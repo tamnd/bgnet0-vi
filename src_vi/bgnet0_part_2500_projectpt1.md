@@ -1,82 +1,82 @@
-# Project: Packet Tracer: Connect Two Computers
+# Dự án: Packet Tracer: Kết Nối Hai Máy Tính
 
-In this project, we're going to build a simple network between two
-computers using Cisco's [fl[Packet
-Tracer|https://www.netacad.com/courses/packet-tracer]] tool. It's free!
+Trong dự án này, ta sẽ xây dựng một mạng đơn giản giữa hai máy tính
+bằng công cụ [fl[Packet
+Tracer|https://www.netacad.com/courses/packet-tracer]] của Cisco. Miễn phí!
 
-If you don't have it installed, check out [Appendix: Packet
-Tracer](#appendix-packettracer) for installation information.
+Nếu bạn chưa cài, xem phần [Phụ lục: Packet
+Tracer](#appendix-packettracer) để biết thông tin cài đặt.
 
-If at any time you make a mistake that you need to delete, choose the
-"Delete" tool from the second icon row down.
+Nếu ở bất kỳ thời điểm nào bạn mắc lỗi cần xóa, hãy chọn công cụ
+"Delete" từ hàng icon thứ hai phía dưới.
 
-## Adding Computers to the LAN
+## Thêm Máy Tính Vào LAN
 
-Select "End Devices" lower left.
+Chọn "End Devices" phía dưới bên trái.
 
 ![End Devices Icon](end_devices_icon.png)
 
-Then drag two "PC"s out onto the work area from the panel in the lower
-middle.
+Sau đó kéo hai "PC" ra vùng làm việc từ panel ở giữa phía dưới.
 
 ![PC Tool Icon](pc_tool.png)
 
-## Wiring PCs Directly Together
+## Nối Dây Hai PC Trực Tiếp
 
-Now that you have two PCs in the workspace, let's wire them together.
+Bây giờ bạn đã có hai PC trong workspace (không gian làm việc), hãy
+nối dây chúng lại.
 
-Click on the "Connections" icon in the lower left.
+Click vào icon "Connections" ở góc dưới bên trái.
 
 ![Connections Icon](connections_icon.png)
 
-Click on the "Copper Cross-Over" icon in the lower middle. (The icon
-will change to an "anti" symbol.)
+Click vào icon "Copper Cross-Over" ở giữa phía dưới. (Icon sẽ đổi
+thành ký hiệu "anti".)
 
 ![Copper Cross-Over Selection](xo_wire_tool.png)
 
-Click on one of the PCs. Select "FastEthernet0".
+Click vào một trong hai PC. Chọn "FastEthernet0".
 
-Click on the other PC. Select "FastEthernet0".
+Click vào PC còn lại. Chọn "FastEthernet0".
 
-You should now see something like this:
+Bây giờ bạn sẽ thấy cái gì đó như thế này:
 
 ![Two PCs wired up](2-pcs.png)
 
-## Setting Up the IP Network
+## Cài Đặt Mạng IP
 
-Neither of these computers have IP addresses yet. We'll set them up with
-static IPs of our choosing.
+Cả hai máy tính chưa có địa chỉ IP. Ta sẽ cài đặt cho chúng IP tĩnh
+theo ý mình.
 
-1. Click on PC0.
+1. Click vào PC0.
 
-2. Click the "Config" tab.
+2. Click tab "Config".
 
-3. Click "FastEthernet0" in the sidebar.
+3. Click "FastEthernet0" trong sidebar.
 
-4. For "IPv4 Address", enter `192.168.0.2`.
+4. Cho "IPv4 Address" (địa chỉ IPv4), nhập `192.168.0.2`.
 
-5. For "Subnet Mask", enter `255.255.255.0`.
+5. Cho "Subnet Mask" (mặt nạ mạng con), nhập `255.255.255.0`.
 
-Close the configuration window.
+Đóng cửa sổ cấu hình.
 
-Click on PC1 and do the same steps, except enter `192.168.0.3` for the
-IP address. Close the configuration window when you're done.
+Click vào PC1 và thực hiện tương tự, nhưng nhập `192.168.0.3` cho địa
+chỉ IP. Đóng cửa sổ cấu hình khi xong.
 
-## Pinging Across the Network
+## Ping Qua Mạng
 
-Let's ping from PC0 to PC1 to make sure the network is connected.
+Hãy ping từ PC0 đến PC1 để đảm bảo mạng đã kết nối.
 
-1. Click on PC0. Select the "Desktop" tab.
+1. Click vào PC0. Chọn tab "Desktop".
 
-2. Click on "Command Prompt".
+2. Click vào "Command Prompt".
 
-3. In the command prompt, type `ping 192.168.0.3`.
+3. Trong command prompt, gõ `ping 192.168.0.3`.
 
-> When you ping, the first ping might timeout because ARP needs to do
-> its work first. In more complex networks, multiple pings might timeout
-> before getting through.
+> Khi ping, lần ping đầu tiên có thể timeout (hết giờ) vì ARP cần
+> làm việc trước. Trong các mạng phức tạp hơn, nhiều ping có thể
+> timeout trước khi thông.
 
-You should see successful ping output:
+Bạn sẽ thấy output ping thành công:
 
 ``` {.sh}
 C:\>ping 192.168.0.3
@@ -94,13 +94,12 @@ Approximate round trip times in milli-seconds:
     Minimum = 0ms, Maximum = 0ms, Average = 0ms
 ```
 
-If you see `Request timed out.` more than twice, something is
-misconfigured.
+Nếu bạn thấy `Request timed out.` nhiều hơn hai lần, có gì đó bị
+cài sai.
 
-## Saving the Project
+## Lưu Dự Án
 
-Be sure to save the project. This will save a file with `.pkt`
-extension.
+Nhớ lưu dự án. Nó sẽ lưu file với phần mở rộng `.pkt`.
 
 <!-- Rubric
 
