@@ -1,38 +1,37 @@
-# Project: Computing and Finding Subnets
+# Dự án: Tính toán và Tìm kiếm Subnet (Computing and Finding Subnets)
 
-In preparation for our subsequent project that finds routes across the
-network, we need to do some work in figuring out how IP addresses,
-subnet masks, and subnets all work together.
+Để chuẩn bị cho dự án tiếp theo là tìm đường định tuyến trong mạng, ta cần
+làm một số việc để hiểu cách địa chỉ IP, subnet mask và subnet hoạt động
+cùng nhau.
 
-In this project we'll put some of the work from the chapters into
-practice. We'll:
+Trong dự án này ta sẽ đưa vào thực hành một số nội dung từ các chương trước.
+Ta sẽ:
 
-* Write functions to convert dots-and-numbers IP addresses into single
-  32-bit values--and back again.
+* Viết hàm chuyển đổi địa chỉ IP dạng chấm-số (dots-and-numbers) thành giá
+  trị 32-bit đơn --- và ngược lại.
 
-* Write a function that converts a subnet mask in slash notation into a
-  single 32-bit value representing that mask.
+* Viết hàm chuyển đổi subnet mask ở dạng slash notation thành một giá trị
+  32-bit đơn đại diện cho mask đó.
 
-* Write a function to see if two IP addresses are on the same subnet.
+* Viết hàm kiểm tra xem hai địa chỉ IP có nằm trên cùng subnet hay không.
 
-## Restrictions
+## Restrictions (Giới hạn)
 
-You may **not** use:
+Bạn **không** được dùng:
 
-* Any functionality from the `socket` module.
-* Any functionality from the `struct` module.
-* Any functionality from the `netaddr` module.
-* The `.to_bytes()` or `.from_bytes()` methods.
+* Bất kỳ chức năng nào từ module `socket`.
+* Bất kỳ chức năng nào từ module `struct`.
+* Bất kỳ chức năng nào từ module `netaddr`.
+* Các phương thức `.to_bytes()` hoặc `.from_bytes()`.
 
-Keep it in the realm of your own home-cooked bitwise operations.
+Hãy giữ nó trong phạm vi các phép toán bitwise tự viết.
 
-## What To Do
+## What To Do (Phải làm gì)
 
-[fls[Grab the skeleton code and other files in this ZIP
-archive|netfuncs/netfuncs.zip]]. This is what you'll fill in for this
-project.
+[fls[Tải skeleton code và các file trong archive ZIP này|netfuncs/netfuncs.zip]].
+Đây là những gì bạn cần điền vào cho dự án này.
 
-Implement the following functions in `netfuncs.py`:
+Cài đặt các hàm sau trong `netfuncs.py`:
 
 * `ipv4_to_value(ipv4_addr)`
 * `value_to_ipv4(addr)`
@@ -41,51 +40,48 @@ Implement the following functions in `netfuncs.py`:
 * `get_network(ip_value, netmask)`
 * `find_router_for_ip(routers, ip)`
 
-The descriptions of the functions are in the file in their respective
-docstrings. Be sure to pay special attention to the input and output
-_types_ in the examples shown there.
+Mô tả các hàm nằm trong file ở docstring tương ứng. Hãy chú ý đặc biệt đến
+_kiểu_ (types) đầu vào và đầu ra trong các ví dụ ở đó.
 
-Note that none of the functions need be more than 5-15 lines long. If
-you're getting a much bigger function implementation, you might be off
-track.
+Lưu ý rằng không hàm nào cần dài hơn 5--15 dòng. Nếu bạn đang viết hàm dài
+hơn thế, có thể bạn đang đi lạc hướng rồi.
 
-## Testing as you Go
+## Testing as you Go (Kiểm tra theo từng bước)
 
-I encourage you to _write one function at a time_ and test it out by
-calling it with your own sample data before moving on to the next
-function.
+Mình khuyến khích bạn _viết từng hàm một_ và kiểm tra bằng dữ liệu mẫu của
+riêng bạn trước khi chuyển sang hàm tiếp theo.
 
-You can add your own calls to the functions to help you verify that
-they're doing what they're supposed to do. Use the inputs and outputs
-from the example comments for tests.
+Bạn có thể thêm các lệnh gọi hàm của riêng mình để kiểm tra xem chúng có
+hoạt động đúng không. Dùng các đầu vào và đầu ra từ phần ví dụ trong comment
+làm test case.
 
-There is a function called `my_tests()` in `netfuncs.py` that will run
-instead of the default main function if you uncomment it.
+Có một hàm tên `my_tests()` trong `netfuncs.py` sẽ chạy thay cho hàm main
+mặc định nếu bạn bỏ comment.
 
-If you uncomment `my_tests()`, you can run the program with:
+Nếu bạn bỏ comment `my_tests()`, bạn có thể chạy chương trình với:
 
 ``` {.sh}
 python netfuncs.py
 ```
 
-and see the output from that function.
+và xem kết quả từ hàm đó.
 
-Be sure to comment out `my_tests()` and run it with the included main
-code before you submit, as shown in the next section.
+Nhớ comment lại `my_tests()` và chạy với code main đi kèm trước khi nộp,
+như phần tiếp theo mô tả.
 
-## Running the Program
+## Running the Program (Chạy chương trình)
 
-You'll run it like this:
+Bạn chạy như sau:
 
 ``` {.sh}
 python netfuncs.py example1.json
 ```
 
-It will read in the JSON data from the included `example1.json` and run
-your functions on various parts of it.
+Chương trình sẽ đọc dữ liệu JSON từ `example1.json` đi kèm và chạy các hàm
+của bạn trên nhiều phần của nó.
 
-The output, included in `example1_output.txt`, should look exactly like
-this if everything is working correctly:
+Đầu ra, nằm trong `example1_output.txt`, phải trông chính xác như thế này
+nếu mọi thứ hoạt động đúng:
 
 ``` {.default}
 Routers:
@@ -135,9 +131,8 @@ Routers and corresponding IPs:
       10.34.98.1: ['10.34.98.184', '10.34.98.33']
 ```
 
-If you're getting different output, try to look through the code and see
-what functions are being used with the incorrect output. Then test those
-in more detail in the `my_tests()` function.
+Nếu đầu ra khác, hãy xem qua code và kiểm tra hàm nào cho đầu ra sai. Sau
+đó kiểm tra chi tiết hơn trong hàm `my_tests()`.
 
 <!--
 New Rubric
@@ -235,4 +230,3 @@ find_router_for_ip(): Calls ips_same_subnet() to make the determination.
 No code below the do-not-modify line was modified.
 
 -->
-
