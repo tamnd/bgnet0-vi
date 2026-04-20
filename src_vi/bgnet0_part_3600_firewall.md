@@ -1,135 +1,125 @@
-# Firewalls
+# Tường lửa (Firewalls)
 
-A favorite component of every bad hacker movie ever is the _firewall_.
-It's clear from those bad movies that it has something to do with
-security, but the exact role is ambiguous; it's only apparent that a bad
-guy getting through the firewall is a bad thing.
+Thành phần yêu thích trong mọi bộ phim hacker dở tệ đó là _tường lửa_
+(firewall). Qua những bộ phim tệ đó, rõ ràng nó liên quan đến bảo mật,
+nhưng vai trò cụ thể thì mơ hồ --- chỉ thấy rằng kẻ xấu vượt qua được
+tường lửa là điều tệ hại.
 
-But back to reality: a firewall is a computer (often a router) that
-restricts certain types of traffic between one interface and another. So
-instead of forwarding every packet of every type from every port, it
-might decide to drop those packets instead.
+Nhưng trở lại thực tế: tường lửa là một máy tính (thường là router)
+hạn chế một số loại lưu lượng nhất định giữa một giao diện mạng và
+giao diện khác. Thay vì chuyển tiếp mọi gói tin thuộc mọi loại từ mọi
+cổng, nó có thể quyết định hủy các gói đó.
 
-The upshot is that if someone in trying to connect to a port on the far
-side of a firewall, the firewall might prevent that connection depending
-on how it is configured.
+Hệ quả là nếu ai đó cố kết nối đến một cổng ở phía bên kia của tường
+lửa, tường lửa có thể ngăn chặn kết nối đó tùy theo cách cấu hình.
 
-In this chapter, we'll be speaking conceptually about firewalls, but
-won't get into any specifics about practical configuration. There are
-many implementations of firewalls out there, and they all tend to have
-different methods of configuration.
+Trong chương này, ta sẽ nói về tường lửa theo nghĩa khái niệm, không
+đi sâu vào cấu hình thực tế cụ thể. Có nhiều triển khai tường lửa
+khác nhau, và chúng đều có phương pháp cấu hình khác nhau.
 
-## Firewall Operation
+## Hoạt động của Tường lửa (Firewall Operation)
 
-If you think about a packet arriving at a router, that router has the
-capability to inspect that packet all it wants. It can look at the
-source and destination IPs, or the ports, or even the application layer
-data.
+Hãy nghĩ về một gói tin đến router --- router đó có khả năng kiểm tra
+gói tin tùy ý. Nó có thể xem IP nguồn và đích, hoặc cổng, thậm chí
+dữ liệu ở tầng ứng dụng.
 
-So that gives it the opportunity to make a decision about whether or not
-to keep forwarding that packet based on any of that data.
+Điều đó cho nó cơ hội quyết định có tiếp tục chuyển tiếp gói tin hay
+không, dựa trên bất kỳ dữ liệu nào trong đó.
 
-For example, the firewall might be configured to allow any port 80
-(HTTP) traffic to come from the outside of the firewall to the inside,
-but block incoming traffic on all other destination ports.
+Ví dụ, tường lửa có thể được cấu hình để cho phép mọi lưu lượng cổng
+80 (HTTP) đến từ bên ngoài vào bên trong, nhưng chặn lưu lượng đến
+trên tất cả các cổng đích khác.
 
-Or maybe it'll be configured to only allow certain IP addresses to
-connect.
+Hoặc có thể chỉ cho phép một số địa chỉ IP nhất định kết nối.
 
-So the firewall, on receipt of a packet, looks at its configured rules
-and decides whether or not to drop the packet (if it's being filtered
-out), or forward the packet normally.
+Vậy khi nhận được một gói tin, tường lửa xem qua các quy tắc đã cấu
+hình và quyết định có hủy gói đó (nếu bị lọc) hay chuyển tiếp bình
+thường.
 
-When it decides to drop the packet, it has a more options. It can either
-silently drop it, or it can reply with a
+Khi quyết định hủy gói, nó có thêm một vài lựa chọn. Có thể hủy thầm
+lặng, hoặc trả lời bằng thông báo
 [ICMP](https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol)
-"destination unreachable" message.
+"destination unreachable" (đích không thể tiếp cận).
 
-That basic filtering gives some a control, but there are still
-some things you might want to do that it can't manage.
+Lọc cơ bản như vậy cho phép kiểm soát một phần, nhưng vẫn có những
+thứ bạn muốn làm mà nó không xử lý được.
 
-For example, if someone behind the firewall establishes a TCP connection
-over the Internet from a random port, we want to be able to get traffic
-back to that host from that random port.
+Ví dụ, nếu ai đó phía sau tường lửa thiết lập kết nối TCP qua Internet
+từ một cổng ngẫu nhiên, ta muốn lưu lượng có thể quay lại đến host đó
+qua cổng ngẫu nhiên đó.
 
-With plain filtering, we'd just have to allow traffic on all those
-ports.
+Với lọc đơn thuần, ta phải cho phép lưu lượng trên tất cả các cổng
+đó.
 
-But with _stateful filtering_, the firewall tracks the state of TCP
-connections that have been initiated from behind the firewall. The
-firewall sees the TCP three-way handshake and knows then that there is a
-valid connection. It can then safely allow traffic back that's destined
-for the inside computer's random port number.
+Nhưng với _lọc trạng thái_ (stateful filtering), tường lửa theo dõi
+trạng thái các kết nối TCP đã được khởi tạo từ phía sau tường lửa.
+Tường lửa thấy bắt tay ba bước TCP và biết rằng đây là kết nối hợp lệ.
+Sau đó nó có thể an toàn cho phép lưu lượng quay vào cổng ngẫu nhiên
+của máy bên trong.
 
-Stateful filtering is also used with UDP traffic, even though it's
-connectionless. The firewall sees a UDP packet go out, and it'll allow
-incoming UDP packets to that port. (For a while. Since it's
-connectionless, there's no way to tell when the server and client and
-done. So the firewall will timeout UDP rules after they haven't been
-used for a while.)
+Lọc trạng thái cũng được dùng với lưu lượng UDP, dù UDP là connectionless
+(không kết nối). Tường lửa thấy gói UDP đi ra, và sẽ cho phép các gói
+UDP đến cổng đó quay vào. (Trong một thời gian. Vì không có kết nối,
+không có cách nào biết khi nào server và client xong việc. Nên tường
+lửa sẽ timeout quy tắc UDP sau một thời gian không dùng.)
 
-> In order to keep the firewall from timing-out on any of its rules, the
-> programs can send _keepalive_ messages. TCP actually has a specific
-> message type for this, and the OS will periodically send empty `ACK`
-> packets out to keep anyone from timing out. (If programming with
-> sockets, you will likely need to set the `SO_KEEPALIVE` option.)
+> Để tránh tường lửa timeout các quy tắc của mình, các chương trình
+> có thể gửi tin nhắn _keepalive_ (giữ kết nối sống). TCP thực ra có
+> một loại thông điệp cụ thể cho việc này, và hệ điều hành sẽ định kỳ
+> gửi các gói `ACK` rỗng ra để không ai timeout. (Khi lập trình với
+> socket, bạn sẽ cần đặt tùy chọn `SO_KEEPALIVE`.)
 >
-> The keepalive can also be effectively implemented by a program using
-> UDP, as well. It could be configured to send a custom keepalive packet
-> to the receiver (who would reply with some kind of ACK) every so
-> often.
+> Keepalive cũng có thể được triển khai hiệu quả bởi chương trình dùng
+> UDP. Nó có thể được cấu hình để gửi gói keepalive tùy chỉnh đến phía
+> nhận (phía nhận sẽ trả lời bằng ACK nào đó) theo chu kỳ.
 >
-> Keepalive is only an issue for programs that have long periods of no
-> network traffic.
+> Keepalive chỉ là vấn đề với các chương trình có khoảng thời gian dài
+> không có lưu lượng mạng.
 
-Finally, filtering could also be done at the application layer. If the
-firewall digs deeply enough into the packet, it might see that it's HTTP
-or FTP data, for example. With that knowledge, it could allow or deny
-all HTTP traffic, even if it's arriving on a non-standard port.
+Cuối cùng, lọc cũng có thể được thực hiện ở tầng ứng dụng. Nếu tường
+lửa đào sâu đủ vào gói tin, nó có thể thấy đó là dữ liệu HTTP hay FTP
+chẳng hạn. Với thông tin đó, nó có thể cho phép hoặc từ chối toàn bộ
+lưu lượng HTTP, kể cả khi nó đến trên cổng không chuẩn.
 
-## Firewalls and NAT
+## Tường lửa và NAT (Firewalls and NAT)
 
-In a home network, it's really common for the firewall to also be the
-router and the switch and do NAT.
+Trong mạng gia đình, thường thấy tường lửa cũng kiêm luôn vai trò
+router, switch và NAT.
 
-It's all rolled into one.
+Tất cả gộp vào một.
 
-But there's nothing stopping us from having a separate firewall computer
-on the network that only decides whether or not to allow traffic.
+Nhưng không có gì ngăn ta có một máy tính tường lửa riêng trên mạng,
+chỉ làm nhiệm vụ quyết định có cho phép lưu lượng đi qua hay không.
 
-And there's no rule that one side of the firewall must be a private
-network and the other side a public network. Both sides could be private
-networks or public networks, or one private and one public.
+Và cũng không có quy tắc nào bắt buộc một phía của tường lửa phải là
+mạng riêng (private) và phía kia là mạng công (public). Cả hai phía
+đều có thể là private, đều public, hoặc một private một public.
 
-The role of the firewall at its core is not to separate public and
-private networks--that's NAT's role--but rather to control which traffic
-is allowed to pass through the firewall.
+Vai trò cốt lõi của tường lửa không phải để phân tách mạng public và
+private --- đó là vai trò của NAT --- mà là kiểm soát lưu lượng nào
+được phép đi qua.
 
-## Local Firewalls
+## Tường lửa cục bộ (Local Firewalls)
 
-You can also set up a firewall just on your computer (and this is
-commonly done). Typically this is set up to allow all connections from
-the computer going out, but to restrict connections from other computers
-coming in.
+Bạn cũng có thể cài tường lửa ngay trên máy tính của mình (và điều
+này thường được làm). Thường được thiết lập để cho phép tất cả kết nối
+đi ra từ máy, nhưng hạn chế kết nối đến từ các máy khác.
 
-In MacOS and Windows, the firewall is something that can simply be
-turned on and then it will start blocking traffic based on some common
-rules.
+Trên MacOS và Windows, tường lửa có thể được bật đơn giản và sau đó
+bắt đầu chặn lưu lượng theo một số quy tắc phổ biến.
 
-If you need some specific ports unblocked, you'll have to manually add
-those.
+Nếu bạn cần mở một số cổng cụ thể, phải thêm thủ công.
 
-Linux has firewall support through a mechanism called
-[iptables](https://en.wikipedia.org/wiki/Iptables). This isn't the most
-straightforward thing to configure, but it's powerful enough to build a
-NAT router/firewall from scratch.
+Linux có hỗ trợ tường lửa thông qua cơ chế gọi là
+[iptables](https://en.wikipedia.org/wiki/Iptables). Đây không phải thứ
+dễ cấu hình nhất, nhưng đủ mạnh để xây dựng một NAT router/firewall
+từ đầu.
 
 ## Reflect
 
-* What's the difference/relationship between a firewall and a router?
+* Sự khác biệt/mối quan hệ giữa tường lửa và router là gì?
 
-* What's the difference/relationship between a firewall and NAT?
+* Sự khác biệt/mối quan hệ giữa tường lửa và NAT là gì?
 
-* What's the funniest or most painful thing in [this NCIS
-  clip](https://www.youtube.com/watch?v=u8qgehH3kEQ)?
-
+* Điều buồn cười nhất hoặc đau đớn nhất trong [đoạn clip NCIS
+  này](https://www.youtube.com/watch?v=u8qgehH3kEQ) là gì?
