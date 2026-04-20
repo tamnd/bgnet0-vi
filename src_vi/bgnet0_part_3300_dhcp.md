@@ -1,24 +1,25 @@
-# Dynamic Host Configuration Protocol (DHCP)
+# Giao thức Cấu hình Host Động (DHCP)
 
-When you first open your laptop at the coffee shop, it doesn't have an
-IP address. It doesn't even know what IP address it _should_ have. Or
-what its name servers are. Or what its subnet mask is.
+Khi bạn mở laptop lần đầu ở quán cà phê, nó chưa có địa chỉ IP. Nó
+thậm chí không biết mình _nên_ có địa chỉ IP nào. Cũng không biết name
+server là gì. Hay subnet mask là bao nhiêu.
 
-Of course, you could manually configure it! Just type in the numbers
-that the cashier hands you with your coffee!
+Tất nhiên, bạn có thể cấu hình thủ công! Cứ gõ vào mấy con số mà
+thu ngân đưa kèm ly cà phê thôi!
 
-OK, that doesn't happen. No one would bother. Or they'd use a duplicate
-address. And things wouldn't work. And they'd probably rage-drink their
-coffee and never return.
+Ừ thì chuyện đó không xảy ra. Chẳng ai muốn làm vậy. Hoặc họ sẽ dùng
+địa chỉ trùng nhau. Rồi mọi thứ sẽ hỏng. Và họ sẽ uống cà phê trong
+bực bội rồi không bao giờ quay lại.
 
-It would be better if there were a way to automatically configure a
-computer that just arrived on the network, wouldn't it?
+Sẽ tiện hơn nhiều nếu có cách tự động cấu hình cho một máy tính vừa
+kết nối vào mạng, phải không?
 
-That's what the _Dynamic Host Configuration Protocol_ (DHCP) is for.
+Đó chính là lý do tồn tại của _Giao thức Cấu hình Host Động_ (Dynamic
+Host Configuration Protocol --- DHCP).
 
-## Operation
+## Hoạt động (Operation)
 
-The overview:
+Tổng quan:
 
 ``` {.default}
 Client --> [DHCPDISCOVER packet] --> Server
@@ -30,52 +31,50 @@ Client --> [DHCPREQUEST packet] --> Server
 Client <-- [DHCPACK packet] <-- Server
 ```
 
-The details:
+Chi tiết hơn:
 
-When your laptop first tries to connect to the network, it sends a
-`DHCPDISCOVER` packet to the broadcast address (`255.255.255.255`) over
-UDP to port `67`, the DHCP server port.
+Khi laptop của bạn lần đầu kết nối vào mạng, nó gửi một gói
+`DHCPDISCOVER` đến địa chỉ broadcast (`255.255.255.255`) qua UDP đến
+cổng `67` --- cổng của DHCP server.
 
-Recall that the broadcast address only propagates on the LAN--the
-default gateway does not forward it.
+Nhớ lại rằng địa chỉ broadcast chỉ lan ra trong LAN --- default
+gateway không chuyển tiếp nó ra ngoài.
 
-On the LAN is another computer acting as the DHCP server. There's a
-process running on it waiting on port `67`.
+Trên LAN có một máy tính khác đang đóng vai DHCP server, với một tiến
+trình đang lắng nghe trên cổng `67`.
 
-The DHCP server process sees the DISCOVER and decides what to do with
-it.
+Tiến trình DHCP server nhận được gói DISCOVER và quyết định xử lý nó
+như thế nào.
 
-The typical use is that the client wants an IP address. We call this
-_leasing_ an IP from the DHCP server. The DHCP server is tracking which
-IPs have been allocated and which are free out of its pool.
+Trường hợp phổ biến nhất là client muốn xin một địa chỉ IP. Ta gọi
+việc này là _thuê_ (leasing) IP từ DHCP server. DHCP server theo dõi
+những IP nào đã được cấp phát và IP nào còn trong pool của nó.
 
-In response to the `DHCPDISCOVER` packet, the DHCP server sends a
-`DHCPOFFER` response back to the client on port `68`.
+Để đáp lại gói `DHCPDISCOVER`, DHCP server gửi phản hồi `DHCPOFFER`
+về cho client trên cổng `68`.
 
-The offer contains an IP address and potentially a lot of other pieces
-of information including, but not limited to:
+Gói offer chứa một địa chỉ IP và có thể còn nhiều thông tin khác,
+bao gồm nhưng không giới hạn:
 
-* Subnet mask
-* Default gateway address
-* The lease time
-* DNS servers
+* Subnet mask (mặt nạ mạng con)
+* Địa chỉ default gateway (cổng mặc định)
+* Thời gian thuê (lease time)
+* DNS servers (máy chủ tên miền)
 
-The client can accept or ignore the offer. (Maybe there are multiple
-DHCP servers making offers, but the client may only accept one of them.)
+Client có thể chấp nhận hoặc bỏ qua offer. (Có thể có nhiều DHCP
+server cùng gửi offer, nhưng client chỉ chấp nhận một trong số đó.)
 
-If the offer is accepted, the client sends a `DHCPREQUEST` back to the
-server notifying it that it wants that particular IP address.
+Nếu chấp nhận, client gửi `DHCPREQUEST` lại cho server để thông báo
+rằng nó muốn địa chỉ IP đó.
 
-Finally, if all's well, the server replies with an acknowledgment
-packet, `DHCPACK`.
+Cuối cùng, nếu mọi thứ ổn, server trả lời bằng gói xác nhận
+`DHCPACK`.
 
-At that point, the client has all the information it needs to
-participate on the network.
+Đến đây, client đã có đủ thông tin để tham gia vào mạng.
 
 ## Reflect
 
-* Reflect on the advantages of using something like DHCP over manually
-  configuring the devices on your LAN.
+* Suy nghĩ về những ưu điểm của việc dùng DHCP so với cấu hình thủ
+  công cho các thiết bị trên LAN của bạn.
 
-* What types of information does a DHCP client receive from the DHCP
-  server?
+* Client DHCP nhận được những loại thông tin gì từ DHCP server?
