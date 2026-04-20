@@ -1,29 +1,27 @@
 # Select
 
-In this chapter we're taking a look at the `select()` function. This is
-a function that looks at a whole set of sockets and lets you know which
-ones have sent you data. That is, which ones are ready to call `recv()`
-on.
+Trong chương này ta sẽ xem xét hàm `select()`. Đây là
+một hàm nhìn vào cả một tập hợp socket và cho bạn biết socket nào đã
+gửi dữ liệu cho bạn. Tức là, socket nào đang sẵn sàng để gọi `recv()`.
 
-This enables us to wait for data on a large number of sockets at the
-same time.
+Điều này cho phép chúng ta chờ dữ liệu trên một số lượng lớn socket cùng một lúc.
 
-## The Problem We're Solving
+## Vấn Đề Ta Đang Giải Quyết
 
-Let's say the server is connected to three clients. It wants to `recv()`
-data from whichever client sends it next.
+Giả sử server đang kết nối với ba client. Nó muốn `recv()` dữ liệu từ
+bất kỳ client nào gửi đến tiếp theo.
 
-But the server has no way of knowing which client will send data next.
+Nhưng server không có cách nào biết client nào sẽ gửi dữ liệu tiếp theo.
 
-In addition, when the server calls `recv()` on a socket with no data
-ready to read, the `recv()` call _blocks_, preventing anything else from
-running.
+Thêm vào đó, khi server gọi `recv()` trên một socket chưa có dữ liệu
+sẵn sàng để đọc, lệnh gọi `recv()` sẽ _block_ (chặn lại), ngăn mọi thứ
+khác tiếp tục chạy.
 
-> To _block_ means that the process will stop executing here and goes to
-> sleep until some condition is met. In the case of `recv()`, the
-> process goes to sleep until there's some data to receive.
+> _Block_ (chặn) có nghĩa là tiến trình sẽ dừng thực thi tại đây và đi
+> vào trạng thái ngủ cho đến khi một điều kiện nào đó được thỏa mãn.
+> Với `recv()`, tiến trình ngủ cho đến khi có dữ liệu để nhận.
 
-So we have this problem where if we do something like this:
+Vậy chúng ta có vấn đề này: nếu làm như thế này:
 
 ``` {.py}
 data1 = s1.recv(4096)
@@ -31,40 +29,37 @@ data2 = s2.recv(4096)
 data3 = s3.recv(4096)
 ```
 
-but there's no data ready on `s1`, then the process will block there and
-not call `recv()` on `s2` or `s3` even if there's data to be received on
-those sockets.
+nhưng `s1` chưa có dữ liệu sẵn sàng, tiến trình sẽ block ở đó và không
+gọi `recv()` trên `s2` hay `s3` dù hai socket kia có thể đang có dữ liệu
+cần nhận.
 
-We need a way to monitor `s1`, `s2`, and `s3` at the same time,
-determine which of them have data ready to receive, and then call
-`recv()` only on those sockets.
+Chúng ta cần một cách để theo dõi `s1`, `s2`, và `s3` cùng lúc, xác định
+cái nào đang có dữ liệu sẵn sàng, rồi chỉ gọi `recv()` trên những socket đó.
 
-The `select()` function does this. Calling `select()` on a set of
-sockets will block until one or more of those sockets is ready-to-read.
-And then it returns to you which sockets are ready and you can call
-`recv()` specifically on those.
+Hàm `select()` làm đúng điều này. Gọi `select()` trên một tập hợp socket
+sẽ block cho đến khi một hoặc nhiều socket trong đó sẵn sàng đọc. Sau đó
+nó trả về cho bạn danh sách những socket đó và bạn có thể gọi `recv()` chỉ
+trên chúng.
 
-## Using `select()`
+## Dùng `select()`
 
-First of all, you need the `select` module.
+Trước tiên, bạn cần module `select`.
 
 ``` {.py}
 import select
 ```
 
-If you have a bunch of connected sockets you want to test for being
-ready to `recv()`, you can add those to a `set()` and pass that to
-`select()`. It will block until one is ready to read.
+Nếu bạn có một loạt socket đã kết nối muốn kiểm tra xem cái nào sẵn sàng
+để `recv()`, bạn có thể thêm chúng vào một `set()` và truyền tập hợp đó vào
+`select()`. Nó sẽ block cho đến khi một cái sẵn sàng đọc.
 
-This set can be used as your canonical list of connected sockets. You
-need to keep track of them all somewhere, and this set is a good place.
-As you get new connections, you add them to the set, and as the
-connections hang up, you remove them from the set. In this way, it
-always holds the sockets of all the current connections.
+Tập hợp này có thể dùng làm danh sách chính tắc (canonical list) các socket
+đang kết nối. Bạn cần theo dõi tất cả chúng ở đâu đó, và đây là nơi tốt.
+Khi có kết nối mới, bạn thêm vào tập hợp; khi kết nối ngắt, bạn xóa ra. Như
+vậy nó luôn chứa socket của tất cả các kết nối hiện tại.
 
-Here's an example. `select()` takes three arguments and return three
-values. We'll just look at the first of each of these for now, ignoring
-the other ones.
+Đây là ví dụ. `select()` nhận ba đối số và trả về ba giá trị. Ta chỉ xem
+cái đầu tiên của mỗi bên thôi, bỏ qua phần còn lại.
 
 ``` {.py}
 read_set = {s1, s2, s3}
@@ -72,31 +67,28 @@ read_set = {s1, s2, s3}
 ready_to_read, _, _ = select.select(read_set, {}, {})
 ```
 
-At this point, we can go through the sockets that are ready and receive
-data.
+Tại đây, ta có thể duyệt qua các socket đã sẵn sàng và nhận dữ liệu.
 
 ``` {.py}
 for s in ready_to_read:
     data = s.recv(4096)
 ```
 
-## Using `select()` with Listening Sockets
+## Dùng `select()` với Socket Lắng Nghe
 
-If you've been looking closely, you might have the following question:
-if the server is blocked on a `select()` call waiting for incoming data,
-how can it also call `accept()` to accept incoming connections? Won't
-the incoming connections have to wait? Furthermore, `accept()` blocks...
-how will we get back to the `select()` if we're blocked on that?
+Nếu bạn quan sát kỹ, có thể bạn đang tự hỏi: nếu server đang block
+trong lệnh gọi `select()` chờ dữ liệu đến, làm sao nó có thể gọi `accept()`
+để chấp nhận kết nối mới? Chẳng phải kết nối mới sẽ phải chờ sao? Hơn nữa,
+`accept()` cũng block... làm sao ta quay lại `select()` nếu đang bị block ở đó?
 
-Fortunately, `select()` provides us with an answer: _you can add a
-listening socket to the set!_ When the listening socket shows up as
-"ready-to-read", it means there's a new incoming connection to
-`accept()`.
+May mắn thay, `select()` cho chúng ta câu trả lời: _bạn có thể thêm socket
+lắng nghe (listening socket) vào tập hợp!_ Khi socket lắng nghe xuất hiện
+là "sẵn sàng đọc" (ready-to-read), điều đó có nghĩa là có một kết nối mới
+đến cần `accept()`.
 
-## The Main Algorithm
+## Thuật Toán Chính
 
-Putting it all together, we get the core of any main loop that uses
-`select()`:
+Kết hợp lại, ta có lõi của bất kỳ vòng lặp chính nào dùng `select()`:
 
 ``` {.default}
 add the listener socket to the set
@@ -119,63 +111,58 @@ main loop:
                 remove the socket from tbe set!
 ```
 
-## What About Those Other Arguments to `select()`?
+## Còn Các Đối Số Kia Của `select()` Thì Sao?
 
-`select()` actually takes three arguments. (Though for this project we
-only need to use the first one, so this section is purely informational.)
+`select()` thực ra nhận ba đối số. (Tuy nhiên với dự án này ta chỉ cần dùng
+đối số đầu tiên, nên phần này chỉ mang tính thông tin.)
 
-They correspond to:
+Chúng tương ứng với:
 
-* Which sockets you want to monitor for ready-to-read
-* Which sockets you want to monitor for ready-to-write
-* Which sockets you want to monitor for exception conditions
+* Những socket nào bạn muốn theo dõi để biết khi nào sẵn sàng đọc (ready-to-read)
+* Những socket nào bạn muốn theo dõi để biết khi nào sẵn sàng ghi (ready-to-write)
+* Những socket nào bạn muốn theo dõi về điều kiện ngoại lệ (exception conditions)
 
-And the return values map to these, as well.
+Và các giá trị trả về cũng ánh xạ tương ứng.
 
 ``` {.py}
 read, write, exc = select.select(read_set, write_set, exc_set)
 ```
 
-But again, for this project, we just use the first and ignore the rest.
+Nhưng một lần nữa, với dự án này ta chỉ dùng cái đầu và bỏ qua phần còn lại.
 
 ``` {.py}
 read, _, _ = select.select(read_set, {}, {})
 ```
 
-### The Timeout
+### Timeout (Hết Thời Gian)
 
-I told a bit of a lie. There's an optional fourth arguments, the
-`timeout`. It's a floating point number of seconds to wait for an event
-to occur; if nothing occurs in that timeframe, `select()` returns and
-none of the returned sockets are shown as ready.
+Mình hơi nói lươn một chút. Có một đối số thứ tư tùy chọn là `timeout`. Đây là
+số giây (dạng số thực) để chờ một sự kiện xảy ra; nếu không có gì xảy ra trong
+khoảng thời gian đó, `select()` trả về và không có socket nào trong kết quả được
+đánh dấu là sẵn sàng.
 
-You can also specify a timeout of `0` if you want to just poll the
-sockets.
+Bạn cũng có thể đặt timeout là `0` nếu muốn chỉ thăm dò (poll) các socket.
 
-## Using `select()` with `send()`
+## Dùng `select()` với `send()`
 
-If your computer tries to send too much too fast, the call to `send()`
-might block. That is, the OS will have it sleep while it processes the
-backlog of data to be sent.
+Nếu máy tính của bạn cố gửi quá nhiều quá nhanh, lệnh gọi `send()` có thể block.
+Tức là, hệ điều hành sẽ cho nó ngủ trong khi xử lý tồn đọng dữ liệu cần gửi.
 
-But let's say you really don't want to have the call block and want to
-keep processing.
+Nhưng giả sử bạn thực sự không muốn lệnh gọi bị block và muốn tiếp tục xử lý.
 
-You can query with `select()` to make sure a socket won't block with a
-`send()` call by passing a set containing the socket descriptor as the
-second argument.
+Bạn có thể dùng `select()` để kiểm tra xem socket có block khi `send()` hay không,
+bằng cách truyền một tập hợp chứa socket descriptor đó làm đối số thứ hai.
 
-And it'll work in much the same way as the "ready to read" set works,
-above.
+Nó sẽ hoạt động tương tự như tập hợp "sẵn sàng đọc" ở trên.
 
-## Reflect
+## Suy Ngẫm
 
-* Why can't we just call `recv()` on all the connected sockets? What
-  does `select()` buy us?
+* Tại sao không thể chỉ gọi `recv()` trên tất cả socket đã kết nối? `select()` mang
+  lại lợi ích gì?
 
-* When `select()` shows a socket "ready-to-read", what does it mean if
-  the socket is a listening socket versus a non-listening socket?
+* Khi `select()` hiển thị một socket "sẵn sàng đọc" (ready-to-read), điều đó có
+  nghĩa gì nếu socket đó là listening socket so với socket thông thường?
 
-* Why do we have to add the listener socket to the set, anyway? Why not
-  just call `accept()` and then call `select()`?
+* Tại sao ta phải thêm listening socket vào tập hợp? Tại sao không gọi `accept()`
+  rồi mới gọi `select()`?
 
