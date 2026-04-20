@@ -1,57 +1,57 @@
-# Project: Using Select
+# Dự án: Dùng Select
 
-In this project we're going to write a server that uses `select()` to
-handle multiple simultaneous connections.
+Trong dự án này ta sẽ viết một server dùng `select()` để xử lý nhiều kết
+nối đồng thời (simultaneous connections).
 
-The client is already provided. You fill in the server.
+Client đã được cung cấp sẵn. Bạn chỉ cần điền vào phần server.
 
-## Demo Code
+## Code Demo
 
-Grab [fls[this ZIP file|select/select.zip]] with all the input files.
+Tải [fls[file ZIP này|select/select.zip]] với tất cả các file đầu vào.
 
-The `select_client.py` file is already complete.
+File `select_client.py` đã hoàn chỉnh rồi.
 
-You have to fill in the `select_server.py` file to get it going.
+Bạn cần điền vào file `select_server.py` để cho nó chạy.
 
-## Features to Add
+## Các Tính Năng Cần Thêm
 
-Your server should do the following:
+Server của bạn cần làm những việc sau:
 
-* When a client connects, the server prints out the client connection
-  info in this form (it's the client IP and port number in front):
+* Khi client kết nối, server in ra thông tin kết nối của client theo
+  dạng sau (IP và số port của client đứng trước):
 
   ``` {.default}
   ('127.0.0.1', 61457): connected
   ```
 
-* When a client disconnects, the server prints out the late client's
-  connection info in this form:
+* Khi client ngắt kết nối, server in ra thông tin kết nối của client đó
+  theo dạng:
 
   ``` {.default}
   ('127.0.0.1', 61457): disconnected
   ```
 
-  **Hint**: You can use the `.getpeername()` method on a socket to get
-  the address of the remote side even after it has disconnected. It'll
-  come back as a tuple containing `("host", port)`, just like what you
-  pass to `connect()`.
+  **Gợi ý**: Bạn có thể dùng phương thức `.getpeername()` trên socket để
+  lấy địa chỉ của đầu kia ngay cả sau khi nó đã ngắt kết nối. Nó trả về
+  một tuple chứa `("host", port)`, giống như những gì bạn truyền vào
+  `connect()`.
 
-* When a client sends data, the server should print out the length of
-  the data as well as the raw bytestring object received:
+* Khi client gửi dữ liệu, server cần in ra độ dài dữ liệu và đối tượng
+  bytestring thô nhận được:
 
   ``` {.default}
   ('127.0.0.1', 61457) 22 bytes: b'test1: xajrxttphhlwmjf'
   ```
 
-## Example Run
+## Ví Dụ Chạy
 
-Running the server:
+Chạy server:
 
 ``` {.sh}
 python select_server.py 3490
 ```
 
-Running the clients:
+Chạy các client:
 
 ``` {.sh}
 python select_client.py alice localhost 3490
@@ -59,10 +59,10 @@ python select_client.py bob localhost 3490
 python select_client.py chris localhost 3490
 ```
 
-The first argument to the client can be any string--the server prints it
-out with the data to help you identify which client it came from.
+Đối số đầu tiên của client có thể là bất kỳ chuỗi nào --- server in nó ra
+cùng với dữ liệu để giúp bạn nhận biết client nào gửi.
 
-Example output:
+Ví dụ output:
 
 ``` {.default}
 waiting for connections
