@@ -1,48 +1,36 @@
-# Parsing Packets {#parsing-packets}
+# Phân Tích Gói Tin {#parsing-packets}
 
-We've already seen some issues with receiving structured data from a
-server. You call `recv(4096)`, and you only get 20 bytes back. Or you
-call `recv(4096)` and it turns out the data is longer than that, and you
-need to call it again.
+Chúng ta đã thấy một số vấn đề với việc nhận dữ liệu có cấu trúc từ một server. Bạn gọi `recv(4096)`, và bạn chỉ nhận lại 20 byte. Hoặc bạn gọi `recv(4096)` và hóa ra dữ liệu dài hơn thế, và bạn cần gọi nó lại.
 
-There's an even worse issue there, too. If the server is sending you
-multiple pieces of data, you might receive the first _and part of the
-next_. You'll have a complete packet and the next partially complete
-one! How do you reconstruct this?
+Còn có một vấn đề tệ hơn ở đó nữa. Nếu server đang gửi cho bạn nhiều phần dữ liệu, bạn có thể nhận được phần đầu _và một phần của phần tiếp theo_. Bạn sẽ có một gói tin hoàn chỉnh và gói tin tiếp theo chỉ mới một phần! Làm thế nào để bạn tái tạo điều này?
 
-An analogy might be if I needed you to split up individual sentences
-from a block of text I give you, but you can only get 20 characters at a
-time.
+Một ví dụ tương tự là nếu tôi cần bạn tách ra từng câu riêng lẻ từ một khối văn bản tôi đưa cho bạn, nhưng bạn chỉ có thể nhận được 20 ký tự một lần.
 
-You call `recv(20)` and you get:
+Bạn gọi `recv(20)` và nhận được:
 
 ``` {.default}
 This is a test of th
 ```
 
-That's not a full sentence, so you can't print it yet. So you call
-`recv(20)` again:
+Đó chưa phải câu hoàn chỉnh, nên bạn chưa thể in nó. Vì vậy bạn gọi `recv(20)` lại:
 
 ``` {.default}
 This is a test of the emergency broadcas
 ```
 
-Still not a sentence. Call it again:
+Vẫn chưa có câu. Gọi lại:
 
 ``` {.default}
 This is a test of the emergency broadcast system. This is on
 ```
 
-Hey! There's a period in there, so we have a complete sentence. So we
-can print it out. But we also have part of the next sentence already
-received!
+Ồ! Có dấu chấm ở đó, vì vậy chúng ta có một câu hoàn chỉnh. Vì vậy chúng ta có thể in nó ra. Nhưng chúng ta cũng đã nhận được một phần của câu tiếp theo rồi!
 
-How are we going to handle all this in a graceful way?
+Làm thế nào chúng ta xử lý tất cả điều này một cách khéo léo?
 
-## You Know What Would Make This Easy?
+## Biết Không, Cái Gì Sẽ Làm Điều Này Dễ?
 
-You know what would make this easy? If we abstracted it out and then we
-could do something like this:
+Biết không, cái gì sẽ làm điều này dễ? Nếu chúng ta trừu tượng hóa nó ra thì chúng ta có thể làm gì đó như thế này:
 
 ``` {.py}
 while the connection isn't closed:
@@ -50,11 +38,9 @@ while the connection isn't closed:
     print(sentence)
 ```
 
-Isn't that easier to think about? Once we have that code the extracts
-the next complete packet from the data stream, we can just use it.
+Đó không phải dễ hơn để nghĩ về sao? Một khi chúng ta có code đó trích xuất gói tin hoàn chỉnh tiếp theo từ luồng dữ liệu, chúng ta chỉ có thể dùng nó.
 
-And if that code is complex enough, it could actually extract different
-types of packets from the stream:
+Và nếu code đó đủ phức tạp, nó thực sự có thể trích xuất các loại gói tin khác nhau từ stream:
 
 ``` {.py}
 packet = get_next_packet()
@@ -66,34 +52,27 @@ elif packet.type == PRIVATE_CHAT:
     display_chat(packet.player_from, packet.message, private=True)
 ```
 
-and so on.
+và cứ thế tiếp tục.
 
-Makes things soooo much easier than trying to reason about packets as
-collections of bytes that might or might not be complete.
+Dễ dàng hơn rất nhiều so với việc cố suy luận về các gói tin như các tập hợp byte có thể hoặc không thể hoàn chỉnh.
 
-Of course, doing that processing is the real trick. Let's talk about how
-to make it happen.
+Tất nhiên, thực hiện xử lý đó mới là thủ thuật thực sự. Hãy nói về cách thực hiện nó.
 
-## Processing a Stream into Packets
+## Xử Lý Stream Thành Gói Tin
 
-The big secret to making this work is this: make a big global buffer.
+Bí mật lớn để làm điều này hoạt động là: tạo một buffer (vùng đệm) toàn cục lớn.
 
-> A buffer is just another word for a storage area for a bunch of bytes.
-> In Python, it would be a bytestring, which is convenient since you're
-> already getting those back from `recv()`.
+> Buffer chỉ là từ khác cho vùng lưu trữ dành cho một loạt byte.
+> Trong Python, nó sẽ là một bytestring, điều này thuận tiện vì bạn đã nhận
+> được những thứ đó trở lại từ `recv()`.
 
-This buffer will hold the bytes you've seen so far. You will inspect the
-buffer to see if it holds a complete data packet.
+Buffer này sẽ giữ các byte bạn đã thấy cho đến nay. Bạn sẽ kiểm tra buffer để xem nó có chứa một gói dữ liệu hoàn chỉnh không.
 
-If there is a complete packet in there, you'll return it (as a
-bytestring or processed). And also, critically, you'll strip it off the
-front of the buffer.
+Nếu có một gói tin hoàn chỉnh ở đó, bạn sẽ trả về nó (dưới dạng bytestring hoặc đã xử lý). Và cũng, một cách quan trọng, bạn sẽ cắt nó khỏi phần đầu của buffer.
 
-Otherwise, you'll call `recv()` again to try to fill up the buffer until
-you have a complete packet.
+Ngược lại, bạn sẽ gọi `recv()` lại để cố điền đầy buffer cho đến khi bạn có một gói tin hoàn chỉnh.
 
-In Python, remember to use the `global` keyword to access global
-variables, e.g.
+Trong Python, hãy nhớ dùng từ khóa `global` để truy cập biến toàn cục, ví dụ:
 
 ``` {.py}
 packet_buffer = b''
@@ -104,133 +83,115 @@ def get_next_packet(s):
     # Now we can use the global version in here
 ```
 
-Otherwise Python will just make another local variable that shadows the
-global one.
+Ngược lại Python sẽ chỉ tạo ra một biến cục bộ khác che khuất biến toàn cục.
 
-## The Sentences Example Again
+## Ví Dụ Về Câu Lại
 
-Let's look at that sentences example from the beginning of this
-chapter.
+Hãy xem lại ví dụ về câu từ đầu chương này.
 
-We'll call our `get_sentence()` function, and it'll look at all the data
-received so far and see if there's a period in it.
+Chúng ta sẽ gọi hàm `get_sentence()` của mình, và nó sẽ xem tất cả dữ liệu đã nhận cho đến nay và xem có dấu chấm trong đó không.
 
-So far we have:
+Cho đến nay chúng ta có:
 
 ``` {.default}
   
 ```
 
-Nothing. No data is received. There's no period in there so we don't
-have a sentence, so we have to call `recv(20)` again to get more bytes:
+Chưa có gì. Không có dữ liệu nào được nhận. Không có dấu chấm ở đó nên chúng ta không có câu, vì vậy chúng ta phải gọi `recv(20)` lại để lấy thêm byte:
 
 ``` {.default}
 This is a test of th
 ```
 
-Still no period. Call `recv(20)` again:
+Vẫn chưa có dấu chấm. Gọi `recv(20)` lại:
 
 ``` {.default}
 This is a test of the emergency broadcas
 ```
 
-Still no period. Call `recv(20)` again:
+Vẫn chưa có dấu chấm. Gọi `recv(20)` lại:
 
 ``` {.default}
 This is a test of the emergency broadcast system. This is on
 ```
 
-There's one! So we do two things:
+Có một cái! Vì vậy chúng ta làm hai việc:
 
-1. Copy the sentence out so we can return it, and:
+1. Sao chép câu ra để chúng ta có thể trả về nó, và:
 
-2. Strip the sentence from the buffer.
+2. Cắt câu khỏi buffer.
 
-After step two, the first sentence is gone and the buffer looks like
-this:
-
-``` {.default}
-This is on
-```
-
-and we return the first sentence "This is a test of the emergency
-broadcast system."
-
-And the function that called `get_sentence()` can print it.
-
-And then call `get_sentence()` again!
-
-In `get_sentence()`, we look at the buffer again. (Remember, the buffer
-is global so it still has the data in it from the last call.)
+Sau bước hai, câu đầu tiên đã biến mất và buffer trông như thế này:
 
 ``` {.default}
 This is on
 ```
 
-There's no period, so we call `recv(20)` again, but this time we only
-get 10 bytes back:
+và chúng ta trả về câu đầu tiên "This is a test of the emergency broadcast system."
+
+Và hàm gọi `get_sentence()` có thể in nó ra.
+
+Và sau đó gọi `get_sentence()` lại!
+
+Trong `get_sentence()`, chúng ta xem lại buffer. (Nhớ, buffer là toàn cục nên nó vẫn có dữ liệu trong đó từ lần gọi cuối.)
+
+``` {.default}
+This is on
+```
+
+Không có dấu chấm, vì vậy chúng ta gọi `recv(20)` lại, nhưng lần này chúng ta chỉ nhận được 10 byte trở lại:
 
 ``` {.default}
 This is only a test.
 ```
 
-But it's a complete sentence, so we strip it from the buffer, leaving it
-empty, and then return it to the caller for printing.
+Nhưng đó là một câu hoàn chỉnh, vì vậy chúng ta cắt nó khỏi buffer, để nó trống, và sau đó trả về nó cho caller để in.
 
-### What If You Receive Multiple Sentences at Once?
+### Nếu Bạn Nhận Nhiều Câu Cùng Lúc?
 
-What if I call `recv(20)` and get this back:
+Nếu tôi gọi `recv(20)` và nhận lại cái này thì sao:
 
 ``` {.default}
 Part 1. Part 2. Part
 ```
 
-Well, it still works! The `get_sentence()` function will see the first
-period in there, strip off the first sentence from the buffer so it
-contains:
+Chà, nó vẫn hoạt động! Hàm `get_sentence()` sẽ thấy dấu chấm đầu tiên ở đó, cắt câu đầu tiên khỏi buffer để nó chứa:
 
 ``` {.default}
 Part 2. Part
 ```
 
-and then return `Part 1.`.
+và sau đó trả về `Part 1.`.
 
-The next time you call `get_sentence()`, as always, the first thing it
-does is check to see if the buffer contains a full sentence. It does! So
-we strip it off:
+Lần tiếp theo bạn gọi `get_sentence()`, như thường lệ, điều đầu tiên nó làm là kiểm tra xem buffer có chứa một câu đầy đủ không. Có! Vì vậy chúng ta cắt nó ra:
 
 ``` {.default}
 Part
 ```
 
-and return `Part 2.`
+và trả về `Part 2.`
 
-The next time you call `get_sentence()`, it sees no period in the
-buffer, so there is no complete sentence, so it calls `recv(20)` again
-to get more data.
+Lần tiếp theo bạn gọi `get_sentence()`, nó không thấy dấu chấm trong buffer, vì vậy không có câu hoàn chỉnh, vì vậy nó gọi `recv(20)` lại để lấy thêm dữ liệu.
 
 ``` {.default}
 Part 3. Part 4. Part 5.
 ```
 
-And now we have a complete sentence, so we strip it off the front:
+Và bây giờ chúng ta có một câu hoàn chỉnh, vì vậy chúng ta cắt nó khỏi phần đầu:
 
 ``` {.default}
 Part 4. Part 5.
 ```
 
-and return `Part 3` to the caller. And so on.
+và trả về `Part 3` cho caller. Và cứ thế.
 
-## The Grand Scheme
+## Sơ Đồ Tổng Thể
 
-Overall, you could think of this abstraction as a pipe full of data.
-When there is a complete packet in the pipe, it's pulled off the front
-and returned.
+Nhìn chung, bạn có thể nghĩ sự trừu tượng này như một ống đầy dữ liệu. Khi có một gói tin hoàn chỉnh trong ống, nó được kéo ra từ phía trước và trả về.
 
-But if there's not, the pipe receives more data at the back and keeps
-checking to see if it has an entire packet yet.
+Nhưng nếu không, ống nhận thêm dữ liệu ở phía sau và tiếp tục kiểm tra xem nó đã có toàn bộ gói tin chưa.
 
-Here's some pseudocode:
+Đây là một số pseudocode (mã giả):
 
 ``` {.py}
 global buffer = b''    # Empty bytestring
@@ -250,19 +211,16 @@ function get_packet():
         append received data onto the buffer
 ```
 
-In Python, you can slice off the buffer to get rid of the packet data
-from the front.
+Trong Python, bạn có thể slice (cắt) buffer để loại bỏ dữ liệu gói tin khỏi phần đầu.
 
-For example, if you know the packet data is 12 bytes, you can slice it
-off with:
+Ví dụ, nếu bạn biết dữ liệu gói tin là 12 byte, bạn có thể slice nó ra bằng:
 
 ``` {.py}
 packet = buffer[:12]   # Grab the packet
 buffer = buffer[12:]   # Slice it off the front
 ```
 
-## Reflect
+## Suy Ngẫm
 
-* Describe the advantages from a programming perspective to abstracting
-  packets out of a stream of data.
-
+* Mô tả những lợi thế từ góc độ lập trình khi trừu tượng hóa các gói tin
+  ra khỏi một luồng dữ liệu.
