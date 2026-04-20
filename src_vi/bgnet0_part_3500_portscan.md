@@ -1,4 +1,4 @@
-# Quét cổng (Port Scanning)
+# Quét cổng (Port Scanning) {#port-scanning}
 
 **LƯU Ý VỀ PHÁP LÝ**: Chưa rõ việc quét cổng (portscan) một máy tính
 không thuộc sở hữu của bạn có hợp pháp hay không. Chúng ta sẽ chỉ
