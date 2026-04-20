@@ -1,74 +1,71 @@
-# Trusting User Data
+# Tin tưởng Dữ liệu Người dùng (Trusting User Data)
 
 > "You won't know who to trust..."
 >
-> —Gregor Ivanovich, _Sneakers_
+> ---Gregor Ivanovich, _Sneakers_
 
-When your server receives data from someone on the Internet, it's not
-good enough to trust that they have good intentions.
+Khi server của bạn nhận dữ liệu từ ai đó trên Internet, không đủ nếu
+chỉ tin rằng họ có ý định tốt.
 
-There are lots of bad actors out there. You have to take steps to
-prevent them from sending things that crash your server processes or,
-worse, give them access to your server machine itself.
+Ngoài kia có rất nhiều kẻ xấu. Bạn phải thực hiện các bước để ngăn
+họ gửi những thứ làm crash tiến trình server của bạn hoặc, tệ hơn,
+cho phép họ truy cập vào chính máy chủ của bạn.
 
-In this chapter we're going to take a high-level look at some issues
-that might arise from users trying to send malicious data.
+Trong chương này, ta sẽ nhìn tổng quát về một số vấn đề có thể phát
+sinh khi người dùng cố gửi dữ liệu độc hại.
 
-The two big ideas here are:
+Hai ý tưởng lớn ở đây là:
 
-* _Think like a villain_. What could someone pass your code that would
-  crash it or make it behave in an unexpected way?
+* _Nghĩ như kẻ phản diện_. Ai đó có thể truyền gì vào code của bạn
+  để làm crash nó hoặc khiến nó hành xử theo cách không mong muốn?
 
-* Don't trust **anything** from the remote side. Don't trust that it
-  will be a reasonable length. Don't trust that it will contain
-  reasonable data.
+* Đừng tin **bất cứ thứ gì** từ phía xa. Đừng tin rằng nó sẽ có độ
+  dài hợp lý. Đừng tin rằng nó sẽ chứa dữ liệu hợp lý.
 
-## Buffer Overflow/Overrun
+## Tràn bộ đệm (Buffer Overflow/Overrun)
 
-This is something that mostly affects memory-unsafe languages like C or
-C++.
+Đây là thứ chủ yếu ảnh hưởng đến các ngôn ngữ không an toàn bộ nhớ
+(memory-unsafe) như C hay C++.
 
-The idea is:
+Ý tưởng là:
 
-1. Your program allocates a fixed size region of memory to use.
+1. Chương trình của bạn cấp phát một vùng bộ nhớ có kích thước cố định.
 
-2. Your program reads some data into that memory region over a network
-   connection.
+2. Chương trình của bạn đọc một số dữ liệu vào vùng bộ nhớ đó qua kết
+   nối mạng.
 
-3. The attacker sends more data than can fit in that memory region. This
-   data is carefully constructed to contain a payload.
+3. Kẻ tấn công gửi nhiều dữ liệu hơn vùng bộ nhớ đó có thể chứa. Dữ
+   liệu này được xây dựng cẩn thận để chứa một payload.
 
-4. Your program, without thinking about it, writes the data from the
-   attacker, filling the memory region and overflowing into whatever is
-   in memory after that.
+4. Chương trình của bạn, không nghĩ ngợi gì, ghi dữ liệu từ kẻ tấn
+   công, lấp đầy vùng bộ nhớ và tràn sang vùng bộ nhớ kế tiếp.
 
-5. Depending on how things are written, the attacker could overwrite the
-   return address value on the stack, causing the function to return
-   into the attacker's payload and run that. The payload manipulates the
-   system to install a virus or change the system to otherwise allow
-   remote access.
+5. Tùy theo cách mọi thứ được viết, kẻ tấn công có thể ghi đè lên
+   giá trị địa chỉ trả về trên stack, khiến hàm trả về vào payload của
+   kẻ tấn công và chạy nó. Payload đó thao túng hệ thống để cài virus
+   hoặc thay đổi hệ thống theo cách cho phép truy cập từ xa.
 
-Modern OSes try to mitigate by making the stack and heap regions of
-memory non-executable, and the code region of memory non-writable.
+Các hệ điều hành hiện đại cố giảm thiểu bằng cách làm vùng stack và
+heap không thể thực thi, và vùng code không thể ghi.
 
-As a developer, you need to write code in C that properly performs
-bounds-checking and never writes to memory it doesn't intend to.
+Là lập trình viên, bạn cần viết code C thực hiện kiểm tra giới hạn
+(bounds-checking) đúng cách và không bao giờ ghi vào vùng bộ nhớ
+ngoài ý muốn.
 
-## Injection Attacks
+## Tấn công Injection (Injection Attacks)
 
-These attacks are ones where you build a command using some data the
-user has provided to you. And then run that command.
+Đây là những cuộc tấn công nơi bạn xây dựng một lệnh (command) sử
+dụng dữ liệu người dùng cung cấp. Rồi chạy lệnh đó.
 
-A malicious user can feed you data that causes another command to be
-run.
+Một người dùng độc hại có thể đưa cho bạn dữ liệu khiến một lệnh
+khác được chạy.
 
-### System Commands
+### Lệnh hệ thống (System Commands)
 
-In many languages, there's a feature that allows you to run a command
-via the shell.
+Trong nhiều ngôn ngữ, có tính năng cho phép chạy một lệnh qua shell.
 
-For example, in Python you can run the `ls` command to get a directory
-listing like this:
+Ví dụ, trong Python bạn có thể chạy lệnh `ls` để lấy danh sách thư
+mục như này:
 
 ``` {.py}
 import os
@@ -76,114 +73,112 @@ import os
 os.system("ls")
 ```
 
-Let's say you write a server that receives some data from a user. The
-user will send `1`, `2` or `3` as data, depending on the function they
-want to select.
+Giả sử bạn viết một server nhận dữ liệu từ người dùng. Người dùng sẽ
+gửi `1`, `2` hoặc `3` tùy theo chức năng họ muốn chọn.
 
-You run some code in your server like this:
+Bạn chạy đoạn code sau trong server:
 
 ``` {.py}
 os.system("mycommand " + user_input)
 ```
 
-So if the user sends `2`, it will run `mycommand 2` as expected and
-return the output to the user.
+Nếu người dùng gửi `2`, nó sẽ chạy `mycommand 2` như mong đợi và trả
+về output cho người dùng.
 
-To be safe, the `mycommand` program verifies that the only allowable
-inputs are `1`, `2`, or `3` and returns an error if something else is
-passed.
+Để an toàn, chương trình `mycommand` kiểm tra rằng đầu vào chỉ được
+phép là `1`, `2`, hoặc `3` và trả về lỗi nếu có gì khác được truyền
+vào.
 
-Are we safe?
+Chúng ta có an toàn không?
 
-No. Do you see how?
+Không. Bạn thấy tại sao không?
 
-The user could pass the input:
+Người dùng có thể truyền đầu vào:
 
 ``` {.default}
 1; cat /etc/passwd
 ```
 
-This would cause the following to be executed:
+Điều này sẽ khiến đoạn sau được thực thi:
 
 ``` {.default}
 mycommand 1; cat /etc/passwd
 ```
 
-The semicolon is the command separator in bash. This causes the
-`mycommand` program to execute, followed by a command that shows the
-contents of the Unix password file.
+Dấu chấm phẩy là dấu phân cách lệnh trong bash. Điều này khiến
+chương trình `mycommand` thực thi, theo sau là lệnh hiển thị nội dung
+file mật khẩu Unix.
 
-To be safe, all the special characters in the input need to be stripped
-or escaped so that the shell doesn't interpret them.
+Để an toàn, tất cả các ký tự đặc biệt trong đầu vào cần được loại bỏ
+hoặc escape để shell không diễn giải chúng.
 
-### SQL Commands
+### Lệnh SQL (SQL Commands)
 
-There's a similar attack called SQL Injection, where a non-carefully
-crafted SQL query can allow a malicious user to execute arbitrary SQL
-queries.
+Có một cuộc tấn công tương tự gọi là SQL Injection, nơi một truy vấn
+SQL không được xây dựng cẩn thận có thể cho phép người dùng độc hại
+thực thi các truy vấn SQL tùy ý.
 
-Let's say you build a SQL query in Python like this, where we get the
-variable `username` over the network in some way:
+Giả sử bạn xây dựng một truy vấn SQL trong Python như này, nơi ta lấy
+biến `username` qua mạng theo cách nào đó:
 
 ``` {.py}
 q = f"SELECT * FROM users WHERE name = '{username}'
 ```
 
-So if I enter `Alice` for the user, we get the following perfectly valid
-query:
+Nếu tôi nhập `Alice` cho user, ta nhận được truy vấn hoàn toàn hợp lệ:
 
 ``` {.sql}
 SELECT * FROM users WHERE name = 'Alice'
 ```
 
-And then I run it, no problem.
+Rồi chạy nó, không vấn đề gì.
 
-But let's _think like a villain_.
+Nhưng hãy _nghĩ như kẻ phản diện_.
 
-What if we entered this:
+Nếu ta nhập cái này:
 
 ``` {.sql}
 Alice' or 1=1 --
 ```
 
-Now we get this:
+Bây giờ ta nhận được:
 
 ``` {.sql}
 SELECT * FROM users WHERE name = 'Alice' or 1=1 -- '
 ```
 
-The `--` is a comment delimiter in SQL. Now we've put together a query
-that shows all user information, not just Alice's.
+`--` là dấu phân cách comment trong SQL. Bây giờ ta đã tạo ra một truy
+vấn hiển thị thông tin tất cả người dùng, không chỉ của Alice.
 
-Not only that, but a naive implementation might also support the `;`
-command separator. If so, an attacker could do something like this:
+Không chỉ vậy, một triển khai ngây thơ có thể hỗ trợ cả dấu `;` phân
+cách lệnh. Nếu vậy, kẻ tấn công có thể làm gì đó như này:
 
 ``` {.sql}
 Alice'; SELECT * FROM passwords --
 ```
 
-Now we get this command:
+Bây giờ ta nhận được lệnh này:
 
 ``` {.sql}
 SELECT * FROM users WHERE name = 'Alice'; SELECT * FROM passwords -- '
 ```
 
-And we get the output from the `passwords` table.
+Và ta nhận được output từ bảng `passwords`.
 
-To avoid this trap, use _parameterized query generators_. This will be
-something in the SQL library that allows you to safely build a query
-with any user input.
+Để tránh cái bẫy này, hãy dùng _parameterized query generators_ (trình
+tạo truy vấn tham số hóa). Đây là thứ trong thư viện SQL cho phép bạn
+xây dựng truy vấn an toàn với bất kỳ đầu vào người dùng nào.
 
-Never try to build the SQL string yourself.
+Đừng bao giờ tự xây dựng chuỗi SQL.
 
 ### Cross-Site Scripting
 
-This is something that happens with HTML/JS.
+Đây là thứ xảy ra với HTML/JS.
 
-Let's say you have a form that accepts a user comment, and then the
-server appends that comment to the web page.
+Giả sử bạn có một form chấp nhận comment của người dùng, và server
+thêm comment đó vào trang web.
 
-So if the user enters:
+Nếu người dùng nhập:
 
 ``` {.default}
 This site has significant problems. I feel uncomfortable using it.
@@ -191,38 +186,36 @@ This site has significant problems. I feel uncomfortable using it.
 Love, FriendlyTroll
 ```
 
-That gets added to the end of the page.
+Cái đó được thêm vào cuối trang.
 
-But if the user enters:
+Nhưng nếu người dùng nhập:
 
 ``` {.html}
 LOL
 <script>alert("Pwnd!")</script>
 ```
 
-Now everyone will see that alert box whenever they view the comments!
+Bây giờ mọi người sẽ thấy hộp alert đó mỗi khi họ xem phần comment!
 
-And that's a pretty innocuous example. The JavaScript could be anything
-and will be executed on the remote site (meaning it can perform API
-calls and fetches as that domain). It could also rewrite the page so
-that the login/password input submitted that information to the
-attacker's website.
+Và đó là ví dụ khá vô hại. JavaScript có thể là bất cứ thứ gì và sẽ
+được thực thi trên site từ xa (nghĩa là nó có thể thực hiện các API
+call và fetch dưới dạng domain đó). Nó cũng có thể viết lại trang để
+phần nhập login/password gửi thông tin đó đến website của kẻ tấn công.
 
 > "It would be bad."
 >
-> —Egon Spengler, _Ghostbusters_
+> ---Egon Spengler, _Ghostbusters_
 
-Most HTML-oriented libraries come with a function to sterilize strings
-so that the browser will render them and not interpret them (e.g. all
-`<` replaced with `&gt;` and so on).
+Hầu hết các thư viện hướng HTML đều có hàm để làm sạch (sterilize)
+chuỗi để trình duyệt render chúng mà không diễn giải (ví dụ: tất cả
+`<` thay bằng `&gt;` và tương tự).
 
-Definitely run any user-generated data through such a function before
-displaying it on a browser.
+Hãy chắc chắn chạy bất kỳ dữ liệu nào do người dùng tạo ra qua hàm
+như vậy trước khi hiển thị trên trình duyệt.
 
 ## Reflect
 
-* In general terms, what's the problem with trusting user input?
+* Nói chung, vấn đề của việc tin tưởng đầu vào người dùng là gì?
 
-* Why aren't buffer overflows as much of a problem with languages like
-  Python, Go, or Rust as they are with C?
-
+* Tại sao tràn bộ đệm (buffer overflow) không phải vấn đề lớn với các
+  ngôn ngữ như Python, Go, hay Rust như với C?
