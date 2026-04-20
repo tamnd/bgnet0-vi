@@ -1,123 +1,118 @@
-# Project: Packet Tracer: Using a Router
+# Dự án: Packet Tracer: Dùng Router
 
-We're going to add a router between two independent networks in Packet
-Tracer.
+Ta sẽ thêm một router giữa hai mạng độc lập trong Packet Tracer.
 
-The goal will be something that looks like this:
+Mục tiêu là xây dựng thứ trông như thế này:
 
 ![Single Router, Two Networks](1router-2net.png)
 
-## Build the LANs
+## Xây Dựng Các LAN
 
-First of all, build two separate LANs. Each will have three PCs and a
-2960 switch like before.
+Trước tiên, xây dựng hai LAN riêng biệt. Mỗi cái có ba PC và một
+switch 2960 như trước.
 
-The left subnet will be `192.168.0.0/24`. The right subnet will be
+Subnet bên trái sẽ là `192.168.0.0/24`. Subnet bên phải sẽ là
 `192.168.1.0/24`.
 
-Assign the left PCs the IP addresses on their `FastEthernet0`
-interfaces:
+Gán cho các PC bên trái địa chỉ IP trên interface `FastEthernet0`:
 
 * `192.168.0.2`
 * `192.168.0.3`
 * `192.168.0.4`
 
-Assign the right PCs the IP addresses on their `FastEthernet0`
-interfaces:
+Gán cho các PC bên phải địa chỉ IP trên interface `FastEthernet0`:
 
 * `192.168.1.2`
 * `192.168.1.3`
 * `192.168.1.4`
 
-All of them have subnet mask `255.255.255.0`.
+Tất cả đều có subnet mask `255.255.255.0`.
 
-Connect the left PCs to one switch on any unused `FastEthernet` ports.
-Connect the right PCs to the other switch in the same way.
+Kết nối các PC bên trái vào một switch trên bất kỳ cổng `FastEthernet`
+nào còn trống. Kết nối các PC bên phải vào switch còn lại theo cách
+tương tự.
 
-At this point, you should have two separate LANs.
+Lúc này bạn đã có hai LAN riêng biệt.
 
-Hit the fast-forward button if all the links aren't green yet. If they
-stay red, something is wrong--double-check your settings.
+Nhấn nút tua nhanh nếu tất cả các link chưa xanh. Nếu chúng vẫn đỏ,
+có gì đó sai --- kiểm tra lại cài đặt.
 
-For sanity, make sure `192.168.0.2` can ping the other two machines on
-its LAN. And make sure `192.168.1.3` can ping the other two machines on
-its LAN.
+Để chắc ăn, hãy đảm bảo `192.168.0.2` có thể ping hai máy còn lại
+trên LAN của nó. Và đảm bảo `192.168.1.3` có thể ping hai máy còn lại
+trên LAN của nó.
 
-## Adding a Router
+## Thêm Router
 
-The router is going to route traffic between these two networks.
+Router sẽ định tuyến lưu lượng giữa hai mạng này.
 
-Click the "Network Devices" icon in the lower left. Then click "Routers"
-in the bottom left. Then drag a `4331` router in between the two.
+Click icon "Network Devices" ở góc dưới bên trái. Sau đó click
+"Routers" ở dưới bên trái. Rồi kéo router `4331` vào giữa hai mạng.
 
-This router is going to be connected to both switches. Each "side" of
-the router will have a different IP address.
+Router này sẽ được kết nối với cả hai switch. Mỗi "phía" của router
+sẽ có địa chỉ IP khác nhau.
 
-We're going to connect some wires here, but _the link won't come up
-yet_. We'll deal with that in a minute.
+Ta sẽ nối dây ở đây, nhưng _link chưa lên_. Ta sẽ xử lý sau.
 
-On the switch on LAN `192.168.0.0/24`, use a Copper Straight-Through
-connector to connect the switch's `GigabitEthernet0/1` port to the
-router's `GigabitEthernet0/0/0` port.
+Trên switch của LAN `192.168.0.0/24`, dùng connector Copper Straight-Through
+để kết nối cổng `GigabitEthernet0/1` của switch với cổng `GigabitEthernet0/0/0`
+của router.
 
-On the switch on LAN `192.168.1.0/24`, use the same type of connector to
-connect the switch's `GigabitEthernet0/1` port to the router's
-`GigabitEthernet0/0/1` port.
+Trên switch của LAN `192.168.1.0/24`, dùng loại connector tương tự để
+kết nối cổng `GigabitEthernet0/1` của switch với cổng `GigabitEthernet0/0/1`
+của router.
 
-Note this is a different port on the router than the other switch is
-connected to! Both switches are plugged into different ports on the
-router.
+Lưu ý đây là cổng khác trên router so với switch kia! Cả hai switch
+được cắm vào các cổng khác nhau trên router.
 
-We have the hardware in place now, but we don't yet have any IP
-addresses assigned on the router. So let's do that.
+Giờ ta đã có phần cứng, nhưng chưa gán địa chỉ IP nào trên router.
+Hãy làm điều đó.
 
-In the "Config" for the router, choose the `GigabitEthernet0/0/0`
-interface and give it the IP address `192.168.0.1`--it's now part of the
-`192.168.0.0/24` subnet. While you're here, click the "On" checkbox to
-power the port. This should bring up the connection and get you the
-green arrows.
+Trong "Config" của router, chọn interface `GigabitEthernet0/0/0` và
+gán địa chỉ IP `192.168.0.1` --- nó giờ là một phần của subnet
+`192.168.0.0/24`. Trong khi ở đây, click checkbox "On" để bật cổng.
+Điều này sẽ kết nối link và cho bạn thấy mũi tên xanh.
 
-Then go to the `GigabitEthernet0/0/1` interface and give it the IP
-address `192.168.1.1`--it's now part of the `192.168.1.0/24` subnet.
-While you're here, click the "On" checkbox to power the port.
+Sau đó vào interface `GigabitEthernet0/0/1` và gán địa chỉ IP
+`192.168.1.1` --- nó giờ là một phần của subnet `192.168.1.0/24`.
+Trong khi ở đây, click checkbox "On" để bật cổng.
 
-Let's try pinging the router. Go to any PC on the `192.168.0.0/24` LAN
-and trying pinging `192.168.0.1` (the router). It should reply.
+Thử ping router. Vào bất kỳ PC nào trên LAN `192.168.0.0/24` và thử
+ping `192.168.0.1` (router). Nó nên trả lời.
 
-Then go to any PC on the `192.168.1.0/24` subnet and try pinging
-`192.168.1.1`. It should reply.
+Sau đó vào bất kỳ PC nào trên subnet `192.168.1.0/24` và thử ping
+`192.168.1.1`. Nó nên trả lời.
 
-Now the ultimate test: get a console on PC `192.168.0.2` and try to ping
-`192.168.1.2` on the other subnet!
+Giờ là bài kiểm tra cuối cùng: mở console trên PC `192.168.0.2` và thử
+ping `192.168.1.2` trên subnet kia!
 
-It... doesn't work!
+Nó... không hoạt động!
 
-Why?
+Tại sao?
 
-## Adding a Default Route
+## Thêm Default Route
 
-All the computers need to know two things:
+Tất cả máy tính cần biết hai thứ:
 
-* What the LAN's subnet number is so it knows to route local traffic on
-  the LAN.
-* A _default gateway_, the computer on the LAN that should get traffic
-  for destinations outside the LAN.
+* Subnet number (số subnet) của LAN để biết định tuyến lưu lượng cục
+  bộ trên LAN.
+* Một _default gateway_ (cổng mặc định), máy tính trên LAN sẽ nhận
+  lưu lượng đến các đích ngoài LAN.
 
-We've put the subnet in, but not the default gateway.
+Ta đã nhập subnet, nhưng chưa nhập default gateway.
 
-For all the PCs on the `192.168.0.0/24` subnet, go into the "Config",
-then choose the "Global" sidebar item. Enter `192.168.0.1` (the router!)
-in the "Default Gateway" field.
+Với tất cả PC trên subnet `192.168.0.0/24`, vào "Config", rồi chọn
+mục "Global" trong sidebar. Nhập `192.168.0.1` (router!) vào trường
+"Default Gateway".
 
-Do the same for all the PCs on the other subnet, except enter
-`192.168.1.1` as the default gateway.
+Làm tương tự cho tất cả PC trên subnet còn lại, nhưng nhập
+`192.168.1.1` làm default gateway.
 
-## Try It Out!
+## Thử Ngay!
 
-Now you should be able to ping any PC from any other PC!
+Giờ bạn nên có thể ping bất kỳ PC nào từ bất kỳ PC nào khác!
 
-If you can't, try pinging just on one LAN to make sure it works. And
-ping the router on that LAN to make sure that works.
+Nếu không, thử ping trên một LAN trước để chắc chắn nó hoạt động. Và
+ping router trên LAN đó để đảm bảo điều đó hoạt động.
 
 <!-- Rubric
 
