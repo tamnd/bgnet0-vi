@@ -1,204 +1,190 @@
-# ARP: The Address Resolution Protocol
+# ARP: Giao thức Phân giải Địa chỉ (Address Resolution Protocol)
 
-As a networked computer, we have a problem.
+Ta --- với tư cách là một máy tính trong mạng --- đang có một vấn đề.
 
-We want to send data on the LAN to another computer on the same subnet.
+Ta muốn gửi dữ liệu trên LAN đến một máy tính khác trên cùng subnet.
 
-Here's what we need to know in order to build an Ethernet frame:
+Đây là những gì ta cần biết để xây dựng một Ethernet frame:
 
-* The data we want to send and its length
-* Our source MAC address
-* Their destination MAC address
+* Dữ liệu muốn gửi và độ dài của nó
+* Địa chỉ MAC nguồn của ta
+* Địa chỉ MAC đích của họ
 
-Here's what we know:
+Đây là những gì ta biết:
 
-* The data we want to send and its length
-* Our source MAC address
-* Our source IP address
-* Their destination IP address
+* Dữ liệu muốn gửi và độ dài của nó
+* Địa chỉ MAC nguồn của ta
+* Địa chỉ IP nguồn của ta
+* Địa chỉ IP đích của họ
 
-What's missing? Even though we know the other computer's IP address, _we
-don't know their MAC address_. How can we build an Ethernet frame
-without their MAC address? We can't. We must get it somehow.
+Còn thiếu gì? Dù ta biết địa chỉ IP của máy tính kia, _ta không biết địa chỉ
+MAC của họ_. Làm sao xây dựng Ethernet frame mà không có địa chỉ MAC đích?
+Không được. Ta phải lấy nó bằng cách nào đó.
 
-> Again, for this section we're talking about sending on the LAN, the
-> local Ethernet. Not over the Internet with IP. This is between two
-> computers on the same Physical Layer network.
+> Nhắc lại, phần này nói về việc gửi trên LAN, tức Ethernet cục bộ. Không
+> phải qua Internet với IP. Đây là giữa hai máy tính trên cùng mạng Tầng
+> Physical.
 
-This section is all about ARP, the Address Resolution Protocol. This is
-how one computer can map a different computer's IP address to that
-computer's MAC address.
+Phần này nói hoàn toàn về ARP, giao thức phân giải địa chỉ (Address
+Resolution Protocol). Đây là cách một máy tính có thể ánh xạ địa chỉ IP của
+máy tính khác sang địa chỉ MAC của máy đó.
 
-## Ethernet Broadcast Frames
+## Ethernet Broadcast Frames (Frame Broadcast Ethernet)
 
-We need some background first, though.
+Ta cần một chút kiến thức nền trước.
 
-Recall that network hardware listens for Ethernet frames that are
-addressed specifically to it. Ethernet frames for other MAC address
-destinations are ignored.
+Nhớ lại rằng phần cứng mạng lắng nghe các Ethernet frame được địa chỉ hóa
+cụ thể đến nó. Các Ethernet frame đến địa chỉ MAC khác bị bỏ qua.
 
-> Side note: they are ignored unless the network card is placed into
-> [_promiscuous mode_](https://en.wikipedia.org/wiki/Promiscuous_mode),
-> in which case it receives **all** traffic on the LAN and forwards it
-> to the OS.
+> Lưu ý: chúng bị bỏ qua trừ khi card mạng được đặt vào
+> [_promiscuous mode_](https://en.wikipedia.org/wiki/Promiscuous_mode) (chế
+> độ phổ thông), trong trường hợp đó nó nhận **tất cả** lưu lượng trên LAN
+> và chuyển tiếp đến hệ điều hành.
 
-But there's a way to override: the _broadcast frame_. This is a frame
-that has a destination MAC address of `ff:ff:ff:ff:ff:ff`. All devices
-on the LAN will receive that frame.
+Nhưng có một cách ghi đè: _broadcast frame_ (frame phát rộng). Đây là frame
+có địa chỉ MAC đích là `ff:ff:ff:ff:ff:ff`. Tất cả thiết bị trên LAN đều
+nhận frame đó.
 
-We're going to make use of this with ARP.
+Ta sẽ dùng điều này với ARP.
 
-## ARP--The Address Resolution Protocol
+## ARP---Giao thức Phân giải Địa chỉ
 
-So we have the destination's IP address, but not its MAC address. We
-want its MAC address.
+Vậy ta có địa chỉ IP đích, nhưng không có địa chỉ MAC của nó. Ta muốn có
+địa chỉ MAC đó.
 
-Here's what's going to happen:
+Đây là những gì sẽ xảy ra:
 
-1. The source computer will broadcast a specialized Ethernet frame that
-   contains the destination IP address. This is the _ARP request_.
+1. Máy tính nguồn sẽ broadcast một Ethernet frame chuyên biệt chứa địa chỉ
+   IP đích. Đây là _ARP request_ (yêu cầu ARP).
 
-   (Remember the EtherType field from the previous chapter? ARP packets
-   have EtherType 0x0806 to differentiate them from regular data
-   Ethernet packets.)
+   (Nhớ trường EtherType từ chương trước không? Các gói ARP có EtherType
+   0x0806 để phân biệt chúng với các gói Ethernet dữ liệu thông thường.)
 
-2. All computers on the LAN receive the ARP request and examine it. But
-   only the computer with the IP address specified in the ARP request
-   will continue. The other computers discard the packet.
+2. Tất cả máy tính trên LAN nhận ARP request và kiểm tra nó. Nhưng chỉ máy
+   tính có địa chỉ IP được chỉ định trong ARP request mới tiếp tục. Các máy
+   tính khác hủy gói tin.
 
-3. The destination computer with the specified IP address builds an _ARP
-   response_. This Ethernet frame contains the destination computer's
-   MAC address.
+3. Máy tính đích với địa chỉ IP được chỉ định xây dựng một _ARP response_
+   (phản hồi ARP). Ethernet frame này chứa địa chỉ MAC của máy tính đích.
 
-4. The destination computer sends the ARP response back to the source
-   computer.
+4. Máy tính đích gửi ARP response về cho máy tính nguồn.
 
-5. The source computer receives the ARP response, and now it knows the
-   destination computer's MAC address.
+5. Máy tính nguồn nhận ARP response, và bây giờ nó biết địa chỉ MAC của máy
+   tính đích.
 
-And it's game-on! Now that we know the MAC address, we can send with
-impunity.
+Và thế là xong! Giờ ta biết địa chỉ MAC, ta có thể gửi thoải mái.
 
-## ARP Caching
+## ARP Caching (Bộ đệm ARP)
 
-Since it's a pain to ask a computer for its MAC address every time we
-want to send it something, we'll _cache_ the result for a while.
+Vì phải hỏi địa chỉ MAC của máy tính mỗi lần muốn gửi gì đó thật phiền, ta
+sẽ _cache_ (lưu vào bộ đệm) kết quả một thời gian.
 
-Then, when we want to send to a particular IP on the LAN, we can look in
-the _ARP cache_ and see if the IP/Ethernet pair is already there. If so,
-no need to send out an ARP request--we can just transmit the data right
-away.
+Sau đó, khi muốn gửi đến một IP cụ thể trên LAN, ta có thể tra _ARP cache_
+(bộ đệm ARP) để xem cặp IP/Ethernet đã có ở đó chưa. Nếu có, không cần gửi
+ARP request --- ta có thể truyền dữ liệu ngay lập tức.
 
-The entries in the cache will timeout and be removed after a certain
-amount of time. There's no standard time to expiration, but I've seen
-numbers from 60 seconds to 4 hours.
+Các bản ghi trong cache sẽ hết hạn và bị xóa sau một khoảng thời gian nhất
+định. Không có thời gian hết hạn chuẩn, nhưng mình thấy các con số từ 60
+giây đến 4 giờ.
 
-Entries could go stale if the MAC address changes for a given IP
-address. Then the cache entry would be out of date. The easiest way for
-that to happen would be if someone closed their laptop and left the
-network (taking their MAC address with them), and then another person
-with a different laptop (and different MAC address) showed up and was
-assigned the same IP address. If that happened, computers with the
-stale entry would send the frames for that IP to the wrong (old) MAC
-address.
+Các bản ghi có thể trở nên lỗi thời nếu địa chỉ MAC thay đổi cho một địa chỉ
+IP cho trước. Khi đó bản ghi cache sẽ bị lỗi thời. Cách dễ nhất để điều đó
+xảy ra là nếu ai đó đóng laptop và rời mạng (mang địa chỉ MAC theo), rồi
+một người khác với laptop khác (và địa chỉ MAC khác) xuất hiện và được gán
+cùng địa chỉ IP. Nếu điều đó xảy ra, các máy tính có bản ghi lỗi thời sẽ
+gửi frame cho IP đó đến địa chỉ MAC (cũ) sai.
 
-## ARP Structure
+## ARP Structure (Cấu trúc ARP)
 
-The ARP data goes in the payload portion of the Ethernet frame. It's
-fixed length. As mentioned before, it's identified by setting the
-EtherType/packet length field to 0x0806.
+Dữ liệu ARP nằm trong phần payload của Ethernet frame. Nó có độ dài cố định.
+Như đã đề cập trước, nó được nhận dạng bằng cách đặt trường EtherType/packet
+length thành 0x0806.
 
-In the payload structure below, when it says "Hardware" it means the
-Link Layer (e.g. Ethernet in this example) and when it says "Protocol"
-it means Network Layer (e.g. IP in this example). It uses those
-generalized names for the fields since there's no requirement that ARP
-use Ethernet or IP--it can work with other protocols, too.
+Trong cấu trúc payload bên dưới, khi nói "Hardware" (phần cứng) có nghĩa là
+Tầng Link (ví dụ Ethernet trong ví dụ này) và khi nói "Protocol" (giao thức)
+có nghĩa là Tầng Network (ví dụ IP trong ví dụ này). Nó dùng các tên tổng
+quát đó cho các trường vì không có yêu cầu nào buộc ARP phải dùng Ethernet
+hay IP --- nó có thể hoạt động với các giao thức khác.
 
-The payload structure, with a total fixed length of 28 octets:
+Cấu trúc payload, với tổng độ dài cố định là 28 octet:
 
-* 2 octets: Hardware Type (Ethernet is `0x0001`)
-* 2 octets: Protocol Type (IPv4 is `0x8000`)
-* 1 octet: Hardware address length in octets (Ethernet is `0x06`)
-* 1 octet: Protocol address length in octets (IPv4 is `0x04`)
-* 2 octets: Operation (`0x01` for request, `0x02` for reply)
-* 6 octets: Sender hardware address (Sender MAC address)
-* 4 octets: Sender protocol address (Sender IP address)
-* 6 octets: Target hardware address (Target MAC address)
-* 4 octets: Target protocol address (Target IP address)
+* 2 octet: Hardware Type (Ethernet là `0x0001`)
+* 2 octet: Protocol Type (IPv4 là `0x8000`)
+* 1 octet: Độ dài địa chỉ hardware tính bằng octet (Ethernet là `0x06`)
+* 1 octet: Độ dài địa chỉ protocol tính bằng octet (IPv4 là `0x04`)
+* 2 octet: Operation (`0x01` cho request, `0x02` cho reply)
+* 6 octet: Sender hardware address (Địa chỉ MAC của người gửi)
+* 4 octet: Sender protocol address (Địa chỉ IP của người gửi)
+* 6 octet: Target hardware address (Địa chỉ MAC của mục tiêu)
+* 4 octet: Target protocol address (Địa chỉ IP của mục tiêu)
 
-## ARP Request/Response
+## ARP Request/Response (Yêu cầu/Phản hồi ARP)
 
-This gets a little confusing, because the "Sender" fields are always set
-up from the point of view of the computer doing the transmitting, not
-from the point of view of who is the requester.
+Phần này hơi khó hiểu vì các trường "Sender" luôn được thiết lập từ góc nhìn
+của máy tính đang truyền, không phải từ góc nhìn của người yêu cầu.
 
-So we're going to declare that Computer 1 is the sending the ARP
-request, and Computer 2 is going to respond to it.
+Vậy ta sẽ khai báo Máy tính 1 là máy gửi ARP request, còn Máy tính 2 sẽ
+phản hồi nó.
 
-In an ARP request from Computer 1 ("If you have this IP, what's your
-MAC?"), the following fields are set up (in addition to the rest of the
-boilerplate ARP request fields mentioned above):
+Trong ARP request từ Máy tính 1 ("Nếu bạn có IP này, MAC của bạn là gì?"),
+các trường sau được thiết lập (ngoài các trường mẫu ARP request còn lại đã
+đề cập ở trên):
 
-* **Sender hardware address**: Computer 1's MAC address
-* **Sender protocol address**: Computer 1's IP address
-* **Target hardware address**: unused
-* **Target protocol address**: the IP address Computer 1 is curious
-  about
+* **Sender hardware address**: Địa chỉ MAC của Máy tính 1
+* **Sender protocol address**: Địa chỉ IP của Máy tính 1
+* **Target hardware address**: không dùng
+* **Target protocol address**: địa chỉ IP mà Máy tính 1 đang tìm kiếm
 
-In an ARP response from Computer 2 ("I have that IP, and this is my
-MAC."), the following fields are set up:
+Trong ARP response từ Máy tính 2 ("Tôi có IP đó, và đây là MAC của tôi."),
+các trường sau được thiết lập:
 
-* **Sender hardware address**: Computer 2's MAC address
-* **Sender protocol address**: Computer 2's IP address
-* **Target hardware address**: Computer 1's MAC address
-* **Target protocol address**: Computer 1's IP address
+* **Sender hardware address**: Địa chỉ MAC của Máy tính 2
+* **Sender protocol address**: Địa chỉ IP của Máy tính 2
+* **Target hardware address**: Địa chỉ MAC của Máy tính 1
+* **Target protocol address**: Địa chỉ IP của Máy tính 1
 
-When Computer 1 receives the ARP reply that names it as the target, it
-can look in the Sender fields and get the MAC address and its
-corresponding IP address.
+Khi Máy tính 1 nhận ARP reply đặt tên nó là mục tiêu, nó có thể tra các
+trường Sender và lấy địa chỉ MAC cùng địa chỉ IP tương ứng.
 
-After that, Computer 1 is able to send Ethernet traffic to Computer 2's
-now-known MAC address.
+Sau đó, Máy tính 1 có thể gửi lưu lượng Ethernet đến địa chỉ MAC đã biết
+của Máy tính 2.
 
-And that is how MAC addresses are discovered for a particular IP
-address!
+Và đó là cách địa chỉ MAC được phát hiện cho một địa chỉ IP cụ thể!
 
-## Other ARP Features
+## Other ARP Features (Các tính năng ARP khác)
 
-### ARP Announcements
+### ARP Announcements (Thông báo ARP)
 
-It's not uncommon for computers that have just come online to announce
-their ARP information unsolicited. This gives everyone else a chance to
-add the data to their caches, and it overwrites potentially stale data
-in those caches.
+Các máy tính vừa kết nối mạng thường thông báo thông tin ARP của chúng mà
+không cần được yêu cầu. Điều này cho mọi người khác cơ hội thêm dữ liệu vào
+cache của họ, và ghi đè dữ liệu có thể đã lỗi thời trong các cache đó.
 
-### ARP Probe
+### ARP Probe (Thăm dò ARP)
 
-A computer can send out a specially-constructed ARP request that
-basically asks, "Is anyone else using this IP address?"
+Một máy tính có thể gửi một ARP request được xây dựng đặc biệt về cơ bản
+hỏi: "Có ai khác đang dùng địa chỉ IP này không?"
 
-Typically it asks using its own IP address; if it gets a response, it
-knows it has an IP conflict.
+Thường nó hỏi bằng địa chỉ IP của chính mình; nếu nhận được phản hồi, nó
+biết mình có xung đột IP.
 
-## IPv6 and ARP
+## IPv6 and ARP (IPv6 và ARP)
 
-IPv6 has its own version of ARP called
-[NDP](https://en.wikipedia.org/wiki/Neighbor_Discovery_Protocol) (the
-Neighbor Discovery Protocol).
+IPv6 có phiên bản ARP riêng gọi là
+[NDP](https://en.wikipedia.org/wiki/Neighbor_Discovery_Protocol) (Neighbor
+Discovery Protocol, Giao thức Khám phá Hàng xóm).
 
-The eagle-eyed among you might have noticed that ARP only supports
-protocol addresses (e.g. IP addresses) of up to 4 bytes, and IPv6
-addresses are 16 bytes.
+Những ai tinh ý có thể nhận thấy rằng ARP chỉ hỗ trợ địa chỉ protocol (ví
+dụ địa chỉ IP) lên đến 4 byte, trong khi địa chỉ IPv6 là 16 byte.
 
-NDP addresses this issue and more, defining a number of
+NDP giải quyết vấn đề này và nhiều hơn nữa, định nghĩa một số loại thông điệp
 [ICMPv6](https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol_for_IPv6)
-(Internet Message Control Protocol for IPv6) that can be used to take
-the place of ARP, among other things.
+(Internet Message Control Protocol for IPv6) có thể được dùng để thay thế
+ARP, trong số những thứ khác.
 
-## Reflect
+## Reflect (Ôn lại)
 
-* Describe the problem ARP is solving.
+* Mô tả vấn đề mà ARP đang giải quyết.
 
-* Why do entries in ARP caches have to expire?
+* Tại sao các bản ghi trong ARP cache phải hết hạn?
 
-* Why can't IPv6 use ARP?
+* Tại sao IPv6 không thể dùng ARP?
