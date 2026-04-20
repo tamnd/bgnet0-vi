@@ -1,66 +1,66 @@
 # Project: The Word Server
 
-This is a project that is all about reading packets.
+Đây là project xoay quanh việc đọc packet (gói tin).
 
-You'll receive a stream of encoded data from a server (provided) and
-you'll have to write code to determine when you've received a complete
-packet and then print out that data.
+Bạn sẽ nhận một luồng dữ liệu mã hóa từ một server (đã được cung cấp
+sẵn) và phải viết code để xác định khi nào bạn đã nhận đủ một packet
+hoàn chỉnh, rồi in dữ liệu đó ra.
 
-## Overview
+## Tổng quan (Overview)
 
-**First:** download these files:
+**Đầu tiên:** tải các file này về:
 
-* [fls[**`wordserver.py`**|word/wordserver.py]]: a ready-to-run
-  server that hands out lists of random words.
+* [fls[**`wordserver.py`**|word/wordserver.py]]: server chạy sẵn,
+  phát ra danh sách các từ ngẫu nhiên.
 
-* [fls[**`wordclient.py`**|word/wordclient.py]]: skeleton code for the client.
+* [fls[**`wordclient.py`**|word/wordclient.py]]: code khung (skeleton)
+  cho phía client.
 
-**RESTRICTION! Do not modify any of the existing code!** Just search for
-`TODO` and fill in that code. You may add additional functions and
-variables if you wish.
+**HẠN CHẾ! Không được sửa bất kỳ đoạn code đã có sẵn nào!** Chỉ cần
+tìm `TODO` và điền code vào đó. Bạn có thể thêm hàm và biến mới nếu
+muốn.
 
-**REQUIREMENT! The code should work with any positive value passed to
-`recv()` between `1` and `4096`!** You might want to test values like
-`1`, `5`, and `4096` to make sure they all work.
+**YÊU CẦU! Code phải hoạt động với mọi giá trị dương truyền vào
+`recv()` từ `1` đến `4096`!** Hãy thử các giá trị như `1`, `5`, và
+`4096` để chắc chắn tất cả đều chạy được.
 
-**REQUIREMENT! The code must work with words from length 1 to length
-65535.** The server won't send very long words, but you can modify it to
-test. To build a string in Python of a specific number of characters,
-you can:
+**YÊU CẦU! Code phải hoạt động với các từ có độ dài từ 1 đến 65535.**
+Server sẽ không gửi từ quá dài, nhưng bạn có thể tự sửa server để test.
+Để tạo một chuỗi Python có số ký tự nhất định, bạn có thể dùng:
 
 ``` {.py}
 long_str = "a" * 256   # Make a string of 256 "a"s
 ```
 
-**PROTIP! Read and understand all the existing client code before you
-start.** This will save you all kinds of trouble. And note how the
-structure of the main code doesn't even care about bytes and
-streams--it's only concerned with entire packets. Cleaner, right?
+**PROTIP! Đọc và hiểu toàn bộ code client hiện có trước khi bắt đầu.**
+Điều này sẽ cứu bạn khỏi vô số rắc rối. Và lưu ý rằng cấu trúc code
+chính không hề quan tâm đến bytes hay stream --- nó chỉ bận tâm đến
+từng packet hoàn chỉnh. Sạch hơn nhiều đúng không?
 
-You are going to complete two functions:
+Bạn sẽ hoàn thiện hai hàm sau:
 
-* **`get_next_word_packet()`**: gets the next complete word packet from
-  the stream. This should return the _complete packet_, the header and
-  the data.
+* **`get_next_word_packet()`**: lấy packet từ tiếp theo hoàn chỉnh từ
+  luồng dữ liệu. Hàm này phải trả về _toàn bộ packet_, bao gồm header
+  và phần dữ liệu.
 
-* **`extract_word()`**: extract and return the word from a complete word
-  packet.
+* **`extract_word()`**: trích xuất và trả về từ từ một packet từ hoàn
+  chỉnh.
 
-What do they do? Keep reading!
+Chúng làm gì? Đọc tiếp thôi!
 
-## What is a "Word Packet"?
+## "Word Packet" là gì?
 
-When you connect to the server, it will send you a stream of data.
+Khi bạn kết nối đến server, nó sẽ gửi cho bạn một luồng dữ liệu.
 
-This stream is made up of a random number (1 to 10 inclusive) of words
-prefixed by the length of the word in bytes.
+Luồng này bao gồm một số lượng ngẫu nhiên (từ 1 đến 10, kể cả hai đầu)
+các từ, mỗi từ được đặt trước bằng độ dài của từ đó tính bằng bytes.
 
-Each word is UTF-8 encoded.
+Mỗi từ được mã hóa theo UTF-8.
 
-The length of the word is encoded as a big-endian 2-byte number.
+Độ dài của từ được mã hóa dưới dạng số 2-byte big-endian.
 
-For example, the word "hello" with length 5 would be encoded as the
-following bytes (in hex):
+Ví dụ, từ "hello" có độ dài 5 sẽ được mã hóa thành các bytes sau (dạng
+hex):
 
 ``` {.default}
 length 5
@@ -70,14 +70,13 @@ length 5
 00 05 68 65 6C 6C 6F
 ```
 
-The numbers corresponding to the letters are the UTF-8 encoding of those
-letters.
+Các số tương ứng với các chữ cái là mã UTF-8 của chúng.
 
-> Fun fact: for alphabetic letters and numbers, UTF-8, ASCII, and
-> ISO-8859-1 are all the same encoding.
+> Fun fact: với các chữ cái và chữ số, UTF-8, ASCII và ISO-8859-1 đều
+> có cùng encoding.
 
-The word "hi" followed by "encyclopedia" would be encoded as two word
-packets, transmitted in the stream like so:
+Từ "hi" theo sau là "encyclopedia" sẽ được mã hóa thành hai word
+packet, truyền trong luồng như sau:
 
 ``` {.default}
 length 2   length 12
@@ -87,70 +86,68 @@ length 2   length 12
 00 02 68 69 00 0C 65 6E 63 79 63 6C 6F 70 65 64 69 61
 ```
 
-## Implementation: `get_next_word_packet()`
+## Cài đặt: `get_next_word_packet()`
 
-This function takes the connected socket as argument. It will return the
-next word packet (the length plus the word, as received) as a
+Hàm này nhận socket đã kết nối làm đối số. Nó sẽ trả về word packet
+tiếp theo (bao gồm độ dài cộng với từ, như khi nhận được) dưới dạng
 bytestring.
 
-It will follow the process outlined in the [Parsing Packets
-chapter](#parsing-packets) for extracting packets from a stream of data.
+Nó sẽ tuân theo quy trình được mô tả trong chương [Parsing Packets
+(Phân tích Packet)](#parsing-packets) để trích xuất packet từ luồng dữ
+liệu.
 
-For example, if the words were "hi" and "encyclopedia" from the example
-above, and we received the first 5 bytes, the packet buffer would
-contain:
+Ví dụ, nếu các từ là "hi" và "encyclopedia" từ ví dụ trên, và chúng ta
+nhận được 5 byte đầu tiên, packet buffer sẽ chứa:
 
 ``` {.default}
       h  i  
 00 02 68 69 00
 ```
 
-We see the first word is 2 bytes long, and we have captured those 2
-bytes.
+Ta thấy từ đầu tiên dài 2 bytes, và ta đã nhận đủ 2 bytes đó.
 
-We would extract and return the first word ("hi") and its length (bytes
-`00` `02`) and return this bytestring:
+Ta sẽ trích xuất và trả về từ đầu tiên ("hi") cùng với độ dài của nó
+(bytes `00` `02`) và trả về bytestring này:
 
 ``` {.default}
       h  i
 00 02 68 69
 ```
 
-We'd also strip those bytes out of the packet buffer so that all that
-remained was the zero that was at the end.
+Ta cũng sẽ bỏ các bytes đó ra khỏi packet buffer để chỉ còn lại byte
+zero ở cuối.
 
 ``` {.default}
 00
 ```
 
-At that point, lacking a complete word in the buffer, a subsequent call
-to the function would trigger a `recv(5)` for the next chunk of data,
-giving us:
+Lúc này, do trong buffer chưa có từ hoàn chỉnh, lần gọi hàm tiếp theo
+sẽ kích hoạt `recv(5)` để lấy thêm dữ liệu, cho ta:
 
 ``` {.default}
       e  n  c  y
 00 0C 65 6E 63 79
 ```
 
-And so on.
+Cứ tiếp tục như vậy.
 
-## Implementation: `extract_word()`
+## Cài đặt: `extract_word()`
 
-This function takes a complete word packet as input, such as:
+Hàm này nhận một word packet hoàn chỉnh làm đầu vào, chẳng hạn:
 
 ``` {.default}
       h  i
 00 02 68 69
 ```
 
-and returns a string of the word, `"hi"`.
+và trả về chuỗi ký tự của từ đó, `"hi"`.
 
-This involves slicing off everything past the two length bytes to get
-the word bytes.
+Việc này bao gồm việc cắt bỏ phần đầu (2 byte độ dài) để lấy phần bytes
+của từ.
 
-But remember: the word is UTF-8 encoded! So you have to call `.decode()`
-to turn it back into a string. (The default decoding is UTF-8, so you
-don't have to pass an argument to `.decode()`.)
+Nhưng nhớ nhé: từ được mã hóa UTF-8! Vì vậy bạn phải gọi `.decode()`
+để chuyển lại thành chuỗi. (Encoding mặc định là UTF-8, nên bạn không
+cần truyền đối số vào `.decode()`.)
 
 <!-- Rubric
 
