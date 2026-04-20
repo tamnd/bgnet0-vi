@@ -1,181 +1,172 @@
-# Project: Packet Tracer: Multiple Routers
+# Dự án: Packet Tracer: Nhiều Router
 
-In the last Packet Tracer project, we had a single router between two
-subnets. In this project, we'll have multiple routers between subnets.
+Trong dự án Packet Tracer trước, chúng ta có một router duy nhất nằm giữa hai
+subnet. Trong dự án này, chúng ta sẽ có nhiều router (multiple routers) giữa các subnet.
 
-This complicates matters, because each router's routing table needs to
-be edited so that it knows out which connection to forward packets.
+Điều đó phức tạp hơn một chút, vì bảng định tuyến (routing table) của mỗi router cần
+được chỉnh sửa để nó biết phải chuyển tiếp gói tin (forward packets) ra cổng nào.
 
-In a larger LAN, a gateway protocol could be used to quickly distribute
-the information the routers needed.
+Trên một mạng LAN lớn hơn, có thể dùng một giao thức cổng (gateway protocol) để
+phân phối thông tin các router cần một cách nhanh chóng.
 
-But in our case, to keep it conceptually simple, we'll just manually
-configure the routes in each of the three routers we'll have.
+Nhưng trong trường hợp của chúng ta, để giữ mọi thứ đơn giản về mặt khái niệm, ta
+sẽ tự cấu hình thủ công các tuyến đường trên từng router --- tổng cộng ba cái.
 
-## What We're Building
+## Chúng Ta Đang Xây Dựng Gì
 
-FIVE subnets!
+NĂM subnet!
 
-* Three of them are LANs:
+* Ba cái là LAN:
   * `192.168.0.0/24`
   * `192.168.1.0/24`
   * `192.168.2.0/24`
 
-* Two of them exist between routers:
+* Hai cái nằm giữa các router:
   * `10.0.0.0/16`
   * `10.1.0.0/16`
 
-And here's a picture of it:
+Và đây là sơ đồ:
 
 ![Multiple Routers Network Diagram](mult_routers_net_diagram.png)
 
-## Drag Out the Components
+## Kéo Thả Các Thành Phần
 
-We'll need:
+Chúng ta sẽ cần:
 
-* 2 PCs per LAN, so 6 PCs total
-* 3 2960 switches
-* 3 4331 routers
+* 2 PC mỗi LAN, vậy tổng cộng 6 PC
+* 3 switch 2960
+* 3 router 4331
 
-Each LAN is connected to one router.
+Mỗi LAN kết nối với một router.
 
-Two of the routers also connect to another router.
+Hai trong số các router đó cũng kết nối với một router khác.
 
-But, **and this is the fun bit**, the middle router is connected to two
-routers **and** another LAN!
+Nhưng, **và đây mới là phần thú vị**, router ở giữa kết nối với hai router khác
+**và** một LAN nữa!
 
-Put straight-through copper connections between the components as shown
-in the diagram, above.
+Dùng cáp đồng thẳng (straight-through copper) nối các thành phần lại như trong sơ
+đồ trên.
 
-## Setting Up the Middle Router
+## Cấu Hình Router Ở Giữa
 
-That router in the middle that connects to two other routers and a LAN?
-It doesn't come with enough ports by default. We need to add one.
+Router ở giữa đó --- kết nối với hai router khác và một LAN? Mặc định nó không đủ
+cổng. Ta cần thêm một cổng.
 
-Luckily this is a virtual simulation, so you're allowed to simulate
-virtual payment for the new components and won't have to open your real
-wallet.
+May thay đây là mô phỏng ảo, nên bạn được phép giả lập việc thanh toán cho linh kiện
+mới mà không cần mở ví thật.
 
-Select that router and go to the "Physical" tab.
+Chọn router đó rồi vào tab "Physical" (Vật lý).
 
-Click "Zoom In" to get a better view.
+Nhấn "Zoom In" để nhìn rõ hơn.
 
-The power switch is on the right side. Scroll over there and click it.
-(You can't add components until you power it down.)
+Công tắc nguồn nằm bên phải. Cuộn đến đó rồi nhấn vào. (Bạn không thể thêm linh
+kiện khi router đang bật.)
 
-Two of the Ethernet connectors are in the upper left. Just right of
-those, there are two more ports that we can plug components into.
+Hai đầu nối Ethernet nằm ở góc trên bên trái. Ngay bên phải của chúng có thêm hai cổng
+khác có thể cắm linh kiện vào.
 
-From the left sidebar, drag a "GLC-T" into the lower one of those ports
-(apparently it doesn't work in the upper one), as shown below:
+Từ thanh bên trái, kéo một linh kiện "GLC-T" vào cổng phía dưới trong số các cổng
+đó (có vẻ cổng trên không dùng được), như hình dưới đây:
 
 ![Adding a GLC-T component](adding-glc-component.png)
 
-Then power the router back on.
+Sau đó bật router lại.
 
-## Set up the Three LAN Subnets
+## Cấu Hình Ba Subnet LAN
 
-Use these subnet numbers:
+Dùng các dải địa chỉ subnet sau:
 
   * `192.168.0.0/24`
   * `192.168.1.0/24`
   * `192.168.2.0/24`
 
-By convention, routers often are the `.1` on their subnet, e.g.
-`192.168.2.1`. This isn't a requirement.
+Theo quy ước, router thường nhận địa chỉ `.1` trên subnet của mình, ví dụ
+`192.168.2.1`. Đây không phải yêu cầu bắt buộc.
 
-Assign the 2 PCs and 1 of the routers IP addresses on the subnet.
-Connect them all to a switch.
+Gán địa chỉ IP cho 2 PC và 1 router trong cùng một subnet. Kết nối tất cả vào một
+switch.
 
-Make sure the correct Ethernet port on the router has been set "On" in
-its config!
+Đảm bảo rằng cổng Ethernet đúng trên router đã được bật "On" trong phần cấu hình!
 
-Sanity check: all computers on a subnet should be able to ping each
-other **and** their router.
+Kiểm tra nhanh: tất cả các máy tính trên cùng subnet phải có thể ping lẫn nhau **và**
+ping được router của chúng.
 
-## Set the Default Gateway on All PCs
+## Đặt Default Gateway Cho Tất Cả PC
 
-Remember that when PCs send out traffic, they either know they're
-sending it on the LAN (because the destination is on the same LAN), or
-they don't know where the IP is. If they don't recognize the IP as being
-on the same subnet, they send the traffic to their _default gateway_,
-i.e. the router that knows what to do with it.
+Nhớ lại rằng khi PC gửi lưu lượng đi, chúng hoặc biết đang gửi trong LAN (vì đích
+nằm trong cùng LAN), hoặc không biết IP đó ở đâu. Nếu không nhận ra IP thuộc cùng
+subnet, chúng gửi lưu lượng tới _cổng mặc định_ (default gateway) --- tức là router
+biết phải làm gì với nó.
 
-Click on each PC in turn. Under "Config" in sidebar "Global/Settings",
-set a static "Default Gateway" of that LAN's router IP.
+Nhấp vào từng PC. Dưới mục "Config" ở thanh bên "Global/Settings", đặt
+"Default Gateway" tĩnh là IP của router trên LAN đó.
 
-For example, if I'm on PC `192.168.1.2` and my router on that LAN is
-`192.168.1.1`, I'll set the PC's default gateway to `192.168.1.1`.
+Ví dụ, nếu tôi đang ở PC `192.168.1.2` và router của tôi trên LAN đó là
+`192.168.1.1`, tôi sẽ đặt default gateway của PC là `192.168.1.1`.
 
-In fact, I'll set the default gateway for all the PCs on the LAN to that
-value.
+Thực ra, tôi sẽ đặt default gateway cho tất cả PC trên LAN đó đều về giá trị đó.
 
-Do the same for the other two LANs.
+Làm tương tự cho hai LAN còn lại.
 
-## Setting Up the Router Subnets
+## Cấu Hình Các Subnet Router
 
-In order to route properly, we need one subnet between the left and
-middle router, and another between the middle and right.
+Để định tuyến đúng, ta cần một subnet giữa router trái và router giữa, và một subnet
+khác giữa router giữa và router phải.
 
-Use these subnets:
+Dùng các subnet sau:
 
   * `10.0.0.0/16`
   * `10.1.0.0/16`
 
-This means the left and right routers will have TWO IP addresses because
-they're attached to two subnets.
+Điều này có nghĩa là router trái và router phải sẽ có HAI địa chỉ IP vì chúng gắn
+với hai subnet.
 
-But the middle router will have THREE IP addresses because it's attached
-to three subnets! (i.e. attached to one LAN, and attached to two other
-routers.
+Còn router giữa sẽ có BA địa chỉ IP vì nó gắn với ba subnet! (Tức là một LAN và
+hai router khác.)
 
-Connect the subnets with copper straight-through connectors if you
-haven't done so already..
+Kết nối các subnet bằng cáp đồng thẳng nếu bạn chưa làm.
 
-## Setting Up the Routing Tables
+## Cấu Hình Bảng Định Tuyến
 
-We're almost there, but if you're on `192.168.0.2` and you try to ping
-`192.168.1.2`, the traffic won't get through.
+Gần xong rồi, nhưng nếu bạn đang ở `192.168.0.2` và thử ping `192.168.1.2`, lưu
+lượng vẫn sẽ không đến được.
 
-This is because the router on subnet `192.168.0.0/24` doesn't know where
-to send so that it arrives at `192.168.1.2`.
+Lý do là router trên subnet `192.168.0.0/24` không biết gửi đi đâu để đến được
+`192.168.1.2`.
 
-We have to put that in.
+Chúng ta phải nhập thông tin đó vào.
 
-We're going to manually add "static routes" to each of the routers so
-that they know where to send things. As mentioned earlier, in real-life
-LANs, it would be more common to use gateway protocols to automatically
-get these routing tables set up.
+Ta sẽ thêm thủ công các "tuyến tĩnh" (static routes) vào từng router để chúng biết
+phải gửi đến đâu. Như đã đề cập, trong thực tế, người ta thường dùng giao thức cổng
+để tự động thiết lập các bảng định tuyến này.
 
-But this is a lab--what would the fun be in that? (Actually it would be
-a very useful exercise, but this one is _usefuller_ as an introduction.)
+Nhưng đây là phòng thí nghiệm --- thủ công mới vui chứ! (Thật ra làm tự động cũng
+rất có ích, nhưng cách thủ công này _hữu ích hơn_ cho người mới bắt đầu.)
 
-Let's look at the network diagram again:
+Hãy nhìn lại sơ đồ mạng:
 
 ![Multiple Routers Network Diagram](mult_routers_net_diagram.png)
 
-If a packet destined for `192.168.1.2` (on the right) leaves from
-`192.168.0.3` on the left, how does it get there?
+Nếu một gói tin đến `192.168.1.2` (bên phải) xuất phát từ `192.168.0.3` bên trái,
+nó sẽ đi qua đâu?
 
-We can see it must travel through all three routers. But when it arrives
-at the first one at `192.168.0.1` (the router for the LAN), where does
-that router send it?
+Ta thấy nó phải đi qua cả ba router. Nhưng khi đến router đầu tiên tại `192.168.0.1`
+(router của LAN), router đó sẽ gửi nó đi đâu?
 
-Well, from there, we'll head out on the `10.0.0.0/16` subnet to router
-`10.0.0.2`.
+Từ đó, ta sẽ đi qua subnet `10.0.0.0/16` đến router `10.0.0.2`.
 
-So we have to add a route for the leftmost router saying, "Hey, if you
-get anything for subnet `192.168.0.0/24`, forward it to `10.0.0.2`
-because that's the next hop on the way."
+Vậy ta phải thêm một tuyến vào router ngoài cùng bên trái để nói: "Này, nếu mày
+nhận được gì cho subnet `192.168.1.0/24`, hãy chuyển tiếp nó đến `10.0.0.2` vì đó
+là bước nhảy tiếp theo (next hop)."
 
-We do this by clicking on the leftmost router, then going to "Config",
-and "Routing/Static" in the left sidebar.
+Ta làm điều này bằng cách nhấp vào router ngoài cùng bên trái, vào "Config", rồi
+"Routing/Static" trên thanh bên trái.
 
-The "Network" and "Mask" fields are the destination, and "Next Hop" is
-the router we should forward that traffic to.
+Các trường "Network" và "Mask" là đích đến, "Next Hop" là router mà ta sẽ chuyển
+tiếp lưu lượng tới.
 
-In the case of the diagram, we'd add a route to the leftmost router like
-so (recalling that a `\24` network has netmask `255.255.255.0`):
+Trong sơ đồ này, ta thêm một tuyến vào router ngoài cùng bên trái như sau (nhớ rằng
+mạng `\24` có netmask `255.255.255.0`):
 
 ``` {.default}
 Network:  192.168.1.0
@@ -183,11 +174,11 @@ Mask:     255.255.255.0
 Next Hop: 10.0.0.2
 ```
 
-And that gets us partway there! But, sadly and importantly, that middle
-router doesn't know where to send traffic for `192.168.1.0/24`, either.
+Vậy là được một phần rồi! Nhưng, đáng tiếc và quan trọng, router giữa cũng không
+biết gửi lưu lượng cho `192.168.1.0/24` đi đâu.
 
-So we have to add a route to that middle router that sends it on the
-next hop, but this time out its `10.1.0.0/16` interface:
+Vậy ta phải thêm một tuyến vào router giữa để gửi nó tới bước nhảy tiếp theo, lần
+này qua interface `10.1.0.0/16` của nó:
 
 ``` {.default}
 Network:  192.168.1.0
@@ -195,23 +186,21 @@ Mask:     255.255.255.0
 Next Hop: 10.1.0.2
 ```
 
-And now we're there! The router with IP `10.1.0.2` has an interface that
-is connected to `192.168.1.0/24`. Our original packet is going to
-`192.168.1.2`, and that's on the same subnet! The router knows it can
-just send the traffic out on that interface.
+Và bây giờ ta đến đích rồi! Router có IP `10.1.0.2` có một interface kết nối với
+`192.168.1.0/24`. Gói tin gốc của ta đang đi tới `192.168.1.2`, và nó nằm trong
+cùng subnet! Router biết nó chỉ cần gửi lưu lượng ra interface đó là xong.
 
-Of course, that's not all we have to do.
+Tất nhiên, đó chưa phải là tất cả những gì ta cần làm.
 
-Add routing table entries for all the non-directly-connected subnets to
-each router.
+Thêm các mục vào bảng định tuyến cho tất cả các subnet không kết nối trực tiếp vào
+mỗi router.
 
-Each router should have two static routing table entries so that all
-inbound and outbound traffic is covered.
+Mỗi router cần có hai mục tuyến tĩnh để tất cả lưu lượng vào ra đều được xử lý.
 
-## Test It Out!
+## Kiểm Tra Thôi!
 
-If it's all configured correctly, you should be able to ping any PC from
-any other PC! The routers forward the traffic to the other LANs!
+Nếu mọi thứ được cấu hình đúng, bạn sẽ có thể ping bất kỳ PC nào từ bất kỳ PC nào
+khác! Các router sẽ chuyển tiếp lưu lượng đến các LAN khác!
 
 <!-- Rubric
 
