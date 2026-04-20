@@ -1,135 +1,124 @@
-# Project 6: Routing with Dijkstra's
+# Dự án 6: Định tuyến với Thuật toán Dijkstra (Routing with Dijkstra's)
 
-Internal Gateway Protocols share information with one another such that
-every router has a complete make of the network they're a part of. This
-way, each router can make autonomous routing decisions given an IP
-address. No matter where it's going, the router can always forward the
-packet in the right direction.
+Các Interior Gateway Protocol chia sẻ thông tin với nhau sao cho mỗi router
+có bản đồ đầy đủ của mạng mà nó thuộc về. Bằng cách này, mỗi router có thể
+đưa ra quyết định định tuyến tự chủ khi được cho một địa chỉ IP. Bất kể gói
+tin đi đâu, router luôn có thể chuyển tiếp nó theo đúng hướng.
 
-IGPs like Open Shortest Path First (OSPF) use Dijkstra's Algorithm to
-find the shortest path along a weighted graph.
+Các IGP như Open Shortest Path First (OSPF) dùng Thuật toán Dijkstra để tìm
+đường ngắn nhất trên đồ thị có trọng số (weighted graph).
 
-In this project, we're going to simulate that routing. Were going to
-implement Dijkstra's Algorithm to print out the shortest path from one
-IP to another IP, showing the IPs of all the routers in between.
+Trong dự án này, ta sẽ mô phỏng việc định tuyến đó. Ta sẽ cài đặt Thuật toán
+Dijkstra để in ra đường ngắn nhất từ một IP đến một IP khác, hiển thị IP của
+tất cả router ở giữa.
 
-We won't be using a real network for this. Rather, your program will
-read in a JSON file that contains the network description and then
-compute the route from that.
+Ta sẽ không dùng mạng thật cho điều này. Thay vào đó, chương trình của bạn
+sẽ đọc một file JSON chứa mô tả mạng rồi tính toán route từ đó.
 
-## Banned Functions
+## Banned Functions (Hàm bị cấm)
 
-You're going to implement Dijkstra's yourself. No credit for using an
-existing library!
+Bạn phải tự cài đặt Dijkstra. Không có điểm nào nếu dùng thư viện có sẵn!
 
-## Graphs Refresher
+## Graphs Refresher (Ôn lại về Đồ thị)
 
-Graphs are made of _vertices_ and _edges_. Sometimes vertices are called
-"vertexes" or "verts" or "nodes". Edges are connections from one node to
-another.
+Đồ thị (graph) được tạo thành từ _vertices_ (đỉnh) và _edges_ (cạnh). Đôi
+khi vertex được gọi là "vertexes" hay "verts" hay "nodes" (nút). Edge là
+kết nối từ một nút đến một nút khác.
 
-Any node on the graph can be connected to any number of other nodes,
-even zero. A node can be connected to every single other node. It could
-even connect to itself.
+Bất kỳ nút nào trên đồ thị đều có thể kết nối với bất kỳ số lượng nút khác
+nào, kể cả không nút nào. Một nút có thể kết nối với mọi nút khác. Thậm chí
+có thể kết nối với chính nó.
 
-An edge can have a _weight_ which generally means the cost of traversing
-that edge when you're walking a path through the graph.
+Một cạnh có thể có _weight_ (trọng số) thường có nghĩa là chi phí để đi qua
+cạnh đó khi bạn đang đi theo một đường trong đồ thị.
 
-For example, imagine a highway map that shows cities and highways
-between the cities. And each highway is labeled with its length. In this
-example, the cities would be vertices, the highways would be edges, and
-the highway length would be the edge weight.
+Ví dụ, hãy tưởng tượng một bản đồ đường cao tốc hiển thị các thành phố và
+đường cao tốc giữa các thành phố. Và mỗi đường cao tốc được ghi nhãn với độ
+dài của nó. Trong ví dụ này, các thành phố sẽ là vertices, các đường cao tốc
+sẽ là edges, và độ dài đường cao tốc sẽ là trọng số cạnh.
 
-When traversing a graph, the goal is to minimize the total of all the
-edge weights that you encounter along the way. On our map, the goal
-would be to choose edges from our starting city through all the
-intermediate cities to our destination city that had us driving the
-minimum total distance.
+Khi đi qua đồ thị, mục tiêu là giảm thiểu tổng tất cả trọng số cạnh mà bạn
+gặp trên đường đi. Trên bản đồ của ta, mục tiêu sẽ là chọn các cạnh từ thành
+phố xuất phát qua tất cả thành phố trung gian đến thành phố đích sao cho tổng
+khoảng cách đi là ít nhất.
 
-## Dijkstra's Algorithm Overview
+## Dijkstra's Algorithm Overview (Tổng quan Thuật toán Dijkstra)
 
-Edsger Dijkstra (_DIKE-struh_) was a famous computer scientist who came
-up with a lot of things, but one of them was so influential it came to
-be known by only his name: Dijkstra's Algorithm.
+Edsger Dijkstra (_DIKE-struh_) là một nhà khoa học máy tính nổi tiếng đã nghĩ
+ra nhiều thứ, nhưng một trong số đó có ảnh hưởng đến mức chỉ được biết đến
+bằng tên của ông: Thuật toán Dijkstra.
 
-> Protip: The secret to spelling "Dijkstra" is remembering that "ijk"
-> appears in order.
+> Mẹo: Bí quyết để đánh vần "Dijkstra" là nhớ rằng "ijk" xuất hiện theo thứ
+> tự.
 
-If you want to find the shortest path between nodes in an unweighted
-graph, you merely need to perform a breadth-first traversal until you
-find what you're looking for. Distances are only measured in "hops".
+Nếu bạn muốn tìm đường ngắn nhất giữa các nút trong đồ thị không trọng số
+(unweighted graph), bạn chỉ cần thực hiện duyệt theo chiều rộng (BFS) cho đến
+khi tìm thấy thứ bạn đang tìm. Khoảng cách chỉ được đo bằng "hop" (bước nhảy).
 
-But if you add weights to the edges between the nodes, BFT can't help
-you differentiate them. Maybe some paths are very desirable, and others
-are very undesirable.
+Nhưng nếu bạn thêm trọng số vào các cạnh giữa các nút, BFS không thể giúp
+bạn phân biệt chúng. Có thể một số đường rất đáng mơ ước, còn một số lại
+rất không đáng.
 
-Dijkstra's _can_ differentiate. It's a BFT with a twist.
+Dijkstra _có thể_ phân biệt. Nó là BFS có kèm một nét thay đổi.
 
-The gist of the algorithm is this: explore outward from the starting
-point, pursuing only the path with the shortest total length so far.
+Ý chính của thuật toán là: khám phá ra từ điểm xuất phát, chỉ theo đuổi con
+đường có tổng độ dài ngắn nhất cho đến nay.
 
-Each path's total weight is the sum of the weights of all its edges.
+Tổng trọng số của mỗi đường là tổng trọng số tất cả các cạnh của nó.
 
-In a well-connected graph, there will be a _lot_ of potential paths from
-the start to the destination. But since we only pursue the shortest
-known path so far, we'll never pursue one that takes us a million miles
-out of the way, assuming we know of a path that is shorter than a
-million miles.
+Trong đồ thị kết nối tốt, sẽ có _rất nhiều_ đường tiềm năng từ điểm bắt đầu
+đến đích. Nhưng vì ta chỉ theo đuổi đường ngắn nhất đã biết cho đến nay, ta
+sẽ không bao giờ theo đuổi một đường đưa ta đi một triệu dặm ngoài đường, giả
+sử ta biết có một đường ngắn hơn một triệu dặm.
 
-## Dijkstra's Implementation
+## Dijkstra's Implementation (Cài đặt Dijkstra)
 
-Dijkstra's builds a tree structure on top of a graph. When you find the
-shortest path from any node back toward the start, that node records the
-prior node in its path as its _parent_. 
+Dijkstra xây dựng cấu trúc cây trên đỉnh đồ thị. Khi bạn tìm thấy đường ngắn
+nhất từ bất kỳ nút nào trở về điểm bắt đầu, nút đó ghi lại nút trước đó trong
+đường của nó như _parent_ (cha) của nó.
 
-If another shorter path comes to be found later, the parent is switched
-to the new shorter path's node.
+Nếu sau đó tìm thấy một đường ngắn hơn khác, parent được chuyển sang nút của
+đường ngắn hơn mới.
 
-[flw[Wikipedia has some great diagrams that show it in
-action|Dijkstra's_algorithm]].
+[flw[Wikipedia có một số sơ đồ hay hiển thị nó trong
+thực tế|Dijkstra's_algorithm]].
 
-Now how do make it work?
+Vậy làm cách nào để nó hoạt động?
 
-Dijkstra's itself only builds the tree representing the shortest paths
-back to the start. We'll follow that shortest path tree later to find a
-particular path.
+Bản thân Dijkstra chỉ xây dựng cây đại diện cho các đường ngắn nhất trở về
+điểm bắt đầu. Ta sẽ theo dõi cây đường ngắn nhất đó sau để tìm một đường cụ
+thể.
 
-* Dijkstra's Algorithm to compute all shortest paths over a graph from a
-  source point:
-  * Initialization:
-    * Create an empty `to_visit` set. This is the set of all nodes we
-      still need to visit.
-    * Create a `distance` dictionary. For any given node (as a key), it
-      will hold the distance from that node to the starting node
-    * Create a `parent` dictionary. For any given node (as a key), it
-      lists the key for the node that leads back to the starting node
-      (along the shortest path).
-    * For every node:
-      * Set its `parent` to `None`.
-      * Set its `distance` to infinity. (Python has infinity in
-        `math.inf`, but you could also use just a very large number,
-        e.g. 4 billion.)
-      * Add the node to the `to_visit` set.
-    * Set the distance to the starting node to `0`.
+* Thuật toán Dijkstra để tính tất cả đường ngắn nhất trên đồ thị từ điểm nguồn:
+  * Khởi tạo:
+    * Tạo một tập `to_visit` rỗng. Đây là tập tất cả các nút ta vẫn cần thăm.
+    * Tạo một từ điển `distance`. Với bất kỳ nút nào (là key), nó sẽ chứa
+      khoảng cách từ nút đó đến nút xuất phát
+    * Tạo một từ điển `parent`. Với bất kỳ nút nào (là key), nó liệt kê key
+      cho nút dẫn trở lại nút xuất phát (theo đường ngắn nhất).
+    * Với mọi nút:
+      * Đặt `parent` của nó thành `None`.
+      * Đặt `distance` của nó thành vô cực. (Python có vô cực trong
+        `math.inf`, nhưng bạn cũng có thể dùng một số rất lớn, ví dụ 4 tỷ.)
+      * Thêm nút vào tập `to_visit`.
+    * Đặt khoảng cách đến nút xuất phát thành `0`.
 
-  * Running:
-    * While `to_visit` isn't empty:
-      * Find the node in `to_visit` with the smallest `distance`. Call
-        this the "current node".
-      * Remove the current node from the `to_visit` set.
-      * For each one of the current node's neighbors still in `to_visit`:
-        * Compute the distance from the starting node to the neighbor.
-          This is the distance of the current node plus the edge weight to
-          the neighbor.
-        * If the computed distance is less than the neighbor's current
-          value in `distance`:
-          * Set the neighbor's value in `distance` to the computed
-            distance.
-          * Set the neighbor's `parent` to the current node.
-        * [This process is called "relaxing". The node distances start
-          at infinity and "relax" down to their shortest distances.]
+  * Chạy:
+    * Trong khi `to_visit` không rỗng:
+      * Tìm nút trong `to_visit` có `distance` nhỏ nhất. Gọi đây là "nút
+        hiện tại".
+      * Xóa nút hiện tại khỏi tập `to_visit`.
+      * Với mỗi nút láng giềng của nút hiện tại còn trong `to_visit`:
+        * Tính khoảng cách từ nút xuất phát đến láng giềng. Đây là khoảng
+          cách của nút hiện tại cộng với trọng số cạnh đến láng giềng.
+        * Nếu khoảng cách tính được nhỏ hơn giá trị hiện tại của láng giềng
+          trong `distance`:
+          * Đặt giá trị của láng giềng trong `distance` bằng khoảng cách tính được.
+          * Đặt `parent` của láng giềng thành nút hiện tại.
+        * [Quá trình này gọi là "relaxing" (thư giãn). Khoảng cách nút bắt
+          đầu từ vô cực và "thư giãn" xuống khoảng cách ngắn nhất của chúng.]
  
-Wikipedia offers this pseudocode, if that's easier to digest:
+Wikipedia cung cấp pseudocode này, nếu dễ tiêu hóa hơn:
 
 ``` {.py}
  1  function Dijkstra(Graph, source):
@@ -153,85 +142,81 @@ Wikipedia offers this pseudocode, if that's easier to digest:
 19      return dist[], prev[]
 ```
 
-At this point, we have constructed our tree made up of all the `parent`
-pointers.
+Đến đây, ta đã xây dựng được cây của mình gồm tất cả các con trỏ `parent`.
 
-To find the shortest path from one point back to the start (at the root
-of the tree), you need to just follow the `parent` pointers from that
-point back up the tree.
+Để tìm đường ngắn nhất từ một điểm trở về điểm bắt đầu (ở gốc của cây), bạn
+chỉ cần theo dõi các con trỏ `parent` từ điểm đó trở lên cây.
 
-* Get Shortest Path from source to destination:
-  * Set our current node to the **destination** node.
-  * Set our `path` to be an empty array.
-  * While current node is not starting node:
-    * Append current node to `path`.
-    * current node = the `parent` of current node
-  * Append the starting node to the path.
+* Lấy Đường ngắn nhất từ nguồn đến đích:
+  * Đặt nút hiện tại của ta thành nút **đích**.
+  * Đặt `path` của ta thành mảng rỗng.
+  * Trong khi nút hiện tại không phải nút xuất phát:
+    * Thêm nút hiện tại vào `path`.
+    * nút hiện tại = `parent` của nút hiện tại
+  * Thêm nút xuất phát vào path.
 
-Of course, this will build the path in reverse order. It has to, since
-the parent pointers all point back to the starting node at the root of
-the tree.  Either reverse it at the end, or run the main Dijkstra's
-algorithm passing the destination in for the source.
+Tất nhiên, điều này sẽ xây dựng đường theo thứ tự ngược. Nó phải như vậy vì
+tất cả con trỏ parent đều trỏ về nút xuất phát ở gốc của cây. Hoặc là đảo
+ngược nó ở cuối, hoặc chạy thuật toán Dijkstra chính bằng cách truyền đích
+vào vị trí nguồn.
 
-### Getting the Minimum Distance
+### Getting the Minimum Distance (Lấy khoảng cách nhỏ nhất)
 
-Part of the algorithm is to find the node with the minimum `distance`
-that is still in the `to_visit` set.
+Một phần của thuật toán là tìm nút với `distance` nhỏ nhất vẫn còn trong tập
+`to_visit`.
 
-For this project, you can just do a `O(n)` linear search to find the
-node with the shortest distance so far.
+Với dự án này, bạn có thể chỉ cần thực hiện tìm kiếm tuyến tính `O(n)` để
+tìm nút có khoảng cách ngắn nhất cho đến nay.
 
-In real life, this is too expensive--`O(n²)` performance over the number
-of vertices. So implementations will use a [min
-heap](https://en.wikipedia.org/wiki/Binary_heap) which will effectively
-get us the minimum in far-superior `O(log n)` time. This gets us to `O(n
-log n)` over the number of verts.
+Trong thực tế, điều này quá tốn kém --- hiệu suất `O(n²)` theo số vertices.
+Vì vậy các cài đặt thực tế sẽ dùng [min
+heap](https://en.wikipedia.org/wiki/Binary_heap) (đống tối thiểu) sẽ giúp
+lấy giá trị nhỏ nhất hiệu quả hơn trong thời gian `O(log n)`. Điều này đưa
+ta đến `O(n log n)` theo số verts.
 
-If you wish the additional challenge, use a min heap.
+Nếu bạn muốn thử thách thêm, hãy dùng min heap.
 
-## What About Our Project?
+## What About Our Project? (Còn dự án của ta thì sao?)
 
-[_All IP addresses in this project are IPv4 addresses._]
+[_Tất cả địa chỉ IP trong dự án này là địa chỉ IPv4._]
 
-[fls[Download the skeleton code ZIP here|dijkstra/dijkstra.zip]].
+[fls[Tải skeleton code ZIP tại đây|dijkstra/dijkstra.zip]].
 
-OK, so that was a lot of general stuff.
+Được rồi, đó là nhiều nội dung tổng quát.
 
-So what does that correspond to in the project?
+Vậy điều đó tương ứng với gì trong dự án?
 
-### The Function, Inputs, and Outputs
+### The Function, Inputs, and Outputs (Hàm, Đầu vào, và Đầu ra)
 
-You have to implement this function:
+Bạn phải cài đặt hàm này:
 
 ``` {.py}
 def dijkstras_shortest_path(routers, src_ip, dest_ip):
 ```
 
-The function inputs are:
+Đầu vào của hàm là:
 
-* `routers`: A dictionary representing the graph.
-* `src_ip`: A source IP address as a dots-and-numbers string.
-* `dest_ip`: A destination IP address as a dots-and-numbers string.
+* `routers`: Một từ điển đại diện cho đồ thị.
+* `src_ip`: Địa chỉ IP nguồn dạng chuỗi chấm-số.
+* `dest_ip`: Địa chỉ IP đích dạng chuỗi chấm-số.
 
-The function output is:
+Đầu ra của hàm là:
 
-* An array of strings showing all the router IP addresses along the
-  route.
-  * **Note: If the source IP and destination IP are on the same subnet
-    as one another, return an empty array.** No routers would be
-    involved in this case.
+* Một mảng chuỗi hiển thị tất cả địa chỉ IP router dọc theo route.
+  * **Lưu ý: Nếu IP nguồn và IP đích ở cùng subnet với nhau, trả về mảng
+    rỗng.** Không có router nào tham gia trong trường hợp này.
 
-Code to drive your function is already included in the skeleton code
-above. It will output to the console lines like this showing the source,
-destination, and all routers in between:
+Code để chạy hàm của bạn đã được bao gồm trong skeleton code ở trên. Nó sẽ
+xuất ra console các dòng như thế này hiển thị nguồn, đích và tất cả router ở
+giữa:
 
 ``` {.default}
 10.34.46.25 -> 10.34.166.228    ['10.34.46.1', '10.34.98.1', '10.34.166.1']
 ```
 
-### The Graph Representation
+### The Graph Representation (Biểu diễn Đồ thị)
 
-The graph dictionary in `routers` looks like this excerpt:
+Từ điển đồ thị trong `routers` trông như đoạn trích này:
 
 ``` {.json}
 {
@@ -261,42 +246,39 @@ The graph dictionary in `routers` looks like this excerpt:
     # ... etc. ...
 ```
 
-The top-level keys (e.g. `"10.34.98.1"`) are the router IPs. These are
-the vertices of the graph.
+Các key cấp cao nhất (ví dụ `"10.34.98.1"`) là các IP router. Đây là các
+vertices của đồ thị.
 
-For each of those, you have a list of `"connections"` which are the
-edges of the graph.
+Với mỗi cái, bạn có một danh sách `"connections"` là các edges của đồ thị.
 
-In each connection, you have a field `"ad"` which is the edge weight.
+Trong mỗi connection, bạn có một trường `"ad"` là trọng số cạnh.
 
-> "AD" is short for _Administrative Distance_. This is a weight set
-> manually or automatically (or a mix of both) that defines how
-> expensive a particular segment of the route is.
-> The default value is 110. Higher numbers are more expensive.
+> "AD" là viết tắt của _Administrative Distance_ (Khoảng cách quản trị). Đây
+> là trọng số được đặt thủ công hoặc tự động (hoặc hỗn hợp cả hai) định nghĩa
+> mức độ tốn kém của một đoạn route cụ thể.
+> Giá trị mặc định là 110. Số cao hơn thì tốn kém hơn.
 >
-> The metric encompasses a number of ideas about the route, including
-> how much bandwidth it provides, how congested it is, how much the
-> administrators want it used (or not), and so on.
+> Chỉ số này bao gồm nhiều ý tưởng về route, bao gồm băng thông nó cung cấp,
+> mức độ tắc nghẽn, mức độ các admin muốn nó được dùng (hay không), v.v.
 
-The netmask for the router IP is in the `"netmask"` field, and there are
-additional `"netmask"` fields for all the connection routers, as well.
+Netmask cho IP router nằm trong trường `"netmask"`, và có thêm các trường
+`"netmask"` cho tất cả router connection.
 
-The `"interface"` says which network device on the router is used to
-reach a neighboring router. It is unused in this project.
+Trường `"interface"` cho biết thiết bị mạng nào trên router được dùng để
+đến router láng giềng. Nó không được dùng trong dự án này.
 
-`"if_count"` and `"if_prefix"` are also unused in this project.
+`"if_count"` và `"if_prefix"` cũng không được dùng trong dự án này.
 
-## Input File and Example Output
+## Input File and Example Output (File đầu vào và Đầu ra mẫu)
 
-The skeleton archive includes an example input file (`example1.json`)
-and expected output for that file (`example1_output.json`).
+Archive skeleton bao gồm file đầu vào mẫu (`example1.json`) và đầu ra kỳ vọng
+cho file đó (`example1_output.json`).
 
-## Hints
+## Hints (Gợi ý)
 
-* Rely heavily on the network functions you wrote in the previous project!
-* Fully understand this project description before coming up with a
-  plan!
-* Come up with a plan as much as possible before writing any code!
+* Dựa nhiều vào các hàm mạng bạn đã viết trong dự án trước!
+* Hiểu đầy đủ mô tả dự án này trước khi đưa ra kế hoạch!
+* Đưa ra kế hoạch càng nhiều càng tốt trước khi viết bất kỳ code nào!
 
 <!--
 Rubric:
@@ -325,4 +307,3 @@ Empty shortest path is returned when source and destination are on the same subn
 5
 Code requested to be unmodified is unmodified
 -->
-
