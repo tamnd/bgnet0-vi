@@ -1,45 +1,48 @@
 # Transmission Control Protocol (TCP)
 
-When someone puts a backhoe through a fiber optic cable, packets might
-be lost. (Entire countries have been brought offline by having a boat
-anchor dragged through an undersea network cable!) Software errors and
-computer crashes and router malfunctions can all cause problems.
+Khi ai đó đào đứt một cáp quang bằng máy xúc, packet có thể bị mất. (Đã
+có cả quốc gia bị mất mạng vì một chiếc neo thuyền kéo qua cáp ngầm dưới
+biển!) Lỗi phần mềm, máy tính treo, router hỏng --- tất cả đều có thể
+gây ra vấn đề.
 
-But we don't want to have to think about that. We want an entity to deal
-with all that and then let us know when the data is complete and intact
-and in order.
+Nhưng chúng ta không muốn phải nghĩ đến chuyện đó. Chúng ta muốn có một
+thứ gì đó xử lý tất cả những chuyện đó rồi báo cho ta biết khi nào dữ
+liệu đã đầy đủ, nguyên vẹn và đúng thứ tự.
 
-TCP is that entity. It worries about lost packets so we don't have to.
-And when it is sure it has all the correct data, _then_ it gives it to
-us.
+TCP là thứ đó. Nó lo lắng về các packet bị mất để chúng ta không phải
+lo. Và chỉ khi nó chắc chắn đã có đủ dữ liệu chính xác, _lúc đó_ nó mới
+đưa dữ liệu cho chúng ta.
 
-We'll look at:
+Chúng ta sẽ xem xét:
 
-* The overall goals of TCP
-* Where it fits in the network stack
-* A refresher on TCP ports
-* How TCP makes, uses, and closes connections
-* Data integrity mechanisms
-  * Maintaining packet order
-  * Detecting errors
-* Flow control--how a receiver keeps from getting overwhelmed
-* Congestion Control--how senders avoid overloading the Internet
+* Mục tiêu tổng thể của TCP
+* Vị trí của nó trong network stack (ngăn xếp mạng)
+* Ôn lại về TCP port (cổng TCP)
+* Cách TCP tạo, sử dụng và đóng kết nối
+* Các cơ chế đảm bảo tính toàn vẹn dữ liệu
+  * Duy trì thứ tự packet
+  * Phát hiện lỗi
+* Flow control (kiểm soát luồng) --- cách receiver (máy nhận) tránh bị
+  quá tải
+* Congestion Control (kiểm soát tắc nghẽn) --- cách sender (máy gửi)
+  tránh làm quá tải Internet
 
-TCP is a very complex topic and we're only skimming the highlights here.
-If you want to learn more, the go-to book is _TCP/IP Illustrated Volume
-1_ by the late, great W. Richard Stevens.
+TCP là một chủ đề rất phức tạp và chúng ta chỉ lướt qua những điểm nổi
+bật ở đây. Nếu bạn muốn tìm hiểu thêm, cuốn sách tham khảo kinh điển là
+_TCP/IP Illustrated Volume 1_ của cố tác giả vĩ đại W. Richard Stevens.
 
-## Goals of TCP
+## Mục tiêu của TCP
 
-* Provide reliable communication
-* Simulate a circuit-like connection on a packet-switched network
-* Provide flow control
-* Provide congestion control
-* Support out-of-band data
+* Cung cấp giao tiếp đáng tin cậy (reliable communication)
+* Mô phỏng kết nối kiểu circuit trên mạng packet-switched (chuyển mạch
+  gói)
+* Cung cấp flow control
+* Cung cấp congestion control
+* Hỗ trợ dữ liệu out-of-band
 
-## Location in the Network Stack
+## Vị trí trong Network Stack
 
-Recall the layers of the Network Stack:
+Hãy nhớ lại các tầng của Network Stack:
 
 <!-- CAPTION: Internet Layered Network Model -->
 |Layer|Responsibility|Example Protocols|
@@ -49,278 +52,269 @@ Recall the layers of the Network Stack:
 |Internet|Routing|IP, IPv6, ICMP|
 |Link|Physical, signals on wires|Ethernet, PPP, token ring|
 
-You can see TCP in there at the Transport Layer. IP below it is
-responsible for routing. And the application layer above it takes
-advantage of all the features TCP has to offer.
+Bạn có thể thấy TCP ở tầng Transport (Vận chuyển). IP bên dưới nó chịu
+trách nhiệm routing (định tuyến). Và tầng Application bên trên tận dụng
+tất cả các tính năng TCP cung cấp.
 
-That's why when we wrote our HTTP client and server, we didn't have to
-worry about data integrity at all. We used TCP so that took care of it
-for us!
+Đó là lý do tại sao khi chúng ta viết HTTP client và server, chúng ta
+không phải lo về tính toàn vẹn dữ liệu chút nào. Chúng ta dùng TCP nên
+nó lo hết cho ta rồi!
 
-## TCP Ports
+## TCP Port
 
-Recall that when we used TCP we had to specify port numbers to connect
-to. And even our clients were automatically assigned local ports by the
-operating system (if we didn't `bind()` them ourselves).
+Nhớ lại rằng khi dùng TCP chúng ta phải chỉ định số port để kết nối đến.
+Và ngay cả client cũng được hệ điều hành tự động gán port cục bộ (nếu
+chúng ta không tự `bind()`).
 
-IP uses IP addresses to identify hosts.
+IP dùng địa chỉ IP để xác định host (máy chủ).
 
-But once on that host, the port number is what the OS uses to deliver
-the data to the correct process.
+Nhưng khi đã đến host đó, số port là thứ hệ điều hành dùng để chuyển dữ
+liệu đến đúng tiến trình.
 
-By analogy, the IP address is like a street address, and the port number
-is like an apartment number at that street address.
+Dùng phép so sánh: địa chỉ IP giống như địa chỉ đường phố, còn số port
+giống như số căn hộ tại địa chỉ đó.
 
-## TCP Overview
+## Tổng quan về TCP
 
-There are three main things TCP does during a connection:
+Có ba việc chính TCP thực hiện trong một kết nối:
 
-1. Make the connection
-2. Transmit data
-3. Close the connection
+1. Tạo kết nối
+2. Truyền dữ liệu
+3. Đóng kết nối
 
-Each of these involves the sending of special non-user-data packets back
-and forth between the client and server. We'll look at special packet
-types SYN, SYN-ACK, ACK, and FIN.
+Mỗi việc đều liên quan đến việc gửi qua lại các packet đặc biệt không
+chứa dữ liệu người dùng giữa client và server. Chúng ta sẽ xem xét các
+loại packet đặc biệt SYN, SYN-ACK, ACK và FIN.
 
-### Making the Connection
+### Tạo kết nối (Making the Connection)
 
-This involves the famous "three-way handshake". Since any packets can be
-lost during transmission, TCP takes extra care to make sure both sides
-of the connection are ready for data before proceeding.
+Đây là "bắt tay ba bước" (three-way handshake) nổi tiếng. Vì bất kỳ
+packet nào cũng có thể bị mất trong quá trình truyền, TCP đặc biệt cẩn
+thận để đảm bảo cả hai bên của kết nối sẵn sàng trước khi tiến hành.
 
-1. The client sends a SYN (synchronize) packet to the server.
-2. The server replies with a SYN-ACK (synchronize acknowledge) packet
-   back to the client.
-3. The client replies with an ACK (acknowledge) packet back to the
-   server.
+1. Client gửi packet SYN (synchronize --- đồng bộ hóa) đến server.
+2. Server trả lời bằng packet SYN-ACK (synchronize acknowledge --- xác
+   nhận đồng bộ) về client.
+3. Client trả lời bằng packet ACK (acknowledge --- xác nhận) về server.
 
-If there is no reply in a reasonable time to any one of these steps, the
-packet is resent.
+Nếu không có phản hồi trong thời gian hợp lý cho bất kỳ bước nào trong
+số này, packet sẽ được gửi lại.
 
-### Transmitting Data
+### Truyền dữ liệu (Transmitting Data)
 
-TCP takes a stream of data and splits it into chunks. Each chunk gets a
-TCP header attached to it, and is then sent on to the IP layer for
-delivery. The header and the chunk together are called a TCP _segment_.
+TCP nhận một luồng dữ liệu và chia thành các chunk (đoạn nhỏ). Mỗi chunk
+được gắn một TCP header và sau đó được gửi xuống tầng IP để phân phối.
+Header và chunk gộp lại gọi là một TCP _segment_ (phân đoạn).
 
-(We'll use "TCP packet" and "TCP segment" interchangeably, but segment
-is more correct.)
+(Chúng ta sẽ dùng "TCP packet" và "TCP segment" thay thế cho nhau, nhưng
+"segment" mới là thuật ngữ chính xác hơn.)
 
-When TCP sends a segment, it expects the recipient of that data to
-respond with an acknowledgment, hereafter known as an ACK. If TCP
-doesn't get the ACK, it's going to assume something has gone wrong and
-it needs to resend that segment.
+Khi TCP gửi một segment, nó kỳ vọng người nhận sẽ phản hồi bằng một ACK
+(acknowledgment --- xác nhận). Nếu TCP không nhận được ACK, nó sẽ giả
+định có sự cố xảy ra và cần gửi lại segment đó.
 
-Segments are numbered so even if they arrive out of order, TCP can put
-them back in the proper sequence.
+Các segment được đánh số thứ tự để dù đến không đúng thứ tự, TCP vẫn có
+thể sắp xếp lại đúng.
 
-### Closing the Connection
+### Đóng kết nối (Closing the Connection)
 
-When a side wants to close the connection, it sends a FIN (finis
-[_sic_]) packet. The remote side will typically reply with an ACK and a
-FIN of its own. The local side would then complete the hangup with
-another ACK.
+Khi một bên muốn đóng kết nối, nó gửi packet FIN (finis [_sic_]). Phía
+kia thường trả lời bằng ACK và FIN của riêng mình. Bên cục bộ sau đó
+hoàn tất việc ngắt kết nối bằng một ACK nữa.
 
-In some OSes, if a host closes a connection with unread data, it sends
-back a RST (reset) to indicate that condition. Socket programs might
-print the message "Connection reset by peer" when this happens.
+Trong một số hệ điều hành, nếu một host đóng kết nối trong khi còn dữ
+liệu chưa đọc, nó gửi RST (reset --- đặt lại) để thông báo điều đó. Các
+chương trình socket có thể in thông điệp "Connection reset by peer" khi
+điều này xảy ra.
 
-## Data Integrity
+## Tính toàn vẹn dữ liệu (Data Integrity)
 
-There are a lot of things that can go wrong. Data can arrive out of
-order. It can be corrupted. It might be duplicated. Or maybe it doesn't
-arrive at all.
+Có rất nhiều thứ có thể xảy ra sai. Dữ liệu có thể đến không đúng thứ
+tự. Nó có thể bị hỏng. Nó có thể bị trùng lặp. Hoặc có thể không đến
+được.
 
-TCP has mechanisms to handle all these contingencies.
+TCP có các cơ chế để xử lý tất cả những trường hợp này.
 
-### Packet Ordering
+### Thứ tự Packet (Packet Ordering)
 
-The sender places an ever-increasing sequence number on each segment.
-"Here's segment 3490. Here's segment 3491."
+Sender đặt một sequence number (số thứ tự) tăng dần vào mỗi segment.
+"Đây là segment 3490. Đây là segment 3491."
 
-The receiver replies to the sender with an ACK packet containing that
-sequence number. "I got segment 3490. I got segment 3491."
+Receiver trả lời sender bằng packet ACK chứa sequence number đó. "Tôi đã
+nhận segment 3490. Tôi đã nhận segment 3491."
 
-If two segments arrive out of order, TCP can put them back in order by
-sorting them by sequence number.
+Nếu hai segment đến không đúng thứ tự, TCP có thể đặt lại thứ tự bằng
+cách sắp xếp theo sequence number.
 
-> Analogy time! If you had a stack of papers and threw them in the air,
-> how could you possibly know their original order? Well, if you
-> numbered all the pages correctly, you just have to sort them. That's
-> the role the sequence number plays in TCP.
+> Đến lúc dùng phép ví von rồi! Nếu bạn có một chồng giấy và tung chúng
+> lên không trung, làm sao bạn biết thứ tự ban đầu của chúng? Thật ra,
+> nếu bạn đã đánh số trang đúng, chỉ cần sắp xếp lại thôi. Đó là vai
+> trò của sequence number trong TCP.
 
-If a duplicate segment arrives, TCP knows it's already seen that
-sequence number, so it can safely discard the duplicate.
+Nếu một segment trùng lặp đến, TCP biết nó đã thấy sequence number đó
+rồi, nên có thể bỏ qua bản sao đó một cách an toàn.
 
-If a segment is missing, TCP can ask for a retransmission. It does this
-by repeatedly ACKing the previous segment. The sender will retransmit
-the next one.
+Nếu một segment bị thiếu, TCP có thể yêu cầu gửi lại. Nó làm điều này
+bằng cách liên tục ACK segment trước đó. Sender sẽ gửi lại segment tiếp
+theo.
 
-Alternately, if the sender doesn't get an ACK for a particular segment
-for some time, it might retransmit that segment on its own, thinking the
-segment might have been lost. This retransmission gets more and more
-pessimistic with each timeout; the server doubles the timeout each time
-it happens.
+Ngoài ra, nếu sender không nhận được ACK cho một segment cụ thể trong
+một thời gian, nó có thể tự mình gửi lại segment đó, nghĩ rằng segment
+có thể đã bị mất. Việc gửi lại này ngày càng bi quan hơn với mỗi lần
+timeout; server tăng gấp đôi thời gian timeout mỗi lần điều đó xảy ra.
 
-Lastly, sequence numbers are initialized to random values during the
-three-way handshake as the connection is being made.
+Cuối cùng, sequence number được khởi tạo với các giá trị ngẫu nhiên
+trong quá trình bắt tay ba bước khi kết nối đang được thiết lập.
 
-### Error Detection
+### Phát hiện lỗi (Error Detection)
 
-Before the sender sends out a segment, a _checksum_ is computed for that
-segment.
+Trước khi sender gửi một segment, một _checksum_ (tổng kiểm tra) được
+tính cho segment đó.
 
-When the receiver gets the segment, it computes its own checksum of that
-segment.
+Khi receiver nhận segment, nó tính checksum của riêng mình cho segment
+đó.
 
-If the two checksums match, the data is assumed to be error-free. If
-they differ, the data is discarded and the sender must timeout and
-retransmit.
+Nếu hai checksum khớp nhau, dữ liệu được coi là không có lỗi. Nếu chúng
+khác nhau, dữ liệu bị loại bỏ và sender phải timeout rồi gửi lại.
 
-The checksum is a 16-bit number that is the result of piping all the TCP
-header and payload data and the IP addresses involved into a function
-that digests them down.
+Checksum là một số 16-bit là kết quả của việc đưa toàn bộ dữ liệu TCP
+header, payload và các địa chỉ IP liên quan vào một hàm để tóm tắt
+chúng.
 
-The details are in this week's project.
+Chi tiết có trong project tuần này.
 
-## Flow Control
+## Flow Control (Kiểm soát luồng)
 
-_Flow Control_ is the mechanism by which two communicating devices alert
-one another that data needs to be sent more slowly. You can't pour 1000
-Mbs (megabits per second) at a device that can only handle 100 Mbs. The
-device needs a way to alert the sender to slow it down.
+_Flow Control_ là cơ chế mà qua đó hai thiết bị đang giao tiếp cảnh báo
+nhau rằng dữ liệu cần được gửi chậm hơn. Bạn không thể đổ 1000 Mbs
+(megabit mỗi giây) vào một thiết bị chỉ xử lý được 100 Mbs. Thiết bị
+cần một cách để cảnh báo sender hãy chậm lại.
 
-> Analogy time: you do this on the phone when you tell the other party
-> "You're talking too fast for me to understand! Slow down!"
+> Phép ví von: bạn làm điều này trên điện thoại khi nói với người kia
+> "Bạn nói nhanh quá tôi không hiểu được! Nói chậm lại đi!"
 
-The most simple way to do this (and this is not what TCP does) is for
-the sender to send the data, then wait for the receiver to send back an
-ACK packet with that sequence number. Then send another data packet.
-This way the receiver can delay the ACK if it needs the sender to slow
-down.
+Cách đơn giản nhất để làm điều này (và đây không phải cách TCP làm) là
+sender gửi dữ liệu, rồi chờ receiver gửi lại packet ACK với sequence
+number đó. Sau đó gửi packet dữ liệu khác. Cách này cho phép receiver
+trì hoãn ACK nếu nó cần sender chậm lại.
 
-But this is a slow back and forth, and the network is usually reliable
-enough for the sender to push out multiple segments without waiting for
-a response.
+Nhưng đây là cách làm chậm chạp, và mạng thường đủ tin cậy để sender
+đẩy ra nhiều segment mà không cần chờ phản hồi.
 
-However, if we do this, we risk the sender sending data more quickly
-than the receiver can handle it!
+Tuy nhiên, nếu chúng ta làm vậy, chúng ta có nguy cơ sender gửi dữ liệu
+nhanh hơn receiver có thể xử lý!
 
-In TCP, this is solved with something called a _sliding window_. This
-goes in the "window" field of the TCP header in the receiver's ACK
-packet.
+Trong TCP, vấn đề này được giải quyết bằng thứ gọi là _sliding window_
+(cửa sổ trượt). Nó nằm trong trường "window" của TCP header trong packet
+ACK của receiver.
 
-In that field, the data receiver can specify how much more data (in
-bytes) it is willing to receive. The sender must not send more than this
-without getting an ACK from the receiver. And the ACK it gets
-will contain new window information.
+Trong trường đó, data receiver có thể chỉ định có thể nhận thêm bao
+nhiêu dữ liệu (tính bằng bytes). Sender không được gửi nhiều hơn mức
+này mà không nhận được ACK từ receiver. Và ACK nó nhận được sẽ chứa
+thông tin window mới.
 
-Using the mechanism, the receiver can get the sender "once you've sent X
-bytes, you have to wait for an ACK telling you how many more you can
-send".
+Sử dụng cơ chế này, receiver có thể nói với sender "khi bạn đã gửi X
+bytes, bạn phải chờ ACK cho biết có thể gửi thêm bao nhiêu nữa".
 
-It's important to note that this is a byte count, not a segment count.
-The sender is free to send multiple segments without receiving an ACK as
-long as the total bytes doesn't exceed the receiver's advertised window
-size.
+Quan trọng cần lưu ý rằng đây là đếm byte, không phải đếm segment.
+Sender tự do gửi nhiều segment mà không cần nhận ACK miễn là tổng số
+bytes không vượt quá kích thước window receiver đã quảng bá.
 
-## Congestion Control
+## Congestion Control (Kiểm soát tắc nghẽn)
 
-Flow control operates between two computers, but there's a greater issue
-of the Internet as a whole. If a router becomes overwhelmed, it might
-start dropping packets which causes the sender to begin retransmitting,
-which does nothing to alleviate the problem. And it's not even on flow
-control's radar since the packets aren't reaching the receiver.
+Flow control hoạt động giữa hai máy tính, nhưng có một vấn đề lớn hơn
+của Internet nói chung. Nếu một router bị quá tải, nó có thể bắt đầu bỏ
+packet khiến sender bắt đầu gửi lại, điều này không giúp ích gì cho vấn
+đề. Và nó còn không nằm trong tầm kiểm soát của flow control vì các
+packet không đến được receiver.
 
-This happened in 1986 when
+Điều này đã xảy ra vào năm 1986 khi
 [NSFNET](https://en.wikipedia.org/wiki/National_Science_Foundation_Network)
-(basically the pre-commercial Internet, may it rest in peace) was
-overwhelmed by insistent senders who didn't know when to quit with the
-retransmissions. Throughput dropped to 0.1% of normal. It wasn't great.
+(về cơ bản là Internet thương mại tiền thân, cầu mong nó an nghỉ) bị
+quá tải bởi các sender cố chấp không biết dừng việc gửi lại. Thông
+lượng giảm xuống còn 0.1% bình thường. Không vui chút nào.
 
-To fix this, a number of mechanisms were implemented by TCP to estimate
-and eliminate network congestion. Note that these are in addition to the
-Flow Control window advertised by a receiver. The sender must obey the
-Flow Control limit **and** the computed network congestion limit,
-whichever is lower. It cannot have more unacknowledged segments out on
-the network than this limit. If it does, it has to stop sending and wait
-for some ACKs to come in.
+Để khắc phục điều này, một số cơ chế đã được TCP triển khai để ước tính
+và loại bỏ tắc nghẽn mạng. Lưu ý rằng những cơ chế này bổ sung cho
+Flow Control window do receiver quảng bá. Sender phải tuân thủ giới hạn
+Flow Control **và** giới hạn tắc nghẽn mạng đã tính toán, tùy theo giá
+trị nào thấp hơn. Nó không thể có nhiều segment chưa được xác nhận trên
+mạng hơn giới hạn này. Nếu có, nó phải dừng gửi và chờ một số ACK đến.
 
-Another way to think about this is that when a sender puts out a new TCP
-segment, that adds to network congestion. When it receives an ACK, that
-indicates that the segment has been removed from the network, decreasing
-congestion.
+Một cách khác để nghĩ về điều này là khi một sender đưa ra một TCP
+segment mới, điều đó thêm vào tắc nghẽn mạng. Khi nó nhận được ACK,
+điều đó chỉ ra rằng segment đó đã được xóa khỏi mạng, giảm tắc nghẽn.
 
-In order to alleviate the problems that hit NFSNET, two big algorithms
-were added: Slow Start and Congestion Avoidance.
+Để giải quyết các vấn đề đã xảy ra với NFSNET, hai thuật toán lớn đã
+được thêm vào: Slow Start (Khởi động chậm) và Congestion Avoidance
+(Tránh tắc nghẽn).
 
-**NOTE:** This is a simplified view of these two algorithms. For full
-details on the complex interplay between them and even more on
-congestion avoidance, see [_TCP Congestion Control_ (RFC
+**LƯU Ý:** Đây là cái nhìn đơn giản hóa về hai thuật toán này. Để biết
+chi tiết đầy đủ về sự tương tác phức tạp giữa chúng và nhiều hơn về
+congestion avoidance, xem [_TCP Congestion Control_ (RFC
 5681)](https://www.rfc-editor.org/rfc/rfc5681.html).
 
-### Slow Start
+### Slow Start (Khởi động chậm)
 
-When the connection first comes up, the sender has no way of knowing how
-congested the network is. This first phase is all about getting a rough
-guess sorted out.
+Khi kết nối lần đầu được thiết lập, sender không có cách nào biết mạng
+tắc nghẽn đến mức nào. Giai đoạn đầu tiên này hoàn toàn là về việc có
+được một ước tính sơ bộ.
 
-And so it's going to start conservatively, assuming there's a high
-congestion level. (If there is already a high congestion level,
-liberally flooding it with data wouldn't be helpful.)
+Vì vậy nó sẽ bắt đầu một cách thận trọng, giả sử mức độ tắc nghẽn cao.
+(Nếu đã có mức độ tắc nghẽn cao, việc xả dữ liệu ào ào vào sẽ không ích
+gì.)
 
-It starts by allowing itself an initial _congestion window_ which is
-how many unACKed bytes (and segments, but let's just think of bytes for
-now) it is allowed to have outstanding. 
+Nó bắt đầu bằng cách cho phép mình một _congestion window_ (cửa sổ tắc
+nghẽn) ban đầu --- đó là số bytes chưa được ACK (và segment, nhưng hãy
+cứ nghĩ theo bytes cho đơn giản) mà nó được phép có đang chờ xử lý.
 
-As the ACKs come in, the size of the congestion window increases by the
-number of acknowledged bytes. So, loosely, after one segment gets ACKed,
-two can be sent out. If those two are successfully ACKed, four can be
-sent out.
+Khi các ACK đến, kích thước congestion window tăng lên bằng số bytes đã
+được xác nhận. Vậy nên, đại khái, sau khi một segment được ACK, hai
+segment có thể được gửi ra. Nếu hai cái đó được ACK thành công, bốn cái
+có thể được gửi ra.
 
-So it starts with a very limited number of unACKed segments allowed to
-be outstanding, but grows very rapidly.
+Vậy nó bắt đầu với số lượng segment chưa được ACK rất hạn chế, nhưng
+tăng rất nhanh.
 
-Eventually one of those ACKs is lost and that's when Slow Start decides
-to slow way down. It cuts the congestion window size by half and then
-TCP switches to the Congestion Avoidance algorithm.
+Cuối cùng một trong những ACK đó bị mất và đó là lúc Slow Start quyết
+định chậm lại đột ngột. Nó cắt kích thước congestion window xuống một
+nửa và sau đó TCP chuyển sang thuật toán Congestion Avoidance.
 
-### Congestion Avoidance
+### Congestion Avoidance (Tránh tắc nghẽn)
 
-This algorithm is similar to Slow Start, but it makes much more
-controlled moves. No more of this exponential growth stuff.
+Thuật toán này tương tự Slow Start, nhưng thực hiện các bước di chuyển
+kiểm soát hơn nhiều. Không còn cái trò tăng trưởng theo cấp số nhân nữa.
 
-Each time a congestion window's-worth of data is successfully
-transmitted, it pushes a little harder by adding another segment's worth
-of bytes to the window. This allows it to have another unACKed segment
-out on the network. If that works fine, it allows itself one more. And
-so on.
+Mỗi lần một congestion window đáng dữ liệu được truyền thành công, nó
+đẩy mạnh thêm một chút bằng cách thêm bytes tương đương một segment vào
+window. Điều này cho phép nó có thêm một segment chưa được ACK trên
+mạng. Nếu điều đó hoạt động tốt, nó tự cho phép thêm một cái nữa. Cứ
+tiếp tục như vậy.
 
-So it's pushing the limits of what can be successfully sent without
-congesting the network, but it's pushing slowly. We call this
-_additive-increase_ and it's generally linear (compared to Slow Start
-which was generally exponential).
+Vậy nên nó đang đẩy giới hạn của những gì có thể được gửi thành công mà
+không làm tắc nghẽn mạng, nhưng đẩy chậm rãi. Chúng ta gọi điều này là
+_additive-increase_ (tăng cộng) và nó thường là tuyến tính (so với Slow
+Start vốn thường là hàm mũ).
 
-Eventually, though, it pushes too far, and has to retransmit a packet.
-At this point, the congestion window is set to a small size and the
-algorithm drops back to Slow Start.
+Tuy nhiên, cuối cùng, nó đẩy quá xa và phải gửi lại một packet. Lúc
+này, congestion window được đặt về kích thước nhỏ và thuật toán quay trở
+lại Slow Start.
 
-## Reflect
+## Reflect (Suy ngẫm)
 
-* Name a few protocols that rely on TCP for data integrity.
+* Hãy kể tên một vài giao thức phụ thuộc vào TCP để đảm bảo tính toàn
+  vẹn dữ liệu.
 
-* Why is there a three-way handshake to set up a connection? Why not
-  just start transmitting?
+* Tại sao có bắt tay ba bước để thiết lập kết nối? Tại sao không chỉ
+  bắt đầu truyền ngay?
 
-* How does a checksum protect against data corruption?
+* Checksum bảo vệ chống lại sự hỏng dữ liệu như thế nào?
 
-* What's the main difference in the goals of Flow Control and Congestion
-  Control?
+* Sự khác biệt chính trong mục tiêu của Flow Control và Congestion
+  Control là gì?
 
-* Reflect on the reasons for switching between Slow Start and Congestion
-  Avoidance. What advantages does each have in different phases of
-  congestion detection?
+* Suy ngẫm về lý do chuyển đổi giữa Slow Start và Congestion Avoidance.
+  Mỗi cái có ưu điểm gì trong các giai đoạn khác nhau của việc phát hiện
+  tắc nghẽn?
 
-* What is the purpose of Flow Control?
-
+* Mục đích của Flow Control là gì?
