@@ -1,86 +1,61 @@
-# Project: HTTP Client and Server
+# Dự Án: HTTP Client và Server
 
-We're going to write a sockets program that can download files from a
-web server! This is going to be our "web client". This will work with
-almost any web server out there, if we code it right.
+Chúng ta sẽ viết một chương trình socket có thể tải xuống file từ web server! Đây sẽ là "web client" của chúng ta. Nó sẽ hoạt động với hầu hết mọi web server ngoài kia, nếu ta code đúng.
 
-And as if that's not enough, we're going to follow it up by writing a
-simple web server! This program will be able to handle requests from the
-web client we write... or indeed any other web client such as Chrome or
-Firefox!
+Và chưa đủ thì thôi, ta sẽ tiếp tục bằng cách viết một web server đơn giản! Chương trình này sẽ xử lý được các request từ web client ta viết... hay thực ra là bất kỳ web client nào khác như Chrome hay Firefox!
 
-These programs are going to speak a protocol you have probably heard of:
-HTTP, the HyperText Transport Protocol.
+Những chương trình này sẽ dùng một giao thức bạn có lẽ đã nghe đến: HTTP (HyperText Transport Protocol --- Giao thức Truyền tải HyperText).
 
-And because they speak HTTP, and web browsers like Chrome speak HTTP,
-they should be able to communicate!
+Và vì chúng nói HTTP, và các trình duyệt web như Chrome cũng nói HTTP, chúng sẽ có thể giao tiếp với nhau!
 
-## Restrictions
+## Giới Hạn
 
-In order to better understand the sockets API at a lower level, this
-project may **not** use any of the following helper functions:
+Để hiểu sâu hơn về sockets API ở mức thấp hơn, dự án này **không được** dùng bất kỳ hàm trợ giúp nào sau đây:
 
-* The `socket.create_connection()` function.
-* The `socket.create_server()` function.
-* Anything in the `urllib` modules.
+* Hàm `socket.create_connection()`.
+* Hàm `socket.create_server()`.
+* Bất cứ thứ gì trong module `urllib`.
 
-After coding up the project, it should be more obvious how these helper
-functions are implemented.
+Sau khi code xong dự án, sẽ thấy rõ hơn những hàm trợ giúp này được triển khai như thế nào.
 
-## Python Character Encoding
+## Mã Hóa Ký Tự Trong Python
 
-The sockets in Python send and receive sequences of bytes, which are
-different than Python strings. You'll have to convert back and forth
-when you want to send a string, or when you want to print a byte
-sequence as a string.
+Socket trong Python gửi và nhận các chuỗi byte, khác với chuỗi Python. Bạn sẽ phải chuyển đổi qua lại khi muốn gửi một chuỗi, hoặc khi muốn in một chuỗi byte dưới dạng chuỗi.
 
-The sequences of bytes depend on the _character encoding_ used by the
-string. The character encoding defines which bytes correspond to which
-characters. Some encodings you might have heard of are ASCII and UTF-8.
-There are hundreds.
+Các chuỗi byte phụ thuộc vào _character encoding_ (mã hóa ký tự) được dùng bởi chuỗi. Mã hóa ký tự xác định byte nào tương ứng với ký tự nào. Một số mã hóa bạn có thể đã nghe là ASCII và UTF-8. Có hàng trăm loại.
 
-The default character encoding of the web is "ISO-8859-1".
+Mã hóa ký tự mặc định của web là "ISO-8859-1".
 
-This is important because you have to encode your Python strings into a
-sequence of bytes and you can tell it the encoding when you do that. (It
-defaults to UTF-8.)
+Điều này quan trọng vì bạn phải encode chuỗi Python thành chuỗi byte và bạn có thể chỉ định encoding khi làm vậy. (Mặc định là UTF-8.)
 
-To convert from a Python string to an ISO-8859-1 sequence of bytes:
+Để chuyển từ chuỗi Python sang chuỗi byte ISO-8859-1:
 
 ``` {.py}
 s = "Hello, world!"          # String
 b = s.encode("ISO-8859-1")   # Sequence of bytes
 ```
 
-That sequence of bytes is ready to send over the socket.
+Chuỗi byte đó đã sẵn sàng để gửi qua socket.
 
-To convert from a byte sequence you received from a socket in ISO-8859-1
-format to a string:
+Để chuyển từ chuỗi byte nhận được từ socket ở định dạng ISO-8859-1 thành chuỗi:
 
 ``` {.py}
 s = b.decode("ISO-8859-1")
 ```
 
-And then it's ready to print.
+Và rồi nó đã sẵn sàng để in.
 
-Of course, if the data is not encoded with ISO-8859-1, you'll get weird
-characters in your string or an error.
+Tất nhiên, nếu dữ liệu không được mã hóa bằng ISO-8859-1, bạn sẽ nhận được ký tự lạ trong chuỗi hoặc gặp lỗi.
 
-The encodings ASCII, UTF-8, and ISO-8859-1 are all the same for your
-basic latin letters, numbers, and punctuation, so your strings will all
-work as expected unless you start getting into some weird Unicode
-characters.
+Các mã hóa ASCII, UTF-8 và ISO-8859-1 đều giống nhau cho các chữ cái latin cơ bản, số và dấu câu của bạn, vì vậy các chuỗi sẽ hoạt động như mong đợi trừ khi bạn bắt đầu đi vào một số ký tự Unicode kỳ lạ.
 
-If you're writing this in C, it's probably best just not to worry about
-it and print the bytes out as you get them. A few might be garbage, but
-it'll work for the most part.
+Nếu bạn đang viết bằng C, có lẽ tốt nhất là không lo lắng về điều đó và in các byte ra khi nhận được. Một vài cái có thể là rác, nhưng nó sẽ hoạt động được phần lớn.
 
-## HTTP Summary
+## Tóm Tắt HTTP
 
-HTTP operates on the concept of _requests_ and _responses_. The client
-requests a web page, the server responds by sending it back.
+HTTP hoạt động dựa trên khái niệm _request_ (yêu cầu) và _response_ (phản hồi). Client yêu cầu một trang web, server phản hồi bằng cách gửi nó lại.
 
-A simple HTTP request from a client looks like this:
+Một HTTP request đơn giản từ client trông như thế này:
 
 ``` {.default}
 GET / HTTP/1.1
@@ -89,34 +64,25 @@ Connection: close
 
 ```
 
-That shows the request _header_ which consists of the request method,
-path, and protocol on the first line, followed by any number of header
-fields.  There is a blank line at the end of the header.
+Phần đó cho thấy _header_ của request bao gồm phương thức request, đường dẫn và giao thức trên dòng đầu tiên, theo sau là bất kỳ số lượng trường header nào. Có một dòng trống ở cuối header.
 
-This request is saying "Get the root web page from the server
-example.com and I'm going to close the connection as soon as I get your
-response."
+Request này đang nói "Lấy trang web gốc từ server example.com và tôi sẽ đóng kết nối ngay khi nhận được response của bạn."
 
-Ends-of-line are delimited by a Carriage Return/Linefeed combination. In
-Python or C, you write a CRLF like this:
+Cuối dòng được phân cách bằng tổ hợp Carriage Return/Linefeed. Trong Python hay C, bạn viết CRLF như thế này:
 
 ``` {.py}
 "\r\n"
 ```
 
-If you were requesting a specific file, it would be on that first line,
-for example:
+Nếu bạn đang request một file cụ thể, nó sẽ ở trên dòng đầu tiên đó, ví dụ:
 
 ``` {.default}
 GET /path/to/file.html HTTP/1.1
 ```
 
-(And if there were a payload to go with this header, it would go just
-after the blank line. There would also be a `Content-Length` header
-giving the length of the payload in bytes. We don't have to worry about
-this for this project.)
+(Và nếu có payload đi kèm với header này, nó sẽ nằm ngay sau dòng trống. Cũng sẽ có một header `Content-Length` cho biết độ dài của payload tính bằng byte. Ta không cần lo về điều này cho dự án này.)
 
-A simple HTTP response from a server looks like:
+Một HTTP response đơn giản từ server trông như thế này:
 
 ``` {.default}
 HTTP/1.1 200 OK
@@ -127,32 +93,25 @@ Connection: close
 Hello!
 ```
 
-This response says, "Your request succeeded and here's a response that's
-6 bytes of plain text. Also, I'm going to close the connection right
-after I send this to you. And the response payload is 'Hello!'."
+Response này nói, "Request của bạn thành công và đây là response 6 byte plain text. Ngoài ra, tôi sẽ đóng kết nối ngay sau khi gửi cho bạn. Và payload của response là 'Hello!'."
 
-Notice that the `Content-Length` is set to the size of the payload: 6
-bytes for `Hello!`.
+Lưu ý rằng `Content-Length` được đặt bằng kích thước payload: 6 byte cho `Hello!`.
 
-Another common `Content-Type` is `text/html` when the payload has HTML
-data in it.
+Một `Content-Type` phổ biến khác là `text/html` khi payload chứa dữ liệu HTML.
 
-## The Client
+## Client
 
-The client should be named `webclient.py`.
+Client nên được đặt tên là `webclient.py`.
 
-You can write the client before the server first and then test it on a
-real, existing webserver.  No need to write both the client and server
-before you test this.
+Bạn có thể viết client trước server và test nó trên một web server thực đang tồn tại. Không cần viết cả client lẫn server trước khi test.
 
-The goal with the client is that you can run it from the command line,
-like so:
+Mục tiêu với client là bạn có thể chạy nó từ command line, như thế này:
 
 ``` {.sh}
 $ python webclient.py example.com
 ```
 
-for output like this:
+cho output như thế này:
 
 ``` {.default}
 HTTP/1.1 200 OK
@@ -176,61 +135,47 @@ Connection: close
     ...
 ```
 
-(Output truncated, but it would show the rest of the HTML for the site.)
+(Output bị cắt ngắn, nhưng sẽ hiển thị phần còn lại của HTML cho trang.)
 
-Notice how the first part of the output is the HTTP response with all
-those fields from the server, and then there's a blank line, and
-everything following the blank line is the response payload.
+Lưu ý cách phần đầu tiên của output là HTTP response với tất cả những trường đó từ server, rồi có một dòng trống, và mọi thứ theo sau dòng trống là payload của response.
 
-**ALSO**: you need to be able specify a port number to connect to on the
-command line. This defaults to port 80 if not specified. So you could
-connect to a webserver on a different port like so:
+**NGOÀI RA**: bạn cần có thể chỉ định số port để kết nối đến trên command line. Mặc định là port 80 nếu không chỉ định. Vì vậy bạn có thể kết nối đến một web server trên port khác như thế này:
 
 ``` {.sh}
 $ python webclient.py example.com 8088
 ```
 
-Which would get you to port 8088.
+Điều này sẽ đưa bạn đến port 8088.
 
-First things first, you need the socket module in Python, so
+Đầu tiên, bạn cần module socket trong Python, vậy nên
 
 ``` {.py}
 import socket
 ```
 
-at the top. Then you have access to the functionality.
+ở đầu. Sau đó bạn có quyền truy cập vào các chức năng.
 
-Here are some Python-specifics:
+Đây là một số chi tiết cụ thể cho Python:
 
-* Use `socket.socket()` to make a new socket. You don't have to pass it
-  anything--the default parameter values work for this project.
+* Dùng `socket.socket()` để tạo socket mới. Bạn không cần truyền bất cứ thứ gì --- các giá trị tham số mặc định hoạt động cho dự án này.
 
-* Use `s.connect()` to connect the new socket to a destination. You can
-  bypass the DNS step since `.connect()` does it for you.
+* Dùng `s.connect()` để kết nối socket mới đến đích. Bạn có thể bỏ qua bước DNS vì `.connect()` làm điều đó cho bạn.
 
-  This function takes a tuple as an argument that contains the host and
-  port to connect to, e.g.
+  Hàm này nhận một tuple làm đối số chứa host và port để kết nối đến, ví dụ:
 
   ``` {.py}
   ("example.com", 80)
   ```
 
-* Build and send the HTTP request. You can use the simple HTTP request
-  shown above. **Don't forget the blank line at the end of the header,
-  and don't forget to end all lines with `"\r\n"`!**
+* Xây dựng và gửi HTTP request. Bạn có thể dùng HTTP request đơn giản được hiển thị ở trên. **Đừng quên dòng trống ở cuối header, và đừng quên kết thúc tất cả các dòng bằng `"\r\n"`!**
 
-  I recommend using the `s.sendall()` method to do this. You could use
-  `.send()` instead but it might only send part of the data.
+  Tôi khuyến nghị dùng phương thức `s.sendall()` để làm điều này. Bạn có thể dùng `.send()` thay thế nhưng nó có thể chỉ gửi một phần dữ liệu.
 
-  (C programmers will find an implementation of `sendall()` in Beej's
-  Guide.)
+  (Lập trình viên C sẽ tìm thấy một implementation của `sendall()` trong Beej's Guide.)
 
-* Receive the web response with the `s.recv()` method. It will return
-  some bytes in response. You'll have to call it several times in a
-  loop to get all the data from bigger sites.
+* Nhận web response bằng phương thức `s.recv()`. Nó sẽ trả về một số byte trong response. Bạn sẽ phải gọi nó nhiều lần trong một vòng lặp để lấy tất cả dữ liệu từ các trang lớn hơn.
 
-  It will return a byte array of zero elements when the server closes
-  the connection and there's no more data to read, e.g.:
+  Nó sẽ trả về một mảng byte rỗng khi server đóng kết nối và không còn dữ liệu nào để đọc, ví dụ:
 
   ``` {.py}
   d = s.recv(4096)  # Receive up to 4096 bytes
@@ -238,9 +183,9 @@ Here are some Python-specifics:
       # all done!
   ```
 
-* Call `s.close()` on your socket when you're done.
+* Gọi `s.close()` trên socket của bạn khi xong.
 
-Test the client by hitting some websites with it:
+Test client bằng cách truy cập một số trang web với nó:
 
 ``` {.sh}
 $ python webclient.py example.com
@@ -248,162 +193,114 @@ $ python webclient.py google.com
 $ python webclient.py oregonstate.edu
 ```
 
-## The Server
+## Server
 
-The server should be named `webserver.py`.
+Server nên được đặt tên là `webserver.py`.
 
-You'll launch the webserver from the command line like so:
+Bạn sẽ khởi động web server từ command line như thế này:
 
 ``` {.sh}
 $ python webserver.py
 ```
 
-and that should start it listening on port 28333.
+và nó sẽ bắt đầu lắng nghe trên port 28333.
 
-**ALSO** code it so we could also specify an optional port number like
-this:
+**NGOÀI RA** hãy code nó để ta cũng có thể chỉ định số port tùy chọn như thế này:
 
 ``` {.sh}
 $ python webserver.py 12399
 ```
 
-The server is going to going to run forever, handling incoming requests.
-(Forever means "until you hit CTRL-C".)
+Server sẽ chạy mãi mãi, xử lý các request đến. (Mãi mãi có nghĩa là "cho đến khi bạn nhấn CTRL-C".)
 
-And it's only going to send back one thing no matter what the request
-is. Have it send back the simple server response, shown above.
+Và nó chỉ gửi lại một thứ bất kể request là gì. Để nó gửi lại server response đơn giản, được hiển thị ở trên.
 
-So it's not a very full-featured webserver. But it's the start of one!
+Vậy nên nó không phải là web server có nhiều tính năng. Nhưng đó là khởi đầu của một cái!
 
-Here are some Python specifics:
+Đây là một số chi tiết cụ thể cho Python:
 
-* Get a socket just like you did for the client.
+* Lấy một socket giống như bạn đã làm với client.
 
-* After the call to `socket()`, you should add this crazy-looking line:
+* Sau lời gọi `socket()`, bạn nên thêm dòng trông kỳ lạ này:
 
   ``` {.py}
   s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
   ```
 
-  where `s` is the socket descriptor you got from `socket()`. This will
-  prevent an "Address already in use" error on the `bind()` in certain
-  circumstances which would certainly be confusing at the time. Usually
-  it happens after the server crashes. Later on we'll figure out why
-  that error occurs.
+  trong đó `s` là socket descriptor bạn nhận được từ `socket()`. Điều này sẽ ngăn lỗi "Address already in use" trên `bind()` trong một số trường hợp nhất định, điều này chắc chắn sẽ gây nhầm lẫn tại thời điểm đó. Thường xảy ra sau khi server crash. Sau này ta sẽ tìm hiểu tại sao lỗi đó xảy ra.
 
-  If you do get that error and don't feel like adding this line of code
-  because you're feeling contrary, you can also just wait a few minutes
-  for the OS to give up on the broken connection..
+  Nếu bạn gặp lỗi đó và không muốn thêm dòng code này vì bạn cảm thấy bướng bỉnh, bạn cũng có thể đợi vài phút để OS bỏ cuộc với kết nối bị hỏng.
 
-* Bind the socket to a port with `s.bind()`. This takes one argument, a
-  tuple containing the address and port you want to bind to. The address
-  can be left blank to have it choose a local address. For example, "Any
-  local address, port 28333" would be passed like so:
+* Bind socket vào một port bằng `s.bind()`. Hàm này nhận một đối số, một tuple chứa địa chỉ và port bạn muốn bind vào. Địa chỉ có thể để trống để nó chọn địa chỉ cục bộ. Ví dụ, "Bất kỳ địa chỉ cục bộ nào, port 28333" sẽ được truyền như thế này:
 
   ``` {.py}
   ('', 28333)
   ```
 
-* Set the socket up to listen with `s.listen()`.
+* Thiết lập socket để lắng nghe bằng `s.listen()`.
 
-* Accept new connections with `s.accept()`. Note that this returns a
-  tuple. The first item in the tuple is a new socket representing the
-  new connection. (The old socket is still listening and you will call
-  `s.accept()` on it again after you're done handling this request.)
+* Chấp nhận kết nối mới bằng `s.accept()`. Lưu ý rằng hàm này trả về một tuple. Item đầu tiên trong tuple là một socket mới đại diện cho kết nối mới. (Socket cũ vẫn đang lắng nghe và bạn sẽ gọi `s.accept()` trên nó lại sau khi xử lý xong request này.)
 
   ``` {.py}
   new_conn = s.accept()
   new_socket = new_conn[0]  # This is what we'll recv/send on
   ```
 
-* Receive the request from the client. You should call
-  `new_socket.recv()` in a loop similar to how you did it with the
-  client.
+* Nhận request từ client. Bạn nên gọi `new_socket.recv()` trong một vòng lặp tương tự cách bạn làm với client.
 
-  When you see a blank line (i.e. `"\r\n\r\n"`) in the request, you've
-  read enough and can quit receiving.
+  Khi bạn thấy một dòng trống (tức là `"\r\n\r\n"`) trong request, bạn đã đọc đủ và có thể ngừng nhận.
 
-  (We don't handle payloads in the request for this project. The _right_
-  thing to do would be to look for a `Content-Length` header and then
-  receive the header plus that many bytes. But that's a stretch goal for
-  you.)
+  (Ta không xử lý payload trong request cho dự án này. Cách _đúng_ là tìm header `Content-Length` và sau đó nhận header cộng với nhiều byte đó. Nhưng đó là mục tiêu mở rộng cho bạn.)
 
-  **Beware**: you can't just loop until `recv()` returns an empty string
-  this time! This would only happen if the client closed the connection,
-  but the client isn't closing the connection and it's waiting for a
-  response. So you have to call `recv()` repeatedly until you see that
-  blank line delimiting the end of the header.
+  **Cẩn thận**: bạn không thể chỉ vòng lặp cho đến khi `recv()` trả về chuỗi rỗng lần này! Điều này chỉ xảy ra nếu client đóng kết nối, nhưng client không đóng kết nối và nó đang chờ response. Vì vậy bạn phải gọi `recv()` nhiều lần cho đến khi thấy dòng trống đó phân cách cuối header.
 
-* Send the response. You should just send the "simple server reponse",
-  from above.
+* Gửi response. Bạn chỉ cần gửi "simple server response" từ phần trên.
 
-* Close the new socket with `new_socket.close()`.
+* Đóng socket mới bằng `new_socket.close()`.
 
-* Loop back to `s.accept()` to get the next request.
+* Vòng lặp lại `s.accept()` để lấy request tiếp theo.
 
-Now run the web server in one window and run the client in another, and
-see if it connects!
+Bây giờ chạy web server trong một cửa sổ và chạy client trong cửa sổ khác, và xem liệu nó có kết nối không!
 
-Once it's working with `webclient.py`, try it with a web browser!
+Khi nó hoạt động với `webclient.py`, hãy thử với một trình duyệt web!
 
-Run the server on an unused port (choose a big one at random):
+Chạy server trên một port chưa dùng (chọn một cái ngẫu nhiên lớn):
 
 ``` {.sh}
 $ python webserver.py 20123
 ```
 
-Go to the URL [`http://localhost:20123/`](http://localhost:20123/) to
-view the page.  (`localhost` is the name of "this computer".)
+Truy cập URL [`http://localhost:20123/`](http://localhost:20123/) để xem trang. (`localhost` là tên của "máy tính này".)
 
-If it works, great!
+Nếu nó hoạt động, tuyệt vời!
 
-Try printing out the value returned by `.accept()`. What's in there?
+Hãy thử in giá trị trả về bởi `.accept()`. Có gì trong đó?
 
-Did you notice that if you use a web browser to connect to your server,
-the browser actually makes two connections? Dig into it and see if you
-can figure out why!
+Bạn có nhận thấy rằng nếu bạn dùng trình duyệt web để kết nối đến server của bạn, trình duyệt thực ra tạo hai kết nối không? Tìm hiểu sâu hơn và xem bạn có thể tìm ra lý do tại sao không!
 
-## Hints and Help
+## Gợi Ý Và Trợ Giúp
 
 ### Address Already In Use
 
-If your server crashes and then you start getting an "Address already in
-use" error when you try to restart it, it means the system hasn't
-finished cleaning up the port. (In this case "address" refers to the
-port.) Either switch to a different port for the server, or wait a
-minute or two for it to timeout and clean up.
+Nếu server của bạn crash và sau đó bạn bắt đầu nhận lỗi "Address already in use" khi cố khởi động lại nó, nghĩa là hệ thống chưa hoàn thành dọn dẹp port. (Trong trường hợp này "address" đề cập đến port.) Hãy chuyển sang một port khác cho server, hoặc đợi một hai phút để nó timeout và dọn dẹp.
 
-### Receiving Partial Data
+### Nhận Dữ Liệu Một Phần
 
-Even if you tell `recv()` that you want to get 4096 bytes, there's no
-guarantee that you'll get all of those. Maybe the server sent fewer.
-Maybe the data got split in transit and only part of it is here.
+Dù bạn nói với `recv()` rằng bạn muốn nhận 4096 byte, không có gì đảm bảo bạn sẽ nhận được tất cả. Có thể server gửi ít hơn. Có thể dữ liệu bị tách ra trong quá trình truyền và chỉ một phần có ở đây.
 
-This can get tricky when processing an HTTP request or response because
-you might call `recv()` and only get part of the data. Worse, the data
-might get split in the middle of the blank line delimiter at the end of
-the header!
+Điều này có thể trở nên phức tạp khi xử lý HTTP request hay response vì bạn có thể gọi `recv()` và chỉ nhận được một phần dữ liệu. Tệ hơn, dữ liệu có thể bị tách ngay giữa delimiter dòng trống ở cuối header!
 
-Don't assume that a single `recv()` call gets you all the data. Always
-call it in a loop, appending the data to a buffer, until you have the
-data you want.
+Đừng giả định rằng một lời gọi `recv()` cho bạn tất cả dữ liệu. Luôn gọi nó trong một vòng lặp, nối dữ liệu vào một buffer, cho đến khi bạn có dữ liệu bạn muốn.
 
-`recv()` will return an empty string (in Python) or `0` (in C) if you
-try to read from a connection that the other side has closed. This is
-how you can detect that closure.
+`recv()` sẽ trả về một chuỗi rỗng (trong Python) hoặc `0` (trong C) nếu bạn cố đọc từ một kết nối mà phía bên kia đã đóng. Đây là cách bạn có thể phát hiện việc đóng kết nối đó.
 
 ### HTTP 301, HTTP 302
 
-If you run the client and get a server response with code `301` or
-`302`, probably along with a message that says `Moved Permanently` or
-`Moved Temporarily`, this is the server indicating to you that the
-particular resource you're trying to get at the URL has moved to a
-different URL.
+Nếu bạn chạy client và nhận được server response có mã `301` hoặc `302`, có lẽ kèm theo thông báo `Moved Permanently` hoặc `Moved Temporarily`, đây là server cho bạn biết rằng tài nguyên cụ thể bạn đang cố lấy ở URL đã chuyển đến URL khác.
 
-If you look at the headers below that, you'll find a `Location:` header
-field.
+Nếu bạn nhìn vào các header bên dưới đó, bạn sẽ tìm thấy trường header `Location:`.
 
-For example, attempting to run `webclient.py google.com` results in:
+Ví dụ, cố chạy `webclient.py google.com` cho kết quả:
 
 ``` {.default}
 HTTP/1.1 301 Moved Permanently
@@ -427,48 +324,32 @@ The document has moved
 Connection closed by foreign host.
 ```
 
-Notice the first line is telling us the resource we're looking for has
-moved.
+Lưu ý dòng đầu tiên cho ta biết tài nguyên ta đang tìm đã di chuyển.
 
-The second line with the `Location:` field tells us to where it has
-moved.
+Dòng thứ hai với trường `Location:` cho ta biết nó đã di chuyển đến đâu.
 
-When a web browser sees a `301` redirect, it automatically goes to the
-other URL so you don't have to worry about it. 
+Khi trình duyệt web thấy redirect `301`, nó tự động đi đến URL khác nên bạn không phải lo về nó.
 
-Try it! Enter `google.com` in your browser and watch it update to
-`www.google.com` after a moment.
+Hãy thử! Nhập `google.com` vào trình duyệt và xem nó cập nhật thành `www.google.com` sau một lúc.
 
-### HTTP 400, HTTP 501 (or any 500s)
+### HTTP 400, HTTP 501 (hoặc bất kỳ 500s nào)
 
-If you run the client and get a response from a server that has the code 
-`400` or any of the `500`s, odds are you have made a bad request. That
-is, the request data you sent was malformed in some way.
+Nếu bạn chạy client và nhận được response từ server có mã `400` hoặc bất kỳ mã `500` nào, khả năng cao bạn đã gửi một bad request (yêu cầu không hợp lệ). Tức là dữ liệu request bạn gửi đi có định dạng sai theo cách nào đó.
 
-Make sure every field of the header ends in `\r\n` and that the header
-is terminated by a blank line (i.e. `\r\n\r\n` are the last 4 bytes of
-the header).
+Đảm bảo rằng mọi trường của header kết thúc bằng `\r\n` và header được kết thúc bởi một dòng trống (tức là `\r\n\r\n` là 4 byte cuối cùng của header).
 
 ### HTTP 404 Not Found!
 
-Make sure you have the `Host:` field set correctly to the same hostname
-as you passed in on the command line. If this is wrong, it'll `404`.
+Đảm bảo bạn đặt trường `Host:` đúng với hostname giống như bạn truyền vào trên command line. Nếu sai, nó sẽ `404`.
 
-## Extensions
+## Mở Rộng
 
-These are here if you have time to give yourself the additional
-challenge for greater understanding of the material. Push yourself!
+Những mục này ở đây nếu bạn có thời gian để thử thách bản thân thêm để hiểu sâu hơn về tài liệu. Hãy ép bản thân!
 
-* Modify the server to print out the IP address and port of the client
-  that just connected to it. Hint: look at the value returned by
-  `accept()` in Python.
+* Chỉnh sửa server để in ra địa chỉ IP và port của client vừa kết nối với nó. Gợi ý: xem giá trị trả về bởi `accept()` trong Python.
 
-* Modify the client to be able to send payloads. You'll need to be able
-  to set the `Content-Type` and `Content-Length` based on the payload.
+* Chỉnh sửa client để có thể gửi payload. Bạn cần có thể đặt `Content-Type` và `Content-Length` dựa trên payload.
 
-* Modify the server to extract and print the "request method" from the
-  request.  This is most often `GET`, but it could also be `POST` or
-  `DELETE` or many others.
+* Chỉnh sửa server để trích xuất và in "request method" từ request. Thường thấy nhất là `GET`, nhưng cũng có thể là `POST` hoặc `DELETE` hoặc nhiều loại khác.
 
-* Modify the server to extract and print a payload sent by the client.
-
+* Chỉnh sửa server để trích xuất và in payload được gửi bởi client.
