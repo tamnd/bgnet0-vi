@@ -1,17 +1,15 @@
-# Appendix: JSON {#appendix-json}
+# Phụ lục: JSON {#appendix-json}
 
-For the final project, we need to be able to encode and decode JSON
-data.
+Với dự án cuối, ta cần có khả năng encode và decode dữ liệu JSON.
 
-If you're not familiar with that format, [get a quick introduction at
+Nếu bạn chưa quen với định dạng đó, [hãy xem phần giới thiệu nhanh trên
 Wikipedia](https://en.wikipedia.org/wiki/JSON).
 
-In this section, we'll take a look at what it means to encode and decode
-JSON data.
+Trong phần này, ta sẽ xem xét ý nghĩa của việc encode và decode dữ liệu JSON.
 
-## JSON versus Native
+## JSON Versus Native
 
-Here's a sample JSON object:
+Đây là một JSON object mẫu:
 
 ``` {.json}
 {
@@ -21,7 +19,7 @@ Here's a sample JSON object:
 }
 ```
 
-In Python, you can make a `dict` object that looks just like that:
+Trong Python, bạn có thể tạo một đối tượng `dict` trông giống y như vậy:
 
 ``` {.json}
 d = {
@@ -31,13 +29,13 @@ d = {
 }
 ```
 
-But here's the key difference: _all JSON data are strings_. The JSON is
-a string representation of the data in question.
+Nhưng đây là sự khác biệt chính: _tất cả dữ liệu JSON là chuỗi_ (strings).
+JSON là biểu diễn dạng chuỗi của dữ liệu được đề cập.
 
-## Converting Back and Forth
+## Chuyển Đổi Qua Lại
 
-If you have a JSON string, you can turn it into Python native data with
-the `json.loads()` function.
+Nếu bạn có một chuỗi JSON, bạn có thể chuyển nó thành dữ liệu native Python bằng
+hàm `json.loads()`.
 
 ``` {.py}
 import json
@@ -47,8 +45,8 @@ data = json.loads('{ "name": "Ada" }')
 print(data["name"])   # Prints Ada
 ```
 
-Likewise, if you have Python data, you can convert it into JSON string
-format with `json.dumps()`:
+Tương tự, nếu bạn có dữ liệu Python, bạn có thể chuyển nó sang định dạng chuỗi JSON
+bằng `json.dumps()`:
 
 ``` {.py}
 import json
@@ -60,12 +58,11 @@ json_data = json.dumps(data)
 print(json_data)  # Prints {"name": "Ada"}
 ```
 
-## Pretty Printing
+## In Đẹp (Pretty Printing)
 
-If you have a complex object, `json.dumps()` will just stick it all
-together on one line.
+Nếu bạn có một đối tượng phức tạp, `json.dumps()` sẽ gộp tất cả lại trên một dòng.
 
-This code:
+Code này:
 
 ``` {.py}
 d = {
@@ -77,20 +74,20 @@ d = {
 json.dumps(d)
 ```
 
-outputs:
+xuất ra:
 
 ``` {.default}
 '{"name": "Ada Lovelace", "country": "England", "years": [1815, 1852]}'
 ```
 
-You can clean it up a bit by passing the `indent` argument to
-`json.dumps()`, giving it an indentation level.
+Bạn có thể làm nó gọn hơn một chút bằng cách truyền đối số `indent` vào `json.dumps()`,
+cho nó mức độ thụt đầu dòng.
 
 ``` {.py}
 json.dumps(d, indent=4)
 ```
 
-outputs:
+xuất ra:
 
 ``` {.default}
 {
@@ -103,17 +100,15 @@ outputs:
 }
 ```
 
-Much cleaner.
+Gọn hơn nhiều.
 
-## Double Quotes are Important
+## Dấu Nháy Kép Rất Quan Trọng
 
-JSON requires strings and key names to be in double quotes. Single
-quotes won't cut it. Missing quotes _definitely_ won't cut it.
+JSON yêu cầu chuỗi và tên key phải ở trong dấu nháy kép (double quotes). Dấu nháy
+đơn không chấp nhận được. Thiếu dấu nháy thì _chắc chắn_ không được.
 
-## Reflect
+## Suy Ngẫm
 
-* What's the difference between a JSON object and a Python dictionary?
+* Sự khác biệt giữa một JSON object và một Python dictionary là gì?
 
-* Looking at the Wikipedia article, what types of data can be
-  represented in JSON?
-
+* Nhìn vào bài viết Wikipedia, những loại dữ liệu nào có thể được biểu diễn trong JSON?
