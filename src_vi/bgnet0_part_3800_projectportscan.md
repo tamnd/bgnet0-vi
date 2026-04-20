@@ -1,11 +1,10 @@
-# Project: Port Scanning
+# Dự án: Quét Cổng (Port Scanning)
 
-We're going to do some port scanning!
+Giờ thì mình sẽ làm chút quét cổng (port scanning)!
 
-**NOTE: We're only going to run this on `localhost` to avoid any legal
-trouble.**
+**LƯU Ý: Chúng ta chỉ chạy lệnh này trên `localhost` để tránh rắc rối pháp lý.**
 
-To make this happen, we need to install the `nmap` too.
+Để thực hiện, ta cần cài công cụ `nmap`.
 
 MacOS:
 
@@ -20,38 +19,37 @@ sudo apt-get update
 sudo apt-get install nmap
 ```
 
-1. **Portscan All Common Ports**
+1. **Quét Tất Cả Các Cổng Phổ Biến**
 
-   This command will portscan 1000 of the most common ports:
+   Lệnh này sẽ quét 1000 cổng phổ biến nhất:
 
    ``` {.sh}
    nmap localhost
    ```
 
-   What's the output?
+   Kết quả đầu ra là gì?
 
-2. **Portscan All Ports**
+2. **Quét Toàn Bộ Cổng**
 
-   This will scan all the ports--starting from `0` on:
+   Lệnh này sẽ quét tất cả cổng --- bắt đầu từ `0`:
 
    ``` {.sh}
    nmap -p0- localhost
    ```
 
-   What's the output?
+   Kết quả đầu ra là gì?
 
-3. **Run a Server and Portscan**
+3. **Chạy Server rồi Quét Cổng**
 
-   Run any TCP server program that you wrote this quarter on some port.
+   Chạy bất kỳ chương trình TCP server nào bạn đã viết trong học kỳ này trên một cổng nào đó.
 
-   Run the all-port scan again (above).
+   Chạy lại lệnh quét toàn bộ cổng ở trên.
 
-   * Notice your server's port in the output!
+   * Để ý cổng của server bạn xuất hiện trong kết quả nhé!
 
-   * Does your server crash with a "Connection reset" error? If so, why?
-     If not, speculate on why this might happen even if you didn't see
-     it from your server. (See the [Port Scanning
-     chapter](#port-scanning) for this!)
+   * Server của bạn có bị crash với lỗi "Connection reset" không? Nếu có, tại sao?
+     Nếu không, hãy đoán xem tại sao điều này có thể xảy ra dù bạn không thấy lỗi
+     từ phía server. (Xem chương [Port Scanning](#port-scanning) nhé!)
 
 <!-- Rubric
 
