@@ -1,143 +1,84 @@
-# The Layered Network Model
+# Mô Hình Mạng Phân Lớp
 
-Before we get started, here are some terms to know:
+Trước khi bắt đầu, đây là một số thuật ngữ cần biết:
 
-* **IP Address** -- historically 4-byte number uniquely identifying your
-  computer on the Internet. Written in dots-and-numbers notation, like
-  so: `198.51.100.99`.
+* **IP Address** (địa chỉ IP) -- theo lịch sử là một số 4-byte xác định duy nhất máy tính của bạn trên Internet. Viết theo ký hiệu chấm-và-số, như sau: `198.51.100.99`.
 
-  These are IP version 4 ("IPv4") addresses. Typically "v4" is implied
-  in the absence of any other version identifier.
+  Đây là các địa chỉ IP phiên bản 4 ("IPv4"). Thông thường "v4" được ngầm hiểu khi không có định danh phiên bản nào khác.
 
-* **Port** -- Programs talk through ports, which are numbered 0-65535
-  and are associated with the TCP or UDP protocols.
+* **Port** (cổng) -- Các chương trình giao tiếp qua port, được đánh số 0-65535 và liên kết với giao thức TCP hoặc UDP.
 
-  Since multiple programs can be running on the same IP address, the
-  port provides a way to uniquely identify those programs on the
-  network.
+  Vì nhiều chương trình có thể chạy trên cùng một địa chỉ IP, port cung cấp cách xác định duy nhất những chương trình đó trên mạng.
 
-  For example, it's very common for a web server to listen for incoming
-  connections on port 80.
+  Ví dụ, rất phổ biến là một web server lắng nghe các kết nối đến trên port 80.
 
-  Publishing the port number is really important for server programs
-  since client programs need to know where to connect to them.
+  Công khai số port thực sự quan trọng với các chương trình server vì các chương trình client cần biết nơi để kết nối đến chúng.
 
-  Clients usually let the OS choose an unused port for them to use since
-  no one tries to connect to clients.
+  Client thường để OS chọn một port chưa dùng vì không ai cố kết nối đến client.
 
-  In a URL, the port number is after a colon. Here we try to connect to
-  `example.com` on port `3490`: `http://example.com:3490/foo.html`
+  Trong một URL, số port đứng sau dấu hai chấm. Ở đây ta thử kết nối đến `example.com` trên port `3490`: `http://example.com:3490/foo.html`
 
-  Ports under 1024 need root/administrator privileges to bind to (but
-  not to connect to).
+  Port dưới 1024 cần quyền root/administrator để bind vào (nhưng không cần để kết nối đến).
 
-* **TCP** -- Transmission Control Protocol, responsible for reliable,
-  in-order data transmission. From a higher-up perspective, makes a
-  packet-switched network feel more like a circuit-switched network.
+* **TCP** -- Transmission Control Protocol (Giao thức Kiểm soát Truyền tải), chịu trách nhiệm truyền dữ liệu đáng tin cậy và theo thứ tự. Nhìn từ góc độ cao hơn, nó làm cho một mạng chuyển mạch gói (packet-switched) cảm giác giống như mạng chuyển mạch kênh (circuit-switched) hơn.
 
-  TCP uses port numbers to identify senders and receivers of data.
+  TCP dùng số port để xác định bên gửi và bên nhận dữ liệu.
 
-  This protocol was invented in 1974 and is still in extremely heavy use
-  today.
+  Giao thức này được phát minh vào năm 1974 và vẫn đang được sử dụng rất nhiều ngày nay.
 
-  In the sockets API, TCP sockets are called _stream sockets_.
+  Trong sockets API, TCP socket được gọi là _stream socket_ (socket luồng).
 
-* **UDP** -- sibling of TCP, except lighter weight. Doesn't guarantee
-  data will arrive, or that it will be in order, or that it won't be
-  duplicated. If it arrives, it will be error-free, but that's all you
-  get.
+* **UDP** -- anh em của TCP, nhưng nhẹ hơn. Không đảm bảo dữ liệu sẽ đến nơi, không đảm bảo thứ tự, không đảm bảo không bị trùng lặp. Nếu đến được, nó sẽ không bị lỗi, nhưng đó là tất cả những gì bạn nhận được.
 
-  In the sockets API, UDP sockets are called _datagram sockets_.
+  Trong sockets API, UDP socket được gọi là _datagram socket_ (socket gói tin).
 
-* **IPv6 Address** -- Four bytes isn't enough to hold a unique address,
-  so IP version 6 expands the address size considerably to 16 bytes.
-  IPv6 addresses look like this: `::1` or `2001:db8::8a2e:370:7334`, or
-  even bigger.
+* **IPv6 Address** (địa chỉ IPv6) -- Bốn byte không đủ để chứa một địa chỉ duy nhất, nên IP phiên bản 6 mở rộng kích thước địa chỉ đáng kể lên 16 byte. Địa chỉ IPv6 trông như thế này: `::1` hoặc `2001:db8::8a2e:370:7334`, hoặc thậm chí dài hơn.
 
-* **NAT** -- Network Address Translation. A way to allow organizations
-  to have private subnets with non-globally-unique addresses that get
-  translated to globally-unique addresses as they pass through the
-  router.
+* **NAT** -- Network Address Translation (Dịch địa chỉ mạng). Một cách cho phép các tổ chức có mạng con riêng tư với các địa chỉ không duy nhất toàn cầu được dịch sang các địa chỉ duy nhất toàn cầu khi chúng đi qua router.
 
-  Private subnets commonly start with addresses `192.168.x.x` or
-  `10.x.x.x`.
+  Mạng con riêng tư thường bắt đầu với địa chỉ `192.168.x.x` hoặc `10.x.x.x`.
 
-* **Router** -- A specialized computer that forwards packets through the
-  packet switching network. It inspects destination IP addresses to
-  determine which route will get the packet closer to its goal.
+* **Router** -- Một máy tính chuyên dụng chuyển tiếp các gói tin qua mạng chuyển mạch gói. Nó kiểm tra địa chỉ IP đích để xác định tuyến đường nào sẽ đưa gói tin đến gần đích hơn.
 
-* **IP** -- Internet Protocol. This is responsible for identifying
-  computers by IP address and using those addresses to route data to
-  recipients through a variety of routers.
+* **IP** -- Internet Protocol (Giao thức Internet). Chịu trách nhiệm xác định máy tính bằng địa chỉ IP và dùng những địa chỉ đó để định tuyến dữ liệu đến người nhận qua nhiều router khác nhau.
 
-* **LAN** -- Local Area Network. A network where all the computers are
-  effectively directly connected, not via a router.
+* **LAN** -- Local Area Network (Mạng cục bộ). Một mạng trong đó tất cả máy tính về cơ bản được kết nối trực tiếp với nhau, không qua router.
 
-* **Interface** -- physical networking hardware on a computer. A
-  computer might have a number of interfaces. Your computer likely has
-  two: a wired Ethernet interface and a wireless Ethernet interface.
+* **Interface** (giao diện mạng) -- phần cứng mạng vật lý trên máy tính. Một máy tính có thể có nhiều interface. Máy tính của bạn có thể có hai: một interface Ethernet có dây và một interface Ethernet không dây.
 
-  A router might have a large number of interfaces to be able to route
-  packets to a large number of destinations. Your home router probably
-  only has two interfaces: one facing inward to your LAN and the other
-  facing outward to the rest of the Internet.
+  Router có thể có nhiều interface để có thể định tuyến gói tin đến nhiều đích khác nhau. Router tại nhà bạn có lẽ chỉ có hai interface: một hướng vào LAN của bạn và cái kia hướng ra phần còn lại của Internet.
 
-  Each interface typically has one IP address and one MAC address.
+  Mỗi interface thường có một địa chỉ IP và một địa chỉ MAC.
 
-  The OS names the interfaces on your local machine. They might be
-  something like `wlan0` or `eth2` or something else. It depends on the
-  hardware and the OS.
+  OS đặt tên các interface trên máy cục bộ của bạn. Chúng có thể là những tên như `wlan0` hoặc `eth2` hay gì đó khác. Tùy thuộc vào phần cứng và hệ điều hành.
 
-* **Header** -- Some data that is prepended to some other data by a
-  particular protocol. The header contains information appropriate for
-  that protocol. A TCP header would include some error detection and
-  correction information and a source and destination port number. IP
-  would include the source and destination IP addresses. Ethernet would
-  include the source and destination MAC addresses. And an HTTP response
-  would include things like the length of the data, the date modified,
-  and whether or not the request was successful.
+* **Header** (tiêu đề) -- Một số dữ liệu được thêm vào trước dữ liệu khác bởi một giao thức cụ thể. Header chứa thông tin phù hợp với giao thức đó. Một TCP header sẽ bao gồm một số thông tin phát hiện và sửa lỗi cùng số port nguồn và đích. IP sẽ bao gồm địa chỉ IP nguồn và đích. Ethernet sẽ bao gồm địa chỉ MAC nguồn và đích. Và một HTTP response sẽ bao gồm những thứ như độ dài dữ liệu, ngày sửa đổi, và liệu request có thành công không.
 
-  Putting a header in front of the data is analogous to putting your
-  letter in an envelope in the snail-mail analogy. Or putting that
-  envelope in another envelope.
+  Đặt header trước dữ liệu tương tự như đặt thư vào phong bì trong phép ẩn dụ thư tay. Hoặc đặt phong bì đó vào trong một phong bì khác.
 
-  As data moves through the network, additional headers are added and
-  removed. Typically only the top-most (front-most?) header is removed
-  or added in normal operation, like a stack. (But some software and
-  hardware peeks deeper.)
+  Khi dữ liệu di chuyển qua mạng, các header bổ sung được thêm vào và loại bỏ. Thông thường chỉ header ngoài cùng (trên cùng?) được loại bỏ hoặc thêm vào trong vận hành bình thường, như một stack. (Nhưng một số phần mềm và phần cứng nhìn sâu hơn.)
 
-  **Network Adapter** -- Another name for "network card", the hardware
-  on your computer that does network stuff.
+  **Network Adapter** (card mạng) -- Tên khác của "network card" (card mạng), phần cứng trên máy tính của bạn thực hiện việc mạng.
 
-  **MAC Address** -- Ethernet interfaces have MAC addresses, which take
-  the form `aa:bb:cc:dd:ee:ff`, where the fields are random-ish one-byte
-  hex numbers. MAC addresses are 6 bytes long, and must be unique on the
-  LAN. When a network adapter is manufactured, it is given a unique MAC
-  address that it keeps for life, typically.
+  **MAC Address** (địa chỉ MAC) -- Các interface Ethernet có địa chỉ MAC, có dạng `aa:bb:cc:dd:ee:ff`, trong đó các trường là các số hex một byte ngẫu nhiên. Địa chỉ MAC dài 6 byte và phải là duy nhất trên LAN. Khi một card mạng được sản xuất, nó được gán một địa chỉ MAC duy nhất mà nó giữ suốt đời, thường là vậy.
 
-## The Layered Network Model
+## Mô Hình Mạng Phân Lớp
 
-When you send data over the Internet, that data is _encapsulated_ in
-different layers of protocols.
+Khi bạn gửi dữ liệu qua Internet, dữ liệu đó được _đóng gói_ (encapsulated) trong các lớp giao thức khác nhau.
 
-The layers of the conceptual layered network model correspond to various
-classes of protocols.
+Các lớp của mô hình mạng phân lớp khái niệm tương ứng với các lớp giao thức khác nhau.
 
-And those protocols are responsible for different things, e.g.
-describing data, preserving data integrity, routing, local delivery,
-etc.
+Và những giao thức đó chịu trách nhiệm cho những thứ khác nhau, ví dụ: mô tả dữ liệu, bảo toàn tính toàn vẹn dữ liệu, định tuyến, phân phối cục bộ, v.v.
 
-So it's a little chicken-and-eggy, because we can't really discuss one
-without the other.
+Vì vậy nó hơi giống bài toán con gà và quả trứng, vì ta không thực sự thảo luận được cái này mà không đề cập đến cái kia.
 
-Best just to dive in and take a look at protocols layering headers on
-top of some data.
+Tốt nhất là cứ nhảy vào luôn và nhìn vào các giao thức đang thêm header lên trên dữ liệu.
 
-## An Example of Layering of Protocols on Data
+## Một Ví Dụ Về Phân Lớp Giao Thức Trên Dữ Liệu
 
-Let's consider what happens with an HTTP request.
+Hãy xem điều gì xảy ra với một HTTP request.
 
-1. The web browser builds the HTTP request that looks like this:
+1. Web browser xây dựng HTTP request trông như thế này:
 
    ``` {.default}
    GET / HTTP/1.1
@@ -146,97 +87,55 @@ Let's consider what happens with an HTTP request.
 
    ```
 
-   And that's all the browser cares about. It doesn't care about IP
-   routing or TCP data integrity or Ethernet.
+   Và đó là tất cả những gì browser quan tâm. Nó không quan tâm đến định tuyến IP hay tính toàn vẹn dữ liệu TCP hay Ethernet.
 
-   It just says "Send this data to that computer on port 80".
+   Nó chỉ nói "Gửi dữ liệu này đến máy tính đó trên port 80".
 
-2. The OS takes over and says, "OK, you asked me to send this over a
-   stream-oriented socket, and I'm going to use the TCP protocol to do
-   that and ensure all the data arrives intact and in order."
+2. OS tiếp quản và nói, "OK, bạn yêu cầu tôi gửi cái này qua socket hướng luồng, và tôi sẽ dùng giao thức TCP để làm điều đó và đảm bảo tất cả dữ liệu đến nguyên vẹn và theo thứ tự."
 
-   So the OS takes the HTTP data and wraps it in a TCP header which
-   includes the port number.
+   Vì vậy OS lấy dữ liệu HTTP và bọc nó trong một TCP header bao gồm số port.
 
-3. And then the OS says, "And you wanted to send it to this remote
-   computer whose IP address is 198.51.100.2, so we'll use the IP
-   protocol to do that."
+3. Và rồi OS nói, "Và bạn muốn gửi nó đến máy tính từ xa này có địa chỉ IP là 198.51.100.2, vậy ta sẽ dùng giao thức IP để làm điều đó."
 
-   And it takes the entire TCP-HTTP data and wraps it up in an IP
-   header. So now we have data that looks like this: IP-TCP-HTTP.
+   Và nó lấy toàn bộ dữ liệu TCP-HTTP và bọc nó lên trong một IP header. Vậy bây giờ chúng ta có dữ liệu trông như thế này: IP-TCP-HTTP.
 
-4. After that, the OS takes a look at its routing table and decides
-   where to send the data next. Maybe the web server is on the LAN,
-   conveniently. More likely, it's somewhere else, so the data would be
-   sent to the router for your house destined for the greater Internet.
+4. Sau đó, OS nhìn vào bảng định tuyến (routing table) của nó và quyết định gửi dữ liệu đến đâu tiếp theo. Có thể web server ở trên LAN thì tiện lắm. Nhiều khả năng hơn là nó ở đâu đó khác, nên dữ liệu sẽ được gửi đến router của nhà bạn hướng đến Internet rộng lớn hơn.
 
-   In either case, it's going to send the data to a server on the LAN,
-   or to your outbound router, also on the LAN. So it's going to a
-   computer on the LAN.
+   Trong cả hai trường hợp, nó sẽ gửi dữ liệu đến một server trên LAN, hoặc đến router ra ngoài của bạn, cũng trên LAN. Vậy nên nó đang đến một máy tính trên LAN.
 
-   And computers on the LAN have an Ethernet address (AKA _MAC
-   address_--which stands for "Media Access Control"), so the sending OS
-   looks up the MAC address that corresponds to the next destination IP
-   address, whether that's a local web server or the outbound router.
-   (This happens via a lookup in something called the _ARP Cache_, but
-   we'll get to that part of the story another time.)
+   Và các máy tính trên LAN có địa chỉ Ethernet (hay còn gọi là _MAC address_ --- viết tắt của "Media Access Control"), vì vậy OS gửi tra cứu địa chỉ MAC tương ứng với địa chỉ IP đích tiếp theo, dù đó là web server cục bộ hay router ra ngoài. (Điều này xảy ra qua tra cứu trong thứ gọi là _ARP Cache_, nhưng ta sẽ đến phần đó của câu chuyện sau.)
 
-   And it wraps the whole IP-TCP-HTTP packet in an Ethernet header, so
-   it becomes Ethernet-IP-TCP-HTTP. The web request is still in there,
-   buried under layers of protocols!
+   Và nó bọc toàn bộ gói IP-TCP-HTTP trong một Ethernet header, nên nó trở thành Ethernet-IP-TCP-HTTP. HTTP request vẫn còn đó, bị chôn vùi dưới các lớp giao thức!
 
-5. And finally, the data goes out on the wire (even if it's WiFi, we
-   still say "on the wire").
+5. Và cuối cùng, dữ liệu đi ra trên dây (dù là WiFi, ta vẫn nói "trên dây").
 
-The computer with the destination MAC address, listening carefully, sees
-the Ethernet packet on the wire and reads it in. (Ethernet packets are
-called _Ethernet frames_.)
+Máy tính có địa chỉ MAC đích, đang lắng nghe cẩn thận, thấy gói Ethernet trên dây và đọc nó vào. (Các gói Ethernet được gọi là _Ethernet frames_ --- khung Ethernet.)
 
-It strips off the Ethernet header, exposing the IP header below it. It
-looks at the destination IP address.
+Nó lột bỏ Ethernet header, để lộ IP header bên dưới. Nó nhìn vào địa chỉ IP đích.
 
-1. If the inspecting computer is a server and it has that IP address,
-   its OS strips off the IP header and looks deeper. (If it doesn't have
-   that IP address, something's wrong and it discards the packet.)
+1. Nếu máy tính đang kiểm tra là một server và có địa chỉ IP đó, OS của nó lột bỏ IP header và nhìn sâu hơn. (Nếu nó không có địa chỉ IP đó, có gì đó không ổn và nó loại bỏ gói tin.)
 
-2. It looks at the TCP header and does all the TCP magic needed to make
-   sure the data isn't corrupted. If it is, it replies back with the
-   magic TCP incantations, saying, "Hey, I need you to send that data
-   again, please."
+2. Nó nhìn vào TCP header và thực hiện tất cả những phép thuật TCP cần thiết để đảm bảo dữ liệu không bị hỏng. Nếu bị hỏng, nó trả lời lại với các thần chú TCP, nói "Này, tôi cần bạn gửi lại dữ liệu đó, xin vui lòng."
 
-   Note that the web browser or server never knows about this TCP
-   conversation that's happening. It's all behind the scenes. For all it
-   can see, the data is just magically arriving intact and in order.
+   Lưu ý rằng web browser hay server không bao giờ biết về cuộc trò chuyện TCP đang xảy ra này. Tất cả là ở đằng sau hậu trường. Với tất cả những gì chúng có thể thấy, dữ liệu chỉ kỳ diệu đến nguyên vẹn và theo thứ tự.
 
-   The reason is that they're on a higher layer of the network. They
-   don't have to worry about routing or anything. The lower layers take
-   care of it.
+   Lý do là chúng đang ở một lớp cao hơn của mạng. Chúng không cần lo về định tuyến hay bất cứ thứ gì. Các lớp thấp hơn lo việc đó.
 
-3. If everything's good with TCP, that header gets stripped and the OS
-   is left with the HTTP data. It wakes up the process (the web server)
-   that was waiting to read it, and gives it the HTTP data.
+3. Nếu mọi thứ đều ổn với TCP, header đó bị lột và OS còn lại với dữ liệu HTTP. Nó đánh thức tiến trình (web server) đang chờ đọc nó, và đưa cho nó dữ liệu HTTP.
 
-But what if the destination Ethernet address was an intermediate router?
+Nhưng nếu địa chỉ Ethernet đích là một router trung gian thì sao?
 
-1. The router strips off the Ethernet frame as always.
+1. Router lột bỏ Ethernet frame như thường lệ.
 
-2. The router looks at the destination IP address. It consults its
-   routing table and decides to which interface to forward the packet.
+2. Router nhìn vào địa chỉ IP đích. Nó tham khảo bảng định tuyến của mình và quyết định chuyển tiếp gói tin đến interface nào.
 
-3. It sends it out to that interface, which wraps it up in another
-   Ethernet frame and sends it to the next router in line.
+3. Nó gửi ra interface đó, cái đó bọc nó trong một Ethernet frame khác và gửi đến router tiếp theo trong hàng.
 
-   (Or maybe it's not Ethernet! Ethernet is a protocol, and there are
-   other low-level protocols in use with fiber optic lines and so on.
-   This is part of the beauty of these layers of abstraction--you can
-   switch protocols partway through transmission and the HTTP data above
-   it is completely unaware that any such thing has happened.)
+   (Hoặc có thể nó không phải Ethernet! Ethernet là một giao thức, và có các giao thức cấp thấp khác đang được dùng với đường cáp quang và các thứ khác. Đây là một phần vẻ đẹp của các lớp trừu tượng này --- bạn có thể chuyển đổi giao thức giữa chừng trong quá trình truyền và dữ liệu HTTP phía trên nó hoàn toàn không biết chuyện đó đã xảy ra.)
 
-## The Internet Layer Model
+## Mô Hình Internet Phân Lớp
 
-Let's start with the easier model that splits this transmission up into
-different layers from the top down. (Note that the list of protocols is
-far from exhaustive.)
+Hãy bắt đầu với mô hình dễ hơn chia việc truyền này thành các lớp khác nhau từ trên xuống. (Lưu ý rằng danh sách các giao thức không phải là đầy đủ.)
 
 <!-- CAPTION: Internet Layered Network Model -->
 |    Layer    | Responsibility                                  | Example Protocols                             |
@@ -246,48 +145,29 @@ far from exhaustive.)
 |  Internet   | Routing                                         | IP, IPv6, ICMP                                |
 |    Link     | Physical, signals on wires                      | Ethernet, PPP, token ring                     |
 
-You can see how different protocols take on the responsibilities of each
-layer in the model.
+Bạn có thể thấy cách các giao thức khác nhau đảm nhận trách nhiệm của từng lớp trong mô hình.
 
-Another way to think of this is that all the programs that implement
-HTTP or FTP or SMTP can use TCP or UDP to transmit data. (Typically all
-sockets programs and applications you write that implement any protocol
-will live at the application layer.)
+Một cách khác để nghĩ về điều này là tất cả các chương trình triển khai HTTP hoặc FTP hoặc SMTP đều có thể dùng TCP hoặc UDP để truyền dữ liệu. (Thông thường tất cả các chương trình socket và ứng dụng bạn viết triển khai bất kỳ giao thức nào đều sẽ nằm ở lớp application.)
 
-And all data that's transmitted with TCP or UDP can use IP or IPv6 for
-routing.
+Và tất cả dữ liệu được truyền bằng TCP hoặc UDP đều có thể dùng IP hoặc IPv6 để định tuyến.
 
-And all data that uses IP or IPv6 for routing can use Ethernet or PPP,
-etc. for going over the wire.
+Và tất cả dữ liệu dùng IP hoặc IPv6 để định tuyến đều có thể dùng Ethernet hoặc PPP, v.v. để đi qua dây.
 
-And as a packet moves down through the layers before being transmitted
-over the wire, the protocols add their own headers on top of everything
-else so far.
+Và khi một gói tin di chuyển xuống qua các lớp trước khi được truyền qua dây, các giao thức thêm header của riêng chúng lên trên tất cả mọi thứ cho đến nay.
 
-This model is complex enough for working on the Internet. You know what
-they say: as simple as possible, but no simpler.
+Mô hình này đủ phức tạp để làm việc trên Internet. Bạn biết người ta hay nói: đơn giản nhất có thể, nhưng không đơn giản hơn nữa.
 
-But there might be other networks in the Universe that aren't the
-Internet, so there's a more general model out there that folks sometimes
-use: the OSI model.
+Nhưng có thể có các mạng khác trong Vũ trụ không phải Internet, vì vậy có một mô hình tổng quát hơn mà mọi người đôi khi dùng: mô hình OSI.
 
-## The ISO OSI Network Layer Model
+## Mô Hình Lớp Mạng ISO OSI
 
-This is important to know if you're taking a certification test or if
-you're going into the field as more than a regular programmer.
+Điều này quan trọng cần biết nếu bạn đang thi chứng chỉ hoặc nếu bạn đang bước vào lĩnh vực này nhiều hơn một lập trình viên thông thường.
 
-The Internet Layer Model is a special case of this more-detailed model
-called the ISO OSI model. (Bonus points for being a palindrome.) It's
-the International Organization for Standardization Open Systems
-Interconnect model. I know that "ISO" is not a direct English
-abbreviation for "International Organization for Standardization", but I
-don't have enough global political influence to change that.
+Mô hình Internet là một trường hợp đặc biệt của mô hình chi tiết hơn này gọi là mô hình ISO OSI. (Thêm điểm vì là palindrome.) Đó là mô hình Kết nối Hệ thống Mở (Open Systems Interconnect) của Tổ chức Tiêu chuẩn Quốc tế (International Organization for Standardization). Tôi biết rằng "ISO" không phải là viết tắt trực tiếp tiếng Anh của "International Organization for Standardization", nhưng tôi không có đủ ảnh hưởng chính trị toàn cầu để thay đổi điều đó.
 
-Coming back to reality, the OSI model is like the Internet model, but
-more granular.
+Quay lại thực tế, mô hình OSI giống như mô hình Internet nhưng chi tiết hơn.
 
-The Internet model maps to the OSI model, like so, with a single layer
-of the Internet model mapping to multiple layers of the OSI model:
+Mô hình Internet ánh xạ sang mô hình OSI, như vậy, với một lớp đơn của mô hình Internet ánh xạ sang nhiều lớp của mô hình OSI:
 
 <!-- CAPTION: OSI to Internet Layer Mapping -->
 | ISO OSI Layer | Internet Layer |
@@ -300,9 +180,7 @@ of the Internet model mapping to multiple layers of the OSI model:
 |   Data link   |      Link      |
 |   Physical    |      Link      |
 
-And if we look at the OSI model, we can see some of the protocols that
-exist at those various layers, similar to what we saw with the Internet
-model, above.
+Và nếu ta nhìn vào mô hình OSI, ta có thể thấy một số giao thức tồn tại ở các lớp khác nhau đó, tương tự với những gì ta thấy với mô hình Internet ở trên.
 
 <!-- CAPTION: ISO OSI Network Layer Model -->
 | ISO OSI Layer | Responsibility                                                 | Example Protocols                        |
@@ -315,28 +193,18 @@ model, above.
 |   Data link   | Encapsulation into frames                                      | Ethernet, PPP, SLIP                      |
 |   Physical    | Physical, signals on wires                                     | Ethernet physical layer, DSL, ISDN       |
 
-We're going to stick with the Internet model for this course since it's
-good enough for 99.9% of the network programming work you'd ever be likely
-to do. But please be aware of the OSI model if you're going into an
-interview for a network-specific programming position.
+Chúng ta sẽ gắn bó với mô hình Internet cho khóa học này vì nó đủ tốt cho 99,9% công việc lập trình mạng bạn có thể sẽ làm. Nhưng hãy lưu ý về mô hình OSI nếu bạn đang chuẩn bị phỏng vấn cho một vị trí lập trình đặc thù về mạng.
 
 ## Reflect
 
-* When a router sees an IP address, how does it know where to forward
-  it?
+* Khi một router thấy một địa chỉ IP, nó biết cần chuyển tiếp đến đâu như thế nào?
 
-* If an IPv4 address is 4 bytes, roughly how many different computers
-  can that represent in total, assuming each computer has a unique IP
-  address?
+* Nếu một địa chỉ IPv4 là 4 byte, khoảng bao nhiêu máy tính khác nhau mà nó có thể đại diện tổng cộng, giả sử mỗi máy tính có địa chỉ IP duy nhất?
 
-* Same question, except for IPv6 and its 16-byte addresses?
+* Câu hỏi tương tự, nhưng cho IPv6 và địa chỉ 16-byte của nó?
 
-* Bonus question for stats nerds: The odds of winning the super lotto
-  jackpot are approximately 300 million to 1. What are the odds of
-  randomly picking my pre-selected 16-byte (128-bit) number?
+* Câu hỏi thêm cho những người mê thống kê: Xác suất trúng jackpot xổ số super lotto là khoảng 300 triệu trên 1. Xác suất để chọn ngẫu nhiên đúng số 16-byte (128-bit) mà tôi đã chọn trước là bao nhiêu?
 
-* Speculate on why the IP header wraps up the TCP header in the layered
-  model, and not the other way around.
+* Hãy suy đoán tại sao IP header bọc TCP header trong mô hình phân lớp, chứ không phải ngược lại.
 
-* If UDP is unreliable and TCP is reliable, speculate on why one might
-  ever use UDP.
+* Nếu UDP không đáng tin cậy và TCP đáng tin cậy, hãy suy đoán tại sao người ta có thể dùng UDP.
