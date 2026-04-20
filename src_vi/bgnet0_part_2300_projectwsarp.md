@@ -1,136 +1,132 @@
 
-# Project: Sniff ARP packets with WireShark
+# Dự án: Bắt gói tin ARP bằng WireShark
 
-We're going to take a look at some live network traffic with
-[fl[WireShark|https://www.wireshark.org/]] and see if we can capture
-some ARP requests and replies.
+Chúng ta sẽ xem xét một chút lưu lượng mạng thực tế bằng
+[fl[WireShark|https://www.wireshark.org/]] và thử bắt
+một số ARP request (yêu cầu ARP) và ARP reply (phản hồi ARP).
 
-Wireshark is a great tool for _sniffing_ network packets. It gives you a
-way to trace packets as that move across the LAN.
+WireShark là công cụ tuyệt vời để _sniff_ (nghe lén) các gói tin mạng. Nó cho
+phép bạn theo dõi các gói tin di chuyển qua LAN (mạng cục bộ).
 
-We'll set up a filter in WireShark so that we're only looking for ARP
-packets to and from our specific machines so we don't have to search for
-a needle in a haystack.
+Ta sẽ cài filter (bộ lọc) trong WireShark để chỉ nhìn vào các gói ARP
+đến và đi từ máy của mình thôi --- khỏi phải mò kim đáy bể.
 
-## What to Create
+## Cần Tạo Ra Gì
 
-A document that contains 4 things:
+Một tài liệu chứa 4 thứ:
 
-1. Your MAC address of your currently active connection.
+1. Địa chỉ MAC của kết nối đang hoạt động trên máy bạn.
 
-2. Your IP address of your currently active connection.
+2. Địa chỉ IP của kết nối đang hoạt động trên máy bạn.
 
-3. A human-readable WireShark packet capture of an ARP request.
+3. Bản ghi gói tin WireShark dạng đọc được của một ARP request.
 
-4. A human-readable WireShark packet capture of an ARP reply.
+4. Bản ghi gói tin WireShark dạng đọc được của một ARP reply.
 
-Details below!
+Chi tiết bên dưới!
 
-## Step by Step
+## Từng Bước Một
 
-Here's what we'll do:
+Đây là những gì ta sẽ làm:
 
-1. **Look Up Your Ethernet (MAC) Address**
+1. **Tra Địa Chỉ Ethernet (MAC) Của Bạn**
 
-   Your computer might have multiple Ethernet interfaces (e.g. one for
-   WiFi and one for wired--the Ethernet jack on the side).
+   Máy tính có thể có nhiều interface (giao diện) Ethernet --- ví dụ
+   một cái cho WiFi và một cái cho dây --- cái jack Ethernet ở cạnh máy.
 
-   Since you're almost certainly using wireless right now, look up the
-   MAC address for your wireless interface. (You might have to search
-   online for how to do this.)
+   Vì bạn gần như chắc chắn đang dùng wireless, hãy tra địa chỉ MAC
+   của interface wireless. (Bạn có thể cần Google để biết cách làm điều này.)
    
-   For both this step and step 2, below, the information can be found
-   with this command on Unix-likes:
+   Cho cả bước này lẫn bước 2 bên dưới, thông tin có thể tìm thấy
+   bằng lệnh này trên Unix-like:
 
    ``` {.sh}
    ifconfig
    ```
 
-   and this command on Windows:
+   và lệnh này trên Windows:
 
    ``` {.sh}
    ipconfig
    ```
 
-2. **Look Up Your IP Address**
+2. **Tra Địa Chỉ IP Của Bạn**
 
-   Again, we want the IP address of your active network interface,
-   probably your WiFi device.
+   Lại nữa, ta cần địa chỉ IP của interface mạng đang hoạt động,
+   thường là thiết bị WiFi.
 
-3. **Launch WireShark**
+3. **Mở WireShark**
 
-   On initial launch, set up WireShark to look at your active Ethernet
-   device. On Linux, this might be `wlan0`. On Mac, it could be `en0`.
-   On Windows, it's likely just `Wi-Fi`.
+   Lần đầu mở, cài WireShark để theo dõi thiết bị Ethernet đang hoạt động.
+   Trên Linux, có thể là `wlan0`. Trên Mac, có thể là `en0`.
+   Trên Windows, khả năng cao là `Wi-Fi`.
 
-   Set up a display filter in WireShark to filter ARP packets that are
-   only either to or from your machine. Type this in the bar near the
-   top of the window, just under the blue sharkfin button.
+   Cài display filter (bộ lọc hiển thị) trong WireShark để lọc các gói ARP
+   chỉ đến hoặc đi từ máy của bạn. Gõ dòng này vào thanh gần
+   đỉnh cửa sổ, ngay dưới nút cá mập xanh.
 
    ``` {.default}
-   arp and eth.addr==[your MAC address]
+   arp and eth.addr==[địa chỉ MAC của bạn]
    ```
 
-   Don't forget to hit `RETURN` after typing in the filter.
+   Đừng quên nhấn `RETURN` sau khi gõ filter.
 
-   Start capturing by hitting the blue sharkfin button.
+   Bắt đầu capture (bắt gói tin) bằng cách nhấn nút cá mập xanh.
 
-4. **Find more IPs on your subnet**
+4. **Tìm Thêm IP Trên Subnet Của Bạn**
 
-   For this section it doesn't matter if there's actually a computer at
-   the remote IP, but it's nice if there is. Watch the Wireshark log for
-   a while to see what other IPs are active on your LAN.
+   Phần này không cần có máy tính thực sự ở IP đó cũng được --- nhưng nếu có
+   thì tốt hơn. Quan sát log WireShark một lúc để xem IP nào đang hoạt động
+   trên LAN.
 
-   > Your IP ANDed with the subnet mask is your subnet number. Try
-   > putting various numbers for the host portion. Try your default
-   > gateway (search the Internet for how to find your default gateway
-   > in your OS.)
+   > IP của bạn AND với subnet mask sẽ cho ra subnet number. Thử
+   > nhập các số khác nhau cho phần host. Thử default gateway của bạn
+   > (Google xem cách tìm default gateway trên hệ điều hành của bạn.)
 
-   On the command line, `ping` another IP on your LAN:
+   Trên command line, `ping` một IP khác trên LAN của bạn:
 
    ``` {.sh}
-   ping [IP address]
+   ping [địa chỉ IP]
    ```
 
-   (Hit `CONTROL-C` to break out of ping.)
+   (Nhấn `CONTROL-C` để thoát khỏi ping.)
 
-   On the first ping, did you see any ARP packets go by in Wireshark? If
-   not, try other IP addresses on the subnet, as noted above.
+   Lần ping đầu tiên, bạn có thấy gói ARP nào đi qua WireShark không?
+   Nếu không, thử các địa chỉ IP khác trên subnet như đã nói ở trên.
 
-   No matter how many pings you send, you should only see one ARP
-   reply. (You'll see one request per ping if there are no replies!)
-   This is because after the first reply, your computer caches the ARP
-   reply and no longer needs to send them out!
+   Dù bạn gửi bao nhiêu ping, bạn chỉ thấy một ARP reply thôi.
+   (Bạn sẽ thấy một request cho mỗi ping nếu không có reply!)
+   Vì sau reply đầu tiên, máy tính cache (lưu bộ nhớ đệm) kết quả ARP và không
+   cần gửi thêm nữa!
 
-   After a minute or five, your computer should expire that ARP cache
-   entry and you'll see another ARP exchange if you ping that IP again.
+   Sau một đến năm phút, máy tính sẽ hết hạn cache entry đó và bạn sẽ
+   thấy thêm một lần trao đổi ARP nếu ping lại IP đó.
 
-5. **Write Down the Request and Reply**
+5. **Chép Lại Request và Reply**
 
-   In the timeline, the ARP request will look something like this
-   excerpt (with different IP addresses, obviously):
+   Trong timeline (dòng thời gian), ARP request trông đại loại thế này
+   (với địa chỉ IP khác, rõ ràng rồi):
 
    ``` {.default}
    ARP 60 Who has 192.168.1.230? Tell 192.168.1.1
    ```
 
-   And if all goes well, you'll have a reply that looks like this:
+   Và nếu mọi thứ suôn sẻ, bạn sẽ có reply trông như thế này:
 
    ``` {.default}
    ARP 42 192.168.1.230 is at ac:d1:b8:df:20:85
    ```
 
-   [If you're not seeing anything, try changing your display filter to
-   just say "arp". Watch for a while and see if you see a
-   request/reply pair go by.]
+   [Nếu không thấy gì, thử đổi display filter thành chỉ "arp". Quan sát
+   một lúc xem có thấy cặp request/reply nào đi qua không.]
 
-   Click on the request and look at the details in the lower left panel.
-   Expand the "Address Resolution Protocol (request)" panel.
+   Click vào request và xem chi tiết ở panel dưới bên trái.
+   Mở rộng panel "Address Resolution Protocol (request)".
 
-   Right click any line in that panel and select "Copy->All Visible
+   Nhấp chuột phải vào bất kỳ dòng nào trong panel đó và chọn "Copy->All Visible
    Items".
 
-   Here's an example request (truncated for line length):
+   Đây là ví dụ một request (rút ngắn cho vừa chiều dài dòng):
 
    ``` {.default}
    Frame 221567: 42 bytes on wire (336 bits), 42 bytes captured  [...]
@@ -147,10 +143,9 @@ Here's what we'll do:
        Target IP address: 192.168.1.148
    ```
 
-   Click on the reply in the timeline. Copy the reply information in the
-   same way.
+   Click vào reply trong timeline. Chép thông tin reply theo cách tương tự.
 
-   Here's an example reply (truncated for line length):
+   Đây là ví dụ một reply (rút ngắn cho vừa chiều dài dòng):
    
    ``` {.default}
    Frame 221572: 42 bytes on wire (336 bits), 42 bytes captured  [...]
