@@ -1,102 +1,97 @@
-# Appendix: Multithreading {#appendix-threading}
+# Phụ lục: Đa Luồng (Multithreading) {#appendix-threading}
 
-_Multithreading_ is the idea that a process can have multiple _threads_
-of execution. That is, it can be running a number of functions at the
-same time, as it were.
+_Đa luồng_ (multithreading) là ý tưởng rằng một tiến trình (process) có thể có
+nhiều _luồng_ (threads) thực thi. Tức là, nó có thể chạy một số hàm cùng một lúc,
+theo nghĩa nào đó.
 
-This is really useful if you have a function that is waiting for
-something to happen, and you need another function to keep running at
-the same time.
+Điều này thực sự hữu ích nếu bạn có một hàm đang chờ điều gì đó xảy ra, và bạn
+cần một hàm khác tiếp tục chạy cùng lúc.
 
-This would be useful in a multiuser chat client because it has to do two
-things at once, both of which block:
+Điều này sẽ hữu ích trong một multiuser chat client vì nó phải làm hai việc cùng lúc,
+cả hai đều block (chặn):
 
-* Wait for the user to type in their chat message.
-* Wait for the server to send more messages.
+* Chờ người dùng gõ tin nhắn chat của họ.
+* Chờ server gửi thêm tin nhắn.
 
-If we didn't use multithreading, we wouldn't be able to receive messages
-from the server while we were waiting for user input and vice versa.
+Nếu không dùng đa luồng, ta sẽ không thể nhận tin nhắn từ server trong khi đang
+chờ input người dùng và ngược lại.
 
-> Side note: `select()` actually has the capability to add regular file
-> descriptors to the set to listen for. So it technically _could_ listen
-> for data on the sockets **and** the keyboard. This doesn't work in
-> Windows, however. And the design of the client is simpler overall with
-> multithreading.
+> Ghi chú bên lề: `select()` thực ra có khả năng thêm các file descriptor thông
+> thường vào tập hợp để lắng nghe. Vì vậy về mặt kỹ thuật nó _có thể_ lắng nghe
+> dữ liệu trên các socket **và** bàn phím. Điều này không hoạt động trên Windows.
+> Và thiết kế của client đơn giản hơn khi dùng đa luồng.
 
-Let's take a look at how this works in Python.
+Hãy xem cách nó hoạt động trong Python.
 
-## Concepts
+## Các Khái Niệm
 
-There are a few terms we should get straight first.
+Có một vài thuật ngữ ta cần làm rõ trước.
 
-* **Thread**: a representation of a "thread of execution", that is, a
-  part of the program that is executing at this particular moment. If
-  you want multiple parts of the program to execute at the same time,
-  you can place them in separate threads.
+* **Thread** (luồng): biểu diễn một "luồng thực thi", tức là, một phần của chương
+  trình đang thực thi tại thời điểm cụ thể này. Nếu bạn muốn nhiều phần của chương
+  trình thực thi cùng lúc, bạn có thể đặt chúng trong các thread riêng biệt.
 
-* **Main Thread**: this is the thread that is running by default. We
-  just never named it before. But the code that you run without thinking
-  about threads is technically running in the main thread.
+* **Main Thread** (luồng chính): đây là luồng đang chạy theo mặc định. Ta chưa
+  bao giờ đặt tên cho nó trước đây. Nhưng code bạn chạy mà không nghĩ đến thread
+  thực ra đang chạy trong main thread.
 
-* **Spawning**: We say we "spawn" a new thread to run a particular
-  function. If we do this, the function will execute _at the same time_
-  as the main thread. They'll both run at once!
+* **Spawning** (tạo): Ta nói ta "spawn" (tạo) một thread mới để chạy một hàm cụ thể.
+  Nếu ta làm vậy, hàm đó sẽ thực thi _cùng lúc_ với main thread. Cả hai sẽ chạy
+  song song!
 
-* **Join**: A thread can wait for another to exit by calling that
-  thread's `join()` method. This conceptually joins the other thread
-  back up to the calling thread. Usually this is the main thread
-  `join()`ing the threads it spawned back to itself.
+* **Join** (ghép): Một thread có thể chờ thread khác kết thúc bằng cách gọi phương
+  thức `join()` của thread đó. Về mặt khái niệm, điều này ghép thread kia trở lại
+  với thread đang gọi. Thường đây là main thread `join()` các thread nó đã spawn
+  trở lại với nó.
 
-* **Target**: The thread target is a function that the thread will run.
-  When this function returns, the thread exits.
+* **Target** (đích): Thread target là hàm mà thread sẽ chạy. Khi hàm này return,
+  thread kết thúc.
 
-It's important to note that _global objects are shared between threads_!
-This means one thread can set the value in a global object and other
-threads will see those changes. You don't have to worry about this if
-the shared data is read-only, but do have to consider this if it's
-writable.
+Điều quan trọng cần lưu ý là _các đối tượng global được chia sẻ giữa các thread_!
+Điều này có nghĩa là một thread có thể đặt giá trị trong một đối tượng global và
+các thread khác sẽ thấy những thay đổi đó. Bạn không cần lo lắng về điều này nếu
+dữ liệu chia sẻ là read-only, nhưng phải cân nhắc nếu nó có thể ghi.
 
-We are about to get into the weeds with concurrency and synchronization
-here, so for this project, let's just not use any global shared objects.
-Remember the old proverb:
+Chúng ta sắp đi sâu vào concurrency (đồng thời) và synchronization (đồng bộ hóa)
+ở đây, vì vậy với dự án này, hãy đơn giản là không dùng bất kỳ đối tượng global
+chia sẻ nào. Nhớ câu châm ngôn cũ:
 
 > Shared Nothing Is Happy Everybody
+> (Không Chia Sẻ Gì Là Mọi Người Vui Vẻ)
 
-That's not really an old proverb. I just made it up. And it sounds kind
-of selfish now that I read it again.
+Đó không phải là câu châm ngôn cũ thật sự. Tôi vừa bịa ra. Và nó nghe có vẻ ích
+kỷ khi đọc lại.
 
-Back on track to a related notion: local objects are _not_ shared
-between threads. This means threads get their own local variables and
-parameter values. They can change them and those changes will not be
-visible to other threads.
+Quay lại với một khái niệm liên quan: các đối tượng cục bộ (local) _không_ được
+chia sẻ giữa các thread. Điều này có nghĩa là thread có các biến cục bộ và giá
+trị tham số riêng. Chúng có thể thay đổi chúng và những thay đổi đó sẽ không hiển
+thị với các thread khác.
 
-Also, if you have multiple threads running at the same time, the order
-in which they are executed is unpredictable. This really only gets to be
-a problem if there is some kind of timing or data dependency between
-threads, and again we're starting to get out in the weeds. Let's just be
-aware that the order of execution is unpredictable and that'll be OK for
-this project.
+Ngoài ra, nếu bạn có nhiều thread chạy cùng lúc, thứ tự thực thi là không thể đoán
+trước. Điều này chỉ thực sự trở thành vấn đề nếu có một số phụ thuộc về thời gian
+hay dữ liệu giữa các thread, và một lần nữa chúng ta đang đi ra ngoài vùng an toàn.
+Hãy chỉ cần biết rằng thứ tự thực thi là không thể đoán trước và điều đó sẽ ổn
+với dự án này.
 
-That should be enough to get started.
+Thế là đủ để bắt đầu rồi.
 
-## Multithreading In Python
+## Đa Luồng trong Python
 
-Let's write a program that spawns three threads.
+Hãy viết một chương trình spawn ba thread.
 
-Each thread will run a function called `runner()` (you can call the
-function whatever you wish). This function takes two arguments: a `name`
-and a `count`. It loops and prints the `name` out `count` times.
+Mỗi thread sẽ chạy một hàm gọi là `runner()` (bạn có thể đặt tên hàm tùy ý).
+Hàm này nhận hai đối số: `name` (tên) và `count` (số lần). Nó lặp và in `name`
+ra `count` lần.
 
-The thread exits when the `runner()` function returns.
+Thread kết thúc khi hàm `runner()` return.
 
-You can create a new thread by calling the `threading.Thread()`
-constructor.
+Bạn có thể tạo thread mới bằng cách gọi constructor `threading.Thread()`.
 
-You can run a thread with its `.start()` method.
+Bạn có thể chạy thread bằng phương thức `.start()` của nó.
 
-And you can wait for the thread to complete with its `.join()` method.
+Và bạn có thể chờ thread hoàn thành bằng phương thức `.join()` của nó.
 
-Let's take a peek!
+Hãy xem thử!
 
 <!-- read in the projects/threaddemo.py file here -->
 ``` {.py}
@@ -143,7 +138,7 @@ for t in threads:
 print("All child threads complete!")
 ```
 
-And here's the output:
+Và đây là output:
 
 ``` {.default}
 Running: Thread0 0
@@ -161,64 +156,59 @@ Running: Thread2 4
 All child threads complete!
 ```
 
-They're all running at the same time!
+Tất cả chúng đang chạy cùng lúc!
 
-Notice the execution order isn't consistent. It might ever vary from run
-to run. And that's OK for this program since the threads don't depend on
-one another.
+Chú ý thứ tự thực thi không nhất quán. Nó có thể thay đổi từ lần chạy này sang
+lần chạy khác. Và điều đó ổn vì các thread không phụ thuộc vào nhau.
 
-## Daemon Threads
+## Daemon Thread
 
-Python classifies threads in two different ways:
+Python phân loại thread theo hai cách khác nhau:
 
-* Regular, normal, run-of-the-mill threads
-* Daemon threads (pronounced "DEE-mun" or "DAY-mun")
+* Thread thông thường, bình thường
+* Daemon thread (phát âm là "DEE-mun" hoặc "DAY-mun")
 
-The general idea is that a daemon thread will keep running forever and
-never return from its function. Unlike non-daemon threads, these threads
-will be automatically killed by Python once all the non-daemon threads
-are dead.
+Ý tưởng chung là một daemon thread sẽ tiếp tục chạy mãi mãi và không bao giờ
+return từ hàm của nó. Không giống như các thread thông thường, những thread này
+sẽ tự động bị Python kill khi tất cả các thread không phải daemon đã chết.
 
-### This is Somehow Related to `CTRL-C`
+### Điều Này Liên Quan Đến `CTRL-C`
 
-If you kill the main thread with `CTRL-C` and there are no other
-non-daemon threads running, all daemon threads will also be killed.
+Nếu bạn kill main thread bằng `CTRL-C` và không có thread thông thường nào khác
+đang chạy, tất cả daemon thread cũng sẽ bị kill.
 
-But if you have some non-daemon threads, you have to `CTRL-C` through
-all of them before you get back to the prompt.
+Nhưng nếu bạn có một số thread thông thường, bạn phải `CTRL-C` qua tất cả chúng
+trước khi quay lại dấu nhắc lệnh.
 
-In the final project, we'll be running a thread forever to listen for
-incoming messages from the server. So that should be a daemon thread.
+Trong dự án cuối, ta sẽ chạy một thread mãi mãi để lắng nghe tin nhắn đến từ
+server. Vì vậy đó nên là daemon thread.
 
-You can create a daemon thread like this:
+Bạn có thể tạo daemon thread như sau:
 
 ``` {.py}
 t = threading.Thread(target=runner, daemon=True)
 ```
 
-Then at least `CTRL-C` will get you out of the client easily.
+Khi đó ít nhất `CTRL-C` sẽ dễ dàng thoát ra khỏi client.
 
-## Reflect
+## Suy Ngẫm
 
-* Describe the type of problem using threads would solve.
+* Mô tả loại vấn đề mà việc dùng thread có thể giải quyết.
 
-* What's the difference between a daemon and non-daemon thread in
-  Python?
+* Sự khác biệt giữa daemon thread và non-daemon thread trong Python là gì?
 
-* What do you have to do to create the main thread in Python, if
-  anything?
+* Bạn phải làm gì để tạo main thread trong Python, nếu có?
 
-## Threading Project
+## Dự Án Threading
 
-If you're looking to flex your muscles a bit, here's a little project to
-work on.
+Nếu bạn muốn thử sức, đây là một dự án nhỏ để làm.
 
-### What We're Building
+### Chúng Ta Xây Dựng Gì
 
-The client who has hired us in this case has several ranges of numbers.
-They want the sum total of all the sums of all the ranges.
+Khách hàng đã thuê chúng ta trong trường hợp này có một số dãy số. Họ muốn tổng
+cộng của tất cả các tổng của tất cả các dãy.
 
-For example, if the ranges are:
+Ví dụ, nếu các dãy là:
 
 ``` {.py}
 [
@@ -227,88 +217,78 @@ For example, if the ranges are:
 ]
 ```
 
-We want to:
+Ta muốn:
 
-* First add up `1+2+3+4+5` to get `15`.
-* Then add up `20+21+22` to get `63`.
-* Then add `15+63` to get `78`, the final answer.
+* Đầu tiên cộng `1+2+3+4+5` để ra `15`.
+* Sau đó cộng `20+21+22` để ra `63`.
+* Sau đó cộng `15+63` để ra `78`, là đáp án cuối.
 
-They want the range sums and the total sum printed out. For the example
-above, they'd want it to print:
+Họ muốn các tổng của dãy và tổng cuối được in ra. Với ví dụ trên, họ muốn in:
 
 ``` {.default}
 [15, 63]
 78
 ```
 
-### Overall Structure
+### Cấu Trúc Tổng Thể
 
-The program MUST use threads to solve the problem because the client
-really likes parallelism.
+Chương trình PHẢI dùng thread để giải quyết vấn đề vì khách hàng thực sự thích
+tính song song (parallelism).
 
-You should write a function that adds up a range of numbers. Then you'll
-spawn a thread for each range and have that thread work on that range.
-If there are 10 ranges of numbers, there will be 10 threads, one
-processing each range.
+Bạn nên viết một hàm cộng một dãy số. Sau đó bạn sẽ spawn một thread cho mỗi
+dãy và để thread đó xử lý dãy đó. Nếu có 10 dãy số, sẽ có 10 thread, mỗi cái
+xử lý một dãy.
 
-The main thread will:
+Main thread sẽ:
 
-* Allocate an array for the results. This array length should the same
-  as the number of ranges (which is the same as the number of threads).
-  Each thread has its own slot to store a result in the array.
+* Cấp phát một mảng cho kết quả. Độ dài mảng này phải bằng số dãy (cũng bằng
+  số thread). Mỗi thread có slot riêng để lưu kết quả trong mảng.
 
   ``` {.py}
   result = [0] * n   # Create an array of `n` zeros
   ```
 
-* In a loop, launch all the threads. Thread arguments are:
+* Trong một vòng lặp, khởi động tất cả các thread. Đối số của thread là:
 
-  * The thread ID number `0..(n-1)`, where `n` is the number of threads.
-    This is the index the thread will use to store its result in the
-    result array.
+  * Số ID thread `0..(n-1)`, trong đó `n` là số thread.
+    Đây là chỉ số thread sẽ dùng để lưu kết quả trong mảng kết quả.
 
-  * The starting value of the range.
+  * Giá trị bắt đầu của dãy.
 
-  * The ending value of the range.
+  * Giá trị kết thúc của dãy.
 
-  * The result array, where the thread will store the result.
+  * Mảng kết quả, nơi thread sẽ lưu kết quả.
 
-* The main thread should keep track of all the thread objects returned
-    from `threading.Thread()` in an array. It'll need them in the next
-    step.
+* Main thread nên theo dõi tất cả các đối tượng thread trả về từ
+  `threading.Thread()` trong một mảng. Nó sẽ cần chúng ở bước tiếp theo.
 
-* In another loop after that, call `.join()` on all the threads. This
-  will cause the main thread to wait until all the subthreads have
-  completed.
+* Trong một vòng lặp khác sau đó, gọi `.join()` trên tất cả các thread.
+  Điều này sẽ khiến main thread chờ cho đến khi tất cả các subthread hoàn thành.
 
-* Print out the results. After all the `join()`s, the result array will
-  have all the sums in it.
+* In kết quả. Sau tất cả các `join()`, mảng kết quả sẽ có tất cả các tổng trong đó.
 
-### Useful Functions
+### Các Hàm Hữu Ích
 
-* `threading.Thread()`: create a thread.
+* `threading.Thread()`: tạo một thread.
 
-* `range(a, b)`: produces all the integers in the range `[a, b)` as an
-  iterable.
+* `range(a, b)`: tạo ra tất cả các số nguyên trong dãy `[a, b)` dưới dạng iterable.
 
-* `sum()`: compute the sum of an iterable.
+* `sum()`: tính tổng của một iterable.
 
-* `enumerate()`: produces indexs and values over an iterable.
+* `enumerate()`: tạo ra index và giá trị trên một iterable.
 
-### Things the Thread Running Function Needs
+### Những Gì Hàm Chạy Thread Cần
 
-All the threads are going to write into a shared array. This array can
-be set up ahead of time to have zeros in all the elements. There should
-be one element per thread, so that each thread can fill in the proper
-one.
+Tất cả các thread sẽ ghi vào một mảng chia sẻ. Mảng này có thể được thiết lập trước
+để có các số không trong tất cả các phần tử. Phải có một phần tử cho mỗi thread,
+để mỗi thread có thể điền vào phần tử phù hợp.
 
-To make this work, you'll have to pass the thread's index number to its
-run function so it knows which element in the shared array to put the
-result in!
+Để làm điều này, bạn phải truyền số chỉ số (index) của thread vào hàm chạy của nó
+để nó biết phần tử nào trong mảng chia sẻ để đặt kết quả vào!
 
-### Example Run
+### Ví Dụ Chạy
 
-Example input (you can just hardcode this in your program):
+Đầu vào ví dụ (bạn có thể hardcode thẳng trong chương trình):
 
 ``` {.py}
 ranges = [
@@ -320,20 +300,20 @@ ranges = [
 ]
 ```
 
-Corresponding output:
+Output tương ứng:
 
 ``` {.default}
 [165, 15, 825, 3927, 136]
 5068
 ```
 
-### Extensions
+### Mở Rộng
 
-* If you're using `sum()` or a `for`-loop, what's your time complexity?
+* Nếu bạn đang dùng `sum()` hoặc vòng lặp `for`, độ phức tạp thời gian (time complexity)
+  của bạn là bao nhiêu?
 
-* The closed-form equation for the sum of integers from 1 to _n_ is
-  `n*(n+1)//2`. Can you use that to get a better time complexity? How
-  much better?
+* Công thức dạng đóng cho tổng các số nguyên từ 1 đến _n_ là `n*(n+1)//2`. Bạn có thể
+  dùng nó để đạt độ phức tạp thời gian tốt hơn không? Tốt hơn bao nhiêu?
 
 
 <!-- Rubric:
