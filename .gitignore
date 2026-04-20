@@ -1,8 +1,8 @@
 docs/
 release/
 src_vi/*.html
-src_vi/*.pdf
-src_vi/*.epub
+src_vi/bgnet0*.pdf
+src_vi/bgnet0*.epub
 src_vi/split/
 src_vi/split-wide/
 src_vi/*.toc
