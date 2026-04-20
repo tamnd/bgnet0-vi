@@ -1,71 +1,69 @@
-# Project: Packet Tracer: Using a Switch
+# Dự án: Packet Tracer: Dùng Switch
 
-It's not typical to wire two PCs directly together. Usually they're
-connected through a _switch_.
+Thông thường không ai nối dây hai PC trực tiếp với nhau. Thường chúng
+được kết nối qua một _switch_ (công tắc mạng).
 
-Let's set that up in the lab.
+Hãy cài đặt điều đó trong lab.
 
-## Add Some PCs
+## Thêm Một Số PC
 
-Choose "End Devices" in the lower left, and drag three PCs onto the
-workspace.
+Chọn "End Devices" ở góc dưới bên trái, và kéo ba PC ra workspace
+(không gian làm việc).
 
-Click on each in turn, going to their "Config" tabs for their
-`FastEthernet0` devices and giving them IP addresses:
+Click vào từng cái, vào tab "Config" cho thiết bị `FastEthernet0` của
+chúng và gán địa chỉ IP:
 
 * PC0: `192.168.0.2`
 * PC1: `192.168.0.3`
 * PC2: `192.168.0.4`
 
-They should all use subnet mask `255.255.255.0`.
+Tất cả đều dùng subnet mask `255.255.255.0`.
 
-## Add a Switch
+## Thêm Switch
 
-Click on "Network Devices" in the lower left. The bottom left row of
-icons will change.
+Click vào "Network Devices" ở góc dưới bên trái. Hàng icon dưới bên
+trái sẽ thay đổi.
 
-Select "Switches", second left on bottom row. The middle panel will
-change.
+Chọn "Switches", thứ hai từ trái trong hàng dưới. Panel giữa sẽ thay
+đổi.
 
-Drag a `2960` switch onto the workspace.
+Kéo switch `2960` ra workspace.
 
-If you click on the switch and look under the "Physical" tab, you'll see
-the switch is a device with a _lot_ of Ethernet ports on it. (This is a
-pretty high-end switch. Home switches typically have 4 or 8 ports. The
-back of your WiFi router at home probably has 4 ports like this--that's
-a switch built into it!)
+Nếu bạn click vào switch và xem tab "Physical", bạn sẽ thấy switch là
+thiết bị có _rất nhiều_ cổng Ethernet. (Đây là switch khá cao cấp.
+Switch gia đình thường có 4 hoặc 8 cổng. Mặt sau router WiFi ở nhà
+bạn có thể có 4 cổng như vậy --- đó là switch tích hợp trong đó!)
 
-We can connect PCs to these ports and they'll be able to talk to one
-another.
+Ta có thể kết nối các PC vào các cổng này và chúng sẽ có thể nói
+chuyện với nhau.
 
-## Wire It Up
+## Nối Dây
 
-None of the PCs will be directly connected. They'll all connect directly
-to the switch.
+Không có PC nào kết nối trực tiếp với nhau. Tất cả đều kết nối trực
+tiếp vào switch.
 
-We don't use crossover cables here; the switch knows what it's doing.
+Không dùng crossover cable ở đây; switch tự biết phải làm gì.
 
-> Note that when you first wire up the LAN, you might not have two green
-> up arrows shown on the connection. One or both of them might be orange
-> circles indicating the link is in the process of coming up. You can
-> hit the `>>` fast-forward button in the lower left to jump ahead in
-> time until you get two green up arrows.
+> Lưu ý khi bạn lần đầu nối dây LAN, có thể không thấy hai mũi tên
+> xanh lên trên kết nối. Một hoặc cả hai có thể là vòng tròn cam
+> cho thấy link đang trong quá trình kết nối. Bạn có thể nhấn nút
+> `>>` tua nhanh ở góc dưới bên trái để nhảy thời gian cho đến khi
+> thấy hai mũi tên xanh lên.
 
-Choose the "Connections" selector in the lower left.
+Chọn selector "Connections" ở góc dưới bên trái.
 
-Choose the "Copper Straight-Through" cable. (The icon will change to an
-"anti" symbol.)
+Chọn cáp "Copper Straight-Through". (Icon sẽ đổi thành ký hiệu "anti".)
 
-Click on PC0, then select `FastEthernet0`.
+Click vào PC0, rồi chọn `FastEthernet0`.
 
-Click on the switch, then select any `FastEthernet0` port.
+Click vào switch, rồi chọn bất kỳ cổng `FastEthernet0` nào.
 
-Do the same for the other 2 PCs.
+Làm tương tự cho 2 PC còn lại.
 
-## Test Pings!
+## Kiểm Tra Ping!
 
-Click on one of the PCs and go to the "Desktop" tab and run a Command
-Prompt. Make sure you can `ping` the other two PCs.
+Click vào một trong các PC và vào tab "Desktop" rồi chạy Command
+Prompt. Đảm bảo bạn có thể `ping` hai PC còn lại.
 
 <!-- Rubric
 
