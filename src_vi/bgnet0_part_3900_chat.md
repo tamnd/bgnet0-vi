@@ -1,19 +1,16 @@
-# Project: Multiuser Chat Client and Server
+# Dự án: Chat Client và Server Nhiều Người Dùng
 
-It's time to put it all together into this, the final project!
+Đã đến lúc tổng hợp tất cả lại trong dự án cuối cùng này!
 
-We're going to build a multiuser chat server and a chat client to go
-along with it.
+Chúng ta sẽ xây dựng một chat server nhiều người dùng và một chat client đi kèm.
 
-The chat server should allow an arbitrary number of connections from
-clients. All the clients will see what the other ones are saying.
+Chat server phải chấp nhận số lượng kết nối tùy ý từ các client. Tất cả các client đều
+thấy những gì người khác đang nói.
 
-Not only that, but there should be messages for when a user joins or
-leaves the chat.
+Không chỉ vậy, còn phải có thông báo khi người dùng tham gia hoặc rời khỏi chat.
 
-Here's a sample screenshot. The prompt where this user ("pat" in this
-example) is typing what they're about to say. The region above it is
-where all the output accumulates.
+Đây là ảnh chụp màn hình mẫu. Dòng nhập liệu ở dưới là nơi người dùng ("pat" trong
+ví dụ này) đang gõ nội dung sắp gửi. Vùng phía trên là nơi tất cả output tích lũy lại.
 
 ``` {.default}
 *** pat has joined the chat
@@ -30,40 +27,36 @@ leslie: Why are you always last?
 pat> oh no!! :)█
 ```
 
-## Overall Architecture
+## Kiến Trúc Tổng Thể
 
-There will be one server, and it will handle many simultaneous clients.
+Sẽ có một server duy nhất, xử lý nhiều client đồng thời.
 
 ### Server
 
-The server will run using `select()` to handle multiple connections to
-see which ones are ready to read.
+Server sẽ dùng `select()` để xử lý nhiều kết nối, kiểm tra xem kết nối nào sẵn sàng đọc.
 
-The listener socket itself will also be included in this set. When it
-shows "ready-to-read", it means there's a new connection to be
-`accept()`ed. If any of the other already-accepted sockets show
-"ready-to-read", it means the client has sent some data that needs to be
-handled.
+Bản thân socket listener cũng được đưa vào tập hợp này. Khi nó hiện "ready-to-read"
+(sẵn sàng đọc), có nghĩa là có kết nối mới cần `accept()`. Nếu bất kỳ socket nào đã
+được accept hiện "ready-to-read", nghĩa là client đó đã gửi dữ liệu cần xử lý.
 
-When the server get a chat packet from one client, it rebroadcasts that
-chat message to every connected client.
+Khi server nhận được chat packet từ một client, nó phát lại (rebroadcast) tin nhắn chat
+đó đến tất cả các client đang kết nối.
 
-> Note: when we use the term "broadcast" here, we're using it in the
-> generic sense of sending a thing to a lot of people. We're **not**
-> talking about IP or Ethernet broadcast addresses. We won't use those
-> in this project.
+> Lưu ý: khi dùng thuật ngữ "broadcast" ở đây, ta dùng theo nghĩa chung là gửi một thứ gì đó
+> đến nhiều người. Chúng ta **không** nói đến địa chỉ IP hay Ethernet broadcast. Ta sẽ không
+> dùng những thứ đó trong dự án này.
 
-When a new client connects or disconnects, the server broadcasts that
-to all the clients, as well.
+Khi có client mới kết nối hoặc ngắt kết nối, server cũng broadcast thông tin đó đến
+tất cả các client.
 
-Since multiple clients will be sending data streams to the server, the
-server needs to maintain a packet buffer _for each client_.
+Vì nhiều client sẽ gửi data stream đến server, server cần duy trì một packet buffer
+_cho mỗi client_.
 
-> You can put this is a Python `dict` that uses the client's socket
-> itself as the key, so it maps from a socket to a buffer.
+> Bạn có thể đặt đây là một Python `dict` dùng chính socket của client làm key, ánh xạ
+> từ socket sang buffer.
 
-The server will be launched by specifying a port number on the command
-line. This is mandatory; there is no default port.
+Server sẽ được khởi động bằng cách chỉ định số cổng trên dòng lệnh. Đây là bắt buộc;
+không có cổng mặc định.
 
 ``` {.sh}
 python chat_server.py 3490
@@ -71,224 +64,195 @@ python chat_server.py 3490
 
 ### Client
 
-When the client is launched, the user specifies their nickname (AKA
-"nick") on the command line along with the server information.
+Khi client được khởi động, người dùng chỉ định biệt danh (nickname, hay còn gọi là
+"nick") trên dòng lệnh cùng với thông tin server.
 
-The very first packet it sends is a "hello" packet that has the nickname
-in it. (This is how the server associates a connection with a nick and
-rebroadcasts the connection event to the other clients.)
+Packet đầu tiên nó gửi là packet "hello" chứa nickname. (Đây là cách server liên kết
+kết nối với một nick và phát lại sự kiện kết nối đến các client khác.)
 
-After that, every line the user types into the client gets sent to the
-server as a chat packet.
+Sau đó, mỗi dòng người dùng gõ vào client sẽ được gửi đến server dưới dạng chat packet.
 
-Every chat packet (or connect or disconnect packet) the client gets from
-the server is shown on the output.
+Mỗi chat packet (hoặc packet kết nối hay ngắt kết nối) mà client nhận được từ server
+sẽ được hiển thị trên màn hình.
 
-The client has a **text user interface** (TUI) that helps keep the
-output clean. Since the output is happening asynchronously on a
-different part of the screen than the input, we need to do some terminal
-magic to keep them from overwriting each other. This TUI code will be
-supplied and is described in the next section.
+Client có **giao diện người dùng văn bản** (TUI --- text user interface) giúp output
+gọn gàng. Vì output xảy ra bất đồng bộ trên phần khác của màn hình so với input, ta
+cần làm một chút phép thuật terminal để tránh chúng ghi đè lên nhau. Code TUI này sẽ
+được cung cấp sẵn và được mô tả trong phần tiếp theo.
 
-Since there can be data arriving while the user is typing something, we
-need a way to handle that. The client will be **multithreaded**. There
-will be two threads of execution.
+Vì có thể có dữ liệu đến trong khi người dùng đang gõ, ta cần một cách để xử lý điều đó.
+Client sẽ **đa luồng** (multithreaded). Sẽ có hai luồng thực thi (thread).
 
-* The main sending thread will:
-  * Read keyboard input
-  * Send chat messages from the user to the server
-* The receiving thread will:
-  * Receive packets from the server
-  * Display those results on-screen
+* Luồng gửi chính (main sending thread) sẽ:
+  * Đọc input từ bàn phím
+  * Gửi chat message từ người dùng đến server
+* Luồng nhận (receiving thread) sẽ:
+  * Nhận packet từ server
+  * Hiển thị kết quả lên màn hình
 
-Since there is no shared data between those threads, no synchronization
-(mutexes, etc.) will be required.
+Vì không có dữ liệu chia sẻ giữa hai luồng đó, không cần đồng bộ hóa (mutex, v.v.).
 
-> They do share the socket, but the OS makes sure that it's OK for
-> multiple threads to use that at the same time without an issue. It's
-> _threadsafe_.
+> Chúng có chia sẻ socket, nhưng OS đảm bảo rằng nhiều luồng dùng chung socket cùng lúc
+> là OK. Nó _threadsafe_ (an toàn với đa luồng).
 
-If you need more information on threading in Python, see the [Appendix:
-Threading](#appendix-threading) section.
+Nếu bạn cần thêm thông tin về threading trong Python, xem phần [Phụ lục:
+Threading](#appendix-threading).
 
-The client will be started by specifying the user's nickname, the server
-address, and the server port on the command line. These are all required
-arguments; there are no defaults.
+Client sẽ được khởi động bằng cách chỉ định nickname của người dùng, địa chỉ server,
+và số cổng server trên dòng lệnh. Tất cả đều là đối số bắt buộc; không có giá trị mặc định.
 
 ``` {.sh}
 python chat_client.py chris localhost 3490
 ```
 
-## Client I/O
+## I/O của Client
 
-The client screen is split into two main regions:
+Màn hình client được chia thành hai vùng chính:
 
-* The input section, the last row or two of the screen.
-* The output section, the remaining top part of the screen.
+* Vùng input, ở một hoặc hai dòng cuối màn hình.
+* Vùng output, phần còn lại ở phía trên.
 
-(The Client TUI section, below, has details about how to do this I/O.)
+(Phần Client TUI bên dưới có chi tiết về cách thực hiện I/O này.)
 
-The client input line at the bottom of the screen should be the user's
-nickname followed by `>` and a space. The input takes place after that:
+Dòng input của client ở dưới cùng màn hình phải là nickname của người dùng theo sau
+là `>` và một dấu cách. Input được nhập sau phần đó:
 
 ``` {.default}
 alice> this is some sample input
 ```
 
-The output area of the screen has two main types of messages:
+Vùng output trên màn hình có hai loại message chính:
 
-* **Chat messages**: these show the speaker nickname followed by `:` and
-  a space, and then the message.
+* **Chat message**: hiển thị nickname người nói theo sau là `:` và một dấu cách, rồi nội dung tin nhắn.
 
   ``` {.default}
   pat: hows it going
   ```
 
-* **Informational messages**: these show when a user has joined or left
-  the chat, or any other information that needs printing. They consist
-  of `***` followed by a space, then the message. Joining and leaving
-  messages are shown here:
+* **Thông báo thông tin** (informational message): hiển thị khi người dùng tham gia hay rời chat,
+  hoặc bất kỳ thông tin nào cần in ra. Gồm `***` theo sau là dấu cách, rồi nội dung thông báo.
+  Tin nhắn tham gia và rời được hiển thị ở đây:
 
   ``` {.default}
   *** leslie has joined the chat
   *** chris has left the chat
   ```
 
-### Special User Input
+### Input Đặc Biệt Của Người Dùng
 
-If the user input begins with `/`, it has special meaning and should be
-parsed farther to determine the action.
+Nếu input của người dùng bắt đầu bằng `/`, nó có ý nghĩa đặc biệt và cần được phân tích
+thêm để xác định hành động.
 
-Currently, the only special input defined is `/q`:
+Hiện tại, input đặc biệt duy nhất được định nghĩa là `/q`:
 
-* **`/q`**: if the user enters this, the client should exit. Nothing is
-  sent to the server in this case.
+* **`/q`**: nếu người dùng nhập lệnh này, client phải thoát. Không gửi gì đến server trong
+  trường hợp này.
 
-## The Client TUI
+## TUI của Client
 
-[fls[Download the Chat UI code and demo here|chat/chatui.zip]].
+[fls[Tải xuống code Chat UI và demo tại đây|chat/chatui.zip]].
 
-In the file `chatui.py`, there are four functions you need, and you can
-get them with this import:
+Trong file `chatui.py`, có bốn hàm bạn cần, và bạn có thể import chúng như sau:
 
 ``` {.py}
 from chatui import init_windows, read_command, print_message, end_windows
 ```
 
-The functions are:
+Các hàm là:
 
-* **init_windows()**: call this first before doing any other
-  UI-oriented I/O of any kind. It should also be called before you start
-  the receiver thread since that thread does I/O.
+* **init_windows()**: gọi hàm này trước khi thực hiện bất kỳ I/O nào liên quan đến UI.
+  Nó cũng phải được gọi trước khi bạn khởi động luồng nhận vì luồng đó thực hiện I/O.
 
-* **end_windows()**: call this when your program completes to clean
-  everything up.
+* **end_windows()**: gọi hàm này khi chương trình kết thúc để dọn dẹp mọi thứ.
 
-* **read_command()**: this prints a prompt out at the bottom of the
-  screen and accepts user input. It returns the line the user entered
-  once they hit the `ENTER` key.
+* **read_command()**: hàm này in ra một prompt ở cuối màn hình và chấp nhận input từ người dùng.
+  Nó trả về dòng người dùng đã nhập khi họ nhấn phím `ENTER`.
 
-  For example:
+  Ví dụ:
 
   ``` {.py}
   s = read_command("Enter something> ")
   ```
 
-  The function takes care of screen placement of the element.
+  Hàm này tự xử lý việc đặt vị trí phần tử trên màn hình.
 
-* **print_message()**: Prints a message to the output portion of the
-  screen. This handle scrolling and making sure the output doesn't
-  interfere with the input from `read_command()`.
+* **print_message()**: In một message ra vùng output trên màn hình. Xử lý việc cuộn
+  và đảm bảo output không can thiệp vào input của `read_command()`.
 
-  Do not include a newline in your output. It will be added
-  automatically.
+  Không thêm ký tự xuống dòng vào output. Nó sẽ được thêm tự động.
 
-**Known Bug**: on Mac, if something gets written by `print_message()`,
-then next backspace you type will show a `^R` and scroll down a line.
-It's unclear why this happens.
+**Lỗi đã biết**: trên Mac, nếu có gì đó được viết bởi `print_message()`, lần
+backspace tiếp theo bạn gõ sẽ hiện `^R` và xuống dòng thêm một hàng. Chưa rõ tại sao điều này xảy ra.
 
-### Curses Variant of `chatui`
+### Biến thể Curses của `chatui`
 
-If the `chatui` library is causing you trouble, you could try the
-alternate version `chatuicurses`. It has the exact same functions and is
-used in the exact same way.
+Nếu thư viện `chatui` gây rắc rối cho bạn, có thể thử phiên bản thay thế `chatuicurses`.
+Nó có cùng các hàm và được dùng theo cùng cách.
 
-Before you use it, you have to install the unicurses library:
+Trước khi dùng, bạn phải cài thư viện unicurses:
 
 ``` {.sh}
 python3 -m pip install uni-curses
 ```
 
-After that installs, you should just be able to use `chatuicurses`
-instead of `chatui` in the import line.
+Sau khi cài xong, bạn chỉ cần thay `chatuicurses` vào chỗ `chatui` trong dòng import.
 
-**Known Mac Issue**: my attempt complained that the curses library
-wasn't installed when in fact it was. This doesn't seem to affect Linux
-or Windows.
+**Vấn đề đã biết trên Mac**: thử nghiệm của tôi báo rằng thư viện curses không được
+cài dù thực ra đã có. Điều này có vẻ không ảnh hưởng đến Linux hay Windows.
 
-**One caveat** here is that the input routine doesn't obey `CRTL-C` to
-get out of the app. As such, you might have to hit `CTRL-C` followed by
-`RETURN` to actually break out. On Windows, you might try `CTRL-BREAK`.
+**Một lưu ý nhỏ** là routine input không nghe lệnh `CTRL-C` để thoát app. Vì vậy,
+bạn có thể phải nhấn `CTRL-C` rồi `RETURN` để thực sự thoát ra. Trên Windows,
+bạn có thể thử `CTRL-BREAK`.
 
-## Packet Structure
+## Cấu Trúc Packet
 
-The client and server will communicate over TCP (stream) sockets using a
-defined packet structure.
+Client và server sẽ giao tiếp qua socket TCP (stream) sử dụng cấu trúc packet được định nghĩa sẵn.
 
-In a nutshell, a packet is a 16-bit big-endian number representing the
-payload length. The payload is a string containing JSON-format data with
-UTF-8 encoding.
+Tóm lại, một packet là một số 16-bit big-endian biểu diễn độ dài payload. Payload là
+một chuỗi chứa dữ liệu định dạng JSON với mã hóa UTF-8.
 
-> You can encode the JSON string to UTF-8 bytes by calling `.encode()`
-> on the string. `.encode()` takes an argument to specify the encoding,
-> but it defaults to `"UTF-8"`.
+> Bạn có thể encode chuỗi JSON sang bytes UTF-8 bằng cách gọi `.encode()` trên chuỗi.
+> `.encode()` nhận đối số để chỉ định encoding, nhưng mặc định là `"UTF-8"`.
 
-So the first thing you'll have to do when looking at the data stream is
-make sure you have at least two bytes in your buffer so you can
-determine the JSON data length. And then after that, see if you have the
-length (plus 2 for the 2-byte header) in your buffer.
+Vậy điều đầu tiên bạn phải làm khi nhìn vào data stream là đảm bảo bạn có ít nhất hai
+bytes trong buffer để xác định độ dài JSON. Rồi sau đó, kiểm tra xem bạn có đủ
+độ dài (cộng thêm 2 cho header 2-byte) trong buffer không.
 
-If you don't, you'll have to keep receiving data in a loop until you
-have enough. Also remember that you might receive some data from the
-next packet in a single `recv()` call.
+Nếu chưa đủ, bạn phải tiếp tục nhận dữ liệu trong vòng lặp cho đến khi có đủ. Cũng nhớ
+rằng bạn có thể nhận một phần dữ liệu của packet tiếp theo trong một lần gọi `recv()`.
 
-Your code has to work no matter how many bytes are returned by `recv()`,
-even if it's more or fewer than you expected!
+Code của bạn phải hoạt động bất kể `recv()` trả về bao nhiêu bytes, dù nhiều hơn hay
+ít hơn bạn mong đợi!
 
-**Have a `get_next_packet()` function** that will extract and return the
-next packet, like you've done in earlier projects. Abstracting the byte
-stream into packets like this will make your life easier.
+**Hãy có một hàm `get_next_packet()`** để trích xuất và trả về packet tiếp theo,
+như bạn đã làm trong các dự án trước. Việc trừu tượng hóa byte stream thành packet
+như vậy sẽ giúp cuộc sống của bạn dễ dàng hơn.
 
-Also: be sure to use `sendall()` so that all the data you want sent
-actually gets sent!
+Ngoài ra: hãy chắc chắn dùng `sendall()` để tất cả dữ liệu bạn muốn gửi thực sự
+được gửi đi!
 
-## JSON Payloads
+## JSON Payload
 
-If your JSON is rusty, check out the [Appendix: JSON](#appendix-json)
-section.
+Nếu kiến thức JSON của bạn đã hơi bị gỉ sét, xem phần [Phụ lục: JSON](#appendix-json).
 
-Each packet starts with the two-byte length of the payload, followed by
-the payload.
+Mỗi packet bắt đầu với hai byte chứa độ dài của payload, tiếp theo là payload.
 
-The payload is a UTF-8 encoded string representing a JSON object.
+Payload là một chuỗi được mã hóa UTF-8 biểu diễn một JSON object.
 
-Each payload is an Object, and has a field in it named `"type"` that
-represents the type of the payload. The remaining fields vary based on
-the type.
+Mỗi payload là một Object, và có một trường tên `"type"` biểu diễn loại của payload.
+Các trường còn lại thay đổi tùy theo loại.
 
-In the following examples, square brackets in strings are used to
-indicate a place where you need to put in the relevant information. The
-brackets are **not** to be included in the packet.
+Trong các ví dụ sau, dấu ngoặc vuông trong chuỗi được dùng để chỉ nơi bạn cần điền
+thông tin liên quan. Dấu ngoặc **không** được đưa vào packet.
 
-### "Hello" Payload
+### Payload "Hello"
 
-When a client first connects to a server, it sends a `hello` packet with
-the user's nickname. This allows the server to associate a connection
-with a nick.
+Khi client lần đầu kết nối đến server, nó gửi packet `hello` với nickname của người dùng.
+Điều này cho phép server liên kết kết nối với một nick.
 
-This MUST be sent before any other packets.
+Packet này PHẢI được gửi trước tất cả các packet khác.
 
-From client to server:
+Từ client đến server:
 
 ``` {.json}
 {
@@ -297,14 +261,13 @@ From client to server:
 }
 ```
 
-### "Chat" Payload
+### Payload "Chat"
 
-This represents a chat message. It has two forms depending on whether or
-not the chat message originated with the client (i.e. the user wants to
-send a message) or the server (i.e. the server is broadcasting someone
-else's message).
+Đây là tin nhắn chat. Nó có hai dạng tùy thuộc vào việc tin nhắn chat đến từ client
+(tức là người dùng muốn gửi tin nhắn) hay từ server (tức là server đang phát lại tin
+nhắn của người khác).
 
-From client to server:
+Từ client đến server:
 
 ``` {.json}
 {
@@ -313,7 +276,7 @@ From client to server:
 }
 ```
 
-From server to clients:
+Từ server đến các client:
 
 ``` {.json}
 {
@@ -323,13 +286,12 @@ From server to clients:
 }
 ```
 
-The client doesn't need to send the sender's nick along with the packet
-since the server can already make that association from the `hello`
-packet sent earlier.
+Client không cần gửi nick của người gửi cùng packet vì server đã có thể liên kết từ
+packet `hello` đã gửi trước đó.
 
-### "Join" Payload
+### Payload "Join"
 
-The server sends this to all the clients when someone joins the chat.
+Server gửi cái này đến tất cả các client khi có người tham gia chat.
 
 ``` {.json}
 {
@@ -338,9 +300,9 @@ The server sends this to all the clients when someone joins the chat.
 }
 ```
 
-### "Leave" Payload
+### Payload "Leave"
 
-The server sends this to all the clients when someone leaves the chat.
+Server gửi cái này đến tất cả các client khi có người rời chat.
 
 ``` {.json}
 {
@@ -349,76 +311,73 @@ The server sends this to all the clients when someone leaves the chat.
 }
 ```
 
-## Extensions
+## Mở Rộng
 
-These aren't worth any points, but if you want to push farther, here are
-some ideas. **Caveat!** Be sure whatever you turn in has the official
-functionality as already described. These mods can be a strict superset
-of that, or you can fork a new project to hold them.
+Những cái này không tính điểm, nhưng nếu bạn muốn đi xa hơn, đây là một số ý tưởng.
+**Lưu ý!** Hãy đảm bảo bài nộp có đầy đủ chức năng chính thức như đã mô tả. Những
+mod này có thể là tập hợp cha của đó, hoặc bạn có thể fork một dự án mới để chứa chúng.
 
-At the very least, I recommend branching from your working version so it
-doesn't get accidentally messed up!
+Tối thiểu, tôi khuyên bạn nên branch từ phiên bản đang hoạt động để nó không bị
+vô tình làm hỏng!
 
-* Add direct messaging--if the user "pat" sends:
+* Thêm tin nhắn trực tiếp (direct messaging) --- nếu người dùng "pat" gửi:
   ``` {.default}
   /message chris how's it going?
   ```
-  then "chris" will see:
+  thì "chris" sẽ thấy:
   ``` {.default}
   pat -> chris: how's it going?
   ```
-  (What if the user doesn't exist? Maybe you need to define an error
-  packet to get back from the server!)
+  (Nếu người dùng không tồn tại thì sao? Có lẽ bạn cần định nghĩa một error packet
+  để server gửi lại!)
 
-* Add a way to list the names of all the people in the chat
+* Thêm cách liệt kê tên của tất cả mọi người trong chat
 
-* Add emotes--if the user "pat" sends:
+* Thêm emote (biểu cảm) --- nếu người dùng "pat" gửi:
   ``` {.default}
   /me goes out to buy some snacky cakes
   ```
-  everyone else sees:
+  mọi người khác thấy:
   ``` {.default}
   [pat goes out to buy some snacky cakes]
   ```
-  (The right way to do this is to add a new packet type!)
+  (Cách làm đúng là thêm một packet type mới!)
 
-* Add chat rooms--there could be a default room everyone is in when they
-  first join, but additions could be to add chat rooms, join or leave
-  chat rooms, and list available chat rooms.
+* Thêm chat room --- có thể có một phòng mặc định khi mọi người mới tham gia,
+  với các tính năng thêm: tạo chat room, tham gia hoặc rời chat room,
+  và liệt kê các chat room hiện có.
 
-* Turn the whole thing into a [MUD](https://en.wikipedia.org/wiki/Multi-user_dungeon).
-  That should keep you busy!
+* Biến toàn bộ thứ này thành một [MUD](https://en.wikipedia.org/wiki/Multi-user_dungeon).
+  Điều đó sẽ giữ bạn bận rộn!
 
-## Some Recommendations
+## Một Số Gợi Ý
 
-Here are some pointers that might help.
+Đây là một số gợi ý có thể hữu ích.
 
-  * Have the server use the set of connected sockets that it passes to
-    `select()`  as its canonical list of everyone who is connected.
+  * Cho server dùng tập hợp (set) các socket đang kết nối mà nó truyền vào `select()`
+    làm danh sách chính thức của tất cả những người đang kết nối.
 
-    If a client disconnects, remove them from the set.
+    Nếu client ngắt kết nối, xóa nó khỏi tập hợp.
 
-    If a new client connects, add them to the set.
+    Nếu có client mới kết nối, thêm nó vào tập hợp.
 
-    The set will always reflect everyone who is connected at this time.
+    Tập hợp sẽ luôn phản ánh tất cả những người đang kết nối tại thời điểm này.
 
-  * Have a buffer per connection on the server. Remember how we had a
-    buffer in earlier projects that would accumulate data until there
-    was a complete packet? We need one of those buffers _per
-    connection_. And in this project, we have a lot of connections.
+  * Có một buffer cho mỗi kết nối trên server. Nhớ lại cách chúng ta có một buffer
+    trong các dự án trước để tích lũy dữ liệu cho đến khi có một packet đầy đủ?
+    Chúng ta cần một buffer như vậy _cho mỗi kết nối_. Và trong dự án này, ta có
+    nhiều kết nối lắm.
 
-    Use a `dict` to store the buffers. The key is the socket itself, and
-    the value is a string with the buffer for that socket in it.
+    Dùng `dict` để lưu trữ các buffer. Key là chính socket đó, value là chuỗi với
+    buffer cho socket đó.
 
-  * Remember the project where we wrote code to extract packets from the
-    bytestring buffer?
+  * Nhớ dự án mà ta viết code để trích xuất packet từ bytestring buffer không?
 
-    Use that strategy again.
+    Dùng chiến lược đó lại.
 
-  * You'll want to use `.to_bytes()` and `.from_bytes()` to get and set
-    the packet length.
+  * Bạn sẽ muốn dùng `.to_bytes()` và `.from_bytes()` để get và set độ dài packet.
 
-  * Use old projects as much as you can.
+  * Tận dụng các dự án cũ nhiều nhất có thể.
 
 <!-- Rubric
 
@@ -464,4 +423,3 @@ Server encodes packets correctly with the length and JSON payload
 
 Server accepts port number on the command line
 -->
-
