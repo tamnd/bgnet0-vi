@@ -1,142 +1,132 @@
 # Network Address Translation (NAT)
 
-In this chapter we'll be taking a look at _network address translation_,
-or NAT.
+Trong chương này ta sẽ xem xét _network address translation_ (dịch địa chỉ mạng),
+hay NAT.
 
-This is a service provided on a router which hides a "private" LAN from
-the rest of the world.
+Đây là dịch vụ được cung cấp trên router nhằm ẩn một mạng LAN "riêng tư" (private)
+khỏi phần còn lại của thế giới.
 
-The router acts as a middleman, translating internal IP addresses to a
-single external IP address. It keeps a table of these connections so
-when packets arrive on either interface, the router can rewrite them
-appropriately.
+Router đóng vai trò trung gian, dịch các địa chỉ IP nội bộ thành một địa chỉ IP bên
+ngoài duy nhất. Nó giữ một bảng các kết nối này để khi gói tin đến từ bất kỳ interface
+nào, router có thể viết lại chúng cho phù hợp.
 
-We say the LAN behind the NAT router is a "private network", and the
-external IP address the router presents for that LAN is the "public IP".
+Ta nói mạng LAN đằng sau router NAT là "mạng riêng tư" (private network), và địa chỉ
+IP bên ngoài mà router đại diện cho LAN đó là "IP công khai" (public IP).
 
-## A Snail-Mail Analogy
+## Phép Ẩn Dụ Thư Tín Ốc Sên
 
-Imagine how an anonymous snail-mail program might work.
+Hãy tưởng tượng cách một chương trình thư tín ốc sên ẩn danh có thể hoạt động.
 
-You write a letter addressed to the recipient with your return address
-on it.
+Bạn viết một lá thư gửi đến người nhận với địa chỉ trả lời của bạn trên đó.
 
-Instead of mailing it directly, you hand the letter to an anonymizer.
-The anonymizer removes your letter from the envelope and puts it in
-another envelope with the same recipient, but replaces the return
-address with the anonymnizer's address. It also records that this sender
-wrote a letter to this recipient.
+Thay vì gửi trực tiếp, bạn đưa thư cho một bên ẩn danh hóa (anonymizer). Bên ẩn
+danh hóa lấy thư của bạn ra khỏi phong bì và cho vào một phong bì khác với cùng
+người nhận, nhưng thay địa chỉ trả lời bằng địa chỉ của chính bên ẩn danh hóa. Nó
+cũng ghi lại rằng người gửi này đã viết thư cho người nhận này.
 
-The recipient gets the letter. All they see is the anonymizer's return
-address on the letter.
+Người nhận nhận được thư. Tất cả những gì họ thấy là địa chỉ trả lời của bên ẩn
+danh hóa trên thư.
 
-The recipient responds to the letter, and sends the response back to the
-anonymizer. The recipient lists themselves as the return address.
+Người nhận trả lời thư và gửi phản hồi lại cho bên ẩn danh hóa. Người nhận liệt kê
+bản thân là địa chỉ trả lời.
 
-The anonymizer receives the mail and notes it's from the recipient. It
-looks in its records to determine the person who originally sent a
-message to the recipient.
+Bên ẩn danh hóa nhận thư và ghi nhận nó đến từ người nhận. Nó tra cứu hồ sơ để xác
+định người đã gửi thư ban đầu cho người nhận.
 
-The anonymizer takes the response out of the envelope and puts it in a
-new envelope with the destination address being the original sender, and
-the return address remaining the original recipient.
+Bên ẩn danh hóa lấy phản hồi ra khỏi phong bì và cho vào một phong bì mới với địa
+chỉ đích là người gửi ban đầu, và địa chỉ trả lời vẫn là người nhận ban đầu.
 
-The original sender receives the response.
+Người gửi ban đầu nhận được phản hồi.
 
-Note that the original recipient never knew the original sender's
-address; they only knew the anonymizer's address.
+Lưu ý rằng người nhận ban đầu không bao giờ biết địa chỉ của người gửi ban đầu; họ
+chỉ biết địa chỉ của bên ẩn danh hóa.
 
-## Why?
+## Tại Sao?
 
-NAT is very, very common. It almost certainly runs on every IPv4 LAN.
+NAT rất, rất phổ biến. Hầu như chắc chắn nó chạy trên mọi mạng LAN IPv4.
 
-But why?
+Nhưng tại sao?
 
-There are two main reasons to use this type of service.
+Có hai lý do chính để dùng loại dịch vụ này.
 
-1. You want to hide your network details from the rest of the world.
+1. Bạn muốn ẩn chi tiết mạng của mình khỏi phần còn lại của thế giới.
 
-2. You need more IP addresses than either (a) anyone is willing to
-   allocate to you or (b) you're willing to pay for.
+2. Bạn cần nhiều địa chỉ IP hơn (a) những gì ai đó sẵn sàng cấp cho bạn hoặc (b)
+   bạn sẵn sàng trả tiền.
 
-### Hiding Your Network
+### Ẩn Mạng Của Bạn
 
-There's no easy way to get random, unsolicited packets onto the private
-network through the gateway running NAT.
+Không có cách dễ dàng nào để đưa các gói tin ngẫu nhiên, không được yêu cầu vào mạng
+riêng tư thông qua gateway đang chạy NAT.
 
-> You can possibly do it with something called _source routing_, but
-> that's not commonly enabled by ISPs.
+> Bạn có thể làm được với thứ gọi là _source routing_ (định tuyến nguồn), nhưng điều
+> đó không được các ISP bật theo mặc định.
 
-You'd have to have the private IP on the packet **and** get that packet
-to the router. There's no way to do this unless you're on the same LAN
-as the router, and that's really unlikely.
+Bạn phải có IP riêng tư trên gói tin **và** đưa gói tin đó đến router. Không có cách
+nào làm điều này trừ khi bạn đang ở cùng LAN với router, và điều đó thực sự khó xảy
+ra.
 
-Regarding the second point, we should talk about the phenomenon known as
-_address space exhaustion_.
+Về điểm thứ hai, ta nên nói về hiện tượng gọi là _cạn kiệt không gian địa chỉ_
+(address space exhaustion).
 
-### IPv4 Exhaustion
+### Cạn Kiệt IPv4
 
-There are really a limited number of IPv4 addresses in the world. As
-such, getting a large block of them costs a lot of money.
+Thực sự có một số lượng giới hạn địa chỉ IPv4 trên thế giới. Do đó, việc lấy một
+khối địa chỉ lớn tốn rất nhiều tiền.
 
-It's a lot cheaper to get just a handful of addresses (e.g. a `/20` or
-`/24` or `/4` network) and then have large private networks behind NAT
-routers. This way you can have a _lot_ of IPs, but they all present to
-the world as coming from the single public IP.
+Rẻ hơn nhiều khi chỉ lấy một số ít địa chỉ (ví dụ mạng `/20` hoặc `/24` hoặc `/4`)
+rồi có các mạng riêng tư lớn đằng sau router NAT. Bằng cách này bạn có thể có _rất
+nhiều_ IP, nhưng tất cả chúng đều thể hiện với thế giới là đến từ IP công khai duy
+nhất.
 
-This is really the motivation behind using NAT everywhere. There was a
-time when we were genuinely about to run out of IPv4 addresses, and NAT
-saved us.
+Đây thực sự là động lực đằng sau việc dùng NAT ở khắp nơi. Có một thời điểm chúng ta
+thực sự sắp hết địa chỉ IPv4, và NAT đã cứu chúng ta.
 
-## Private Networks
+## Mạng Riêng Tư (Private Networks)
 
-There are subnets that are reserved for use as private networks. Routers
-don't forward these addresses directly. If a router on the greater
-Internet sees an IP from one of these subnets, it will drop it.
+Có những subnet được dành riêng để dùng làm mạng riêng tư. Router không chuyển tiếp
+các địa chỉ này trực tiếp. Nếu một router trên Internet rộng lớn thấy IP từ một trong
+các subnet này, nó sẽ loại bỏ.
 
-For IPv4 there are three such subnets:
+Với IPv4 có ba subnet như vậy:
 
 * `10.0.0.0/8`
 * `172.16.0.0/12`
 * `192.168.0.0/16`
 
-The last of these is really common on household LANs.
+Cái cuối cùng rất phổ biến trên các mạng LAN gia đình.
 
-Again, routers on the Internet will drop packets with these addresses.
-The only way data gets from these IPs onto the Internet is via NAT.
+Một lần nữa, các router trên Internet sẽ loại bỏ gói tin với các địa chỉ này. Cách
+duy nhất để dữ liệu từ các IP này lên Internet là qua NAT.
 
-## How it Works
+## Cách Hoạt Động
 
-For this demo, we're going to use `IP:port` notation. The number after
-the colon is the port number.
+Trong demo này, ta dùng ký hiệu `IP:port`. Số sau dấu hai chấm là số port.
 
-Also, we'll use the term "Local Computer" to refer to the computer on
-the LAN, and "Remote Computer" or "Remote Server" to refer to the
-distant computer it's connecting to.
+Ngoài ra, ta dùng thuật ngữ "Máy Tính Cục Bộ" (Local Computer) để chỉ máy tính trên
+LAN, và "Máy Tính Từ Xa" (Remote Computer) hoặc "Server Từ Xa" (Remote Server) để
+chỉ máy tính ở xa mà nó đang kết nối đến.
 
-And finally, the local LAN router will just be called "The Router" or
-the "NAT Router".
+Và cuối cùng, router LAN cục bộ sẽ chỉ được gọi là "The Router" hoặc "NAT Router".
 
-Let's go!
+Bắt đầu thôi!
 
-On my LAN, I want to go from `192.168.1.2:1234` on my private LAN to the
-public address `203.0.113.24:80`--that's port `80`, the HTTP server.
+Trên mạng LAN của tôi, tôi muốn đi từ `192.168.1.2:1234` trên mạng LAN riêng tư đến
+địa chỉ công khai `203.0.113.24:80` --- đó là port `80`, HTTP server.
 
-The first thing my computer does is check to see if the destination IP
-address is on my LAN... Since my LAN is `192.168.0.0/16` or smaller,
-then no, it's not.
+Điều đầu tiên máy tính của tôi làm là kiểm tra xem địa chỉ IP đích có nằm trên LAN
+của tôi không... Vì LAN của tôi là `192.168.0.0/16` hoặc nhỏ hơn, thì không, nó
+không nằm trên LAN.
 
-So my computer sends it to the default gateway, my router that has NAT
-enabled.
+Vậy máy tính của tôi gửi nó đến default gateway, tức router đã bật NAT.
 
-The router is going to play the role of the "anonymizer" middleman in
-the earlier analogy example. And recall that the router has two
-interfaces on it--one faces the internal `192.168.0.0/16` private LAN,
-and the other faces the greater Internet with a public, external IP.
-Let's use `192.168.1.1` as the private IP address on the router and
-`198.51.100.99` as the public IP.
+Router sẽ đóng vai trò "bên ẩn danh hóa" trung gian như trong ví dụ ẩn dụ trước. Và
+nhớ rằng router có hai interface --- một mặt hướng vào mạng LAN riêng tư
+`192.168.0.0/16`, và cái kia hướng ra Internet rộng lớn với một IP công khai bên
+ngoài. Ta dùng `192.168.1.1` là IP riêng tư trên router và `198.51.100.99` là IP
+công khai.
 
-So the LAN looks like this:
+Vậy mạng LAN trông như thế này:
 
 ``` {.default}
 +----------+-------------+
@@ -158,13 +148,12 @@ So the LAN looks like this:
                        {The Greater Internet}
 ```
 
-The router now has to "repackage" the data for the greater Internet.
-This means rewriting the packet source to be from the router's public IP
-and some unused port on the public interface of the router. (The port
-doesn't need to be the same as the port originally on the packet. The
-router allocates a random unused port when the new packet is sent out.))
+Router bây giờ phải "đóng gói lại" dữ liệu cho Internet rộng lớn. Điều này có nghĩa
+là viết lại nguồn gói tin thành IP công khai của router và một port chưa dùng trên
+interface công khai của router. (Port không cần phải giống với port ban đầu trên gói
+tin. Router cấp phát một port ngẫu nhiên chưa dùng khi gói tin mới được gửi ra.)
 
-So the router records all this information:
+Vậy router ghi lại tất cả thông tin này:
 
 <!-- CAPTION: NAT router connection record -->
 
@@ -174,10 +163,10 @@ So the router records all this information:
 |Remote Public Address|203.0.113.24|80|TCP|
 |Router Public Address|198.51.100.99|5678|TCP|
 
-(Note: except for `80`, since we're connecting to HTTP in this example,
-all port numbers were randomly chosen.)
+(Lưu ý: ngoại trừ `80` vì ta đang kết nối HTTP trong ví dụ này, tất cả số port đều
+được chọn ngẫu nhiên.)
 
-So while the original packet was:
+Vậy trong khi gói tin gốc là:
 
 ``` {.default}
 192.168.1.2:1234 --> 203.0.113.24:80
@@ -186,8 +175,7 @@ So while the original packet was:
     Computer            Computer
 ```
 
-the NAT router rewrites it to be the same destination, but the router as
-the source.
+NAT router viết lại nó để có cùng đích, nhưng router là nguồn.
 
 ``` {.default}
 198.51.100.99:5678 --> 203.0.113.24:80
@@ -196,11 +184,9 @@ the source.
                           Computer
 ```
 
-From the destination's point of view, it is completely unaware that this
-isn't originally from the router itself.
+Từ góc nhìn của đích, nó hoàn toàn không biết rằng gói tin này không phải từ router.
 
-So the destination replies with some HTTP data, sending it back to the
-router:
+Vậy đích trả lời với một số dữ liệu HTTP, gửi lại cho router:
 
 ``` {.default}
 203.0.113.24:80 --> 198.51.100.99:5678
@@ -209,12 +195,12 @@ router:
    Computer
 ```
 
-The router then looks at its records. It says, "Wait a moment--if I get
-data on port `5678`, that means I need to translate this back to a
-private IP on the LAN!
+Router sau đó nhìn vào hồ sơ của mình. Nó nói: "Khoan đã --- nếu tôi nhận dữ liệu
+trên port `5678`, điều đó có nghĩa là tôi cần dịch cái này trở lại thành IP riêng tư
+trên LAN!
 
-So it translates the message so that it's no longer addressed to the
-router, but instead is sent to the private source IP recorded earlier:
+Vậy nó dịch tin nhắn để nó không còn được gửi đến router nữa, mà thay vào đó được
+gửi đến IP nguồn riêng tư đã ghi lại trước đó:
 
 ``` {.default}
 203.0.113.24:80 --> 192.168.1.2:1234
@@ -223,77 +209,68 @@ router, but instead is sent to the private source IP recorded earlier:
    Computer             Computer
 ```
 
-And sends that out on the LAN. And its received! The LAN computer thinks
-it's talking to the remote server, and the remote server thinks it's
-talking to the router! NAT!
+Và gửi nó ra trên LAN. Và nó được nhận! Máy tính LAN nghĩ nó đang nói chuyện với
+server từ xa, còn server từ xa nghĩ nó đang nói chuyện với router! NAT!
 
-It might be a little confusing in that last step that the packet is
-coming from the NAT router but is actually IP addressed like it came
-from the Remote Computer. This is OK on the LAN because the NAT router
-sends that IP packet out with an Ethernet address of the Local Computer
-on the LAN. Or, put another way, the NAT router can use link layer
-addressing to get the packet delivered to the Local Computer and the
-IP address of where that packet came from doesn't have to match the
-internet IP of the NAT router.
+Có thể hơi khó hiểu ở bước cuối cùng khi gói tin đến từ NAT router nhưng thực ra
+được đánh địa chỉ IP như đến từ Máy Tính Từ Xa. Điều này không sao trên LAN vì NAT
+router gửi gói tin IP đó ra với địa chỉ Ethernet của Máy Tính Cục Bộ trên LAN. Hay
+nói cách khác, NAT router có thể dùng địa chỉ link layer để đưa gói tin đến Máy Tính
+Cục Bộ và địa chỉ IP nguồn của gói tin không cần phải khớp với IP Internet của NAT
+router.
 
-## NAT and IPv6
+## NAT và IPv6
 
-Since IPv6 has _tons_ of addresses, do we really need NAT? And the
-technical answer is "no". Part of the reason IPv6 came about was to get
-rid of this nasty NAT middleman business.
+Vì IPv6 có _rất nhiều_ địa chỉ, ta có thực sự cần NAT không? Và câu trả lời kỹ thuật
+là "không". Một phần lý do IPv6 ra đời là để loại bỏ NAT trung gian phức tạp này.
 
-That said, there is a reserved IPv6 subnet for private networks:
+Tuy nhiên, vẫn có một subnet IPv6 dành riêng cho các mạng riêng tư:
 
 ``` {.default}
 fd00::/8
 ```
 
-There's some additional structure in the "host" portion of the address,
-but you can [read about it on
-Wikipedia](https://en.wikipedia.org/wiki/Unique_local_address#Definition)
-if you want.
+Có thêm một số cấu trúc trong phần "host" của địa chỉ, nhưng bạn có thể
+[đọc về nó trên Wikipedia](https://en.wikipedia.org/wiki/Unique_local_address#Definition)
+nếu muốn.
 
-Like the IPv4 private subnets, IP addresses from this subnet are dropped
-by routers on the greater Internet.
+Giống như các subnet riêng tư IPv4, địa chỉ IP từ subnet này bị router trên Internet
+rộng lớn loại bỏ.
 
-NAT doesn't work for IPv6, but there is another way to do the
-translation with [network prefix
-translation](https://en.wikipedia.org/wiki/IPv6-to-IPv6_Network_Prefix_Translation).
+NAT không hoạt động với IPv6, nhưng có một cách khác để thực hiện dịch bằng
+[network prefix translation](https://en.wikipedia.org/wiki/IPv6-to-IPv6_Network_Prefix_Translation).
 
-But what about the whole idea that people can't easily get unsolicited packets onto
-your LAN? Well, you're just going to have to configure your firewall
-properly to keep people out. But that's a story for another time.
+Còn về việc người ta không thể dễ dàng đưa gói tin không được yêu cầu vào LAN của
+bạn thì sao? Thì bạn sẽ phải cấu hình firewall đúng cách để ngăn người khác vào.
+Nhưng đó là chuyện kể sau.
 
-## Port Forwarding
+## Chuyển Tiếp Cổng (Port Forwarding)
 
-If you have a server running behind the NAT router, how can it serve
-content to the outside world? After all, no one on the outside can refer
-to it by its internal IP address--all they can see is the router's
-external IP.
+Nếu bạn có server chạy đằng sau NAT router, làm sao nó có thể phục vụ nội dung cho
+thế giới bên ngoài? Xét cho cùng, không ai bên ngoài có thể tham chiếu đến nó qua
+IP nội bộ --- tất cả những gì họ thấy là IP bên ngoài của router.
 
-But you can configure the NAT router to do something called _port
-forwarding_. 
+Nhưng bạn có thể cấu hình NAT router để làm điều gọi là _port forwarding_ (chuyển
+tiếp cổng).
 
-For example, you could tell it that traffic sent to its public IP port
-80 should be _forwarded_ to some private IP on port 80. The router
-forwards the traffic, and the original sender is unaware that its
-traffic is ultimately arriving at a private IP.
+Ví dụ, bạn có thể nói với nó rằng lưu lượng gửi đến port 80 IP công khai của nó nên
+được _chuyển tiếp_ (forwarded) đến một IP riêng tư nào đó trên port 80. Router chuyển
+tiếp lưu lượng, và người gửi ban đầu không biết rằng lưu lượng của họ cuối cùng đến
+một IP riêng tư.
 
-There's no reason the same port must be used.
+Không có lý do gì phải dùng cùng một port.
 
-For example, SSH uses port 22, and that's fine on the computer on the
-private network. But if you forward from the public port 22, you'll find
-malicious actors are continuously trying to log in through it. (Yes,
-even on your computer at home.) So it's more common to use some other
-uncommon port as the public SSH port, and then forward it to port 22 on
-the LAN.
+Ví dụ, SSH dùng port 22, và điều đó ổn trên máy tính trong mạng riêng tư. Nhưng nếu
+bạn chuyển tiếp từ port công khai 22, bạn sẽ thấy các tác nhân độc hại liên tục cố
+đăng nhập qua đó. (Vâng, ngay cả trên máy tính của bạn ở nhà.) Vì vậy, phổ biến hơn
+là dùng một port không phổ biến khác làm port SSH công khai, rồi chuyển tiếp nó đến
+port 22 trên LAN.
 
-## Review
+## Ôn Tập
 
-* Look up your computer's internal IP address. (Might have to search the
-  net to see how to do this.) Then go to
-  [google.com](https://google.com/) and type "what is my ip". The
-  numbers are (very probably) different. Why?
+* Tra cứu địa chỉ IP nội bộ của máy tính. (Có thể phải tìm trên mạng cách làm điều
+  này trên hệ điều hành của bạn.) Sau đó vào [google.com](https://google.com/) và
+  gõ "what is my ip". Các số đó (rất có thể) khác nhau. Tại sao?
 
-* What problems does NAT solve?
+* NAT giải quyết những vấn đề gì?
 
