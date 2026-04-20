@@ -1,62 +1,58 @@
-# The Link Layer and Ethernet
+# Tầng Liên kết và Ethernet (The Link Layer and Ethernet)
 
-We're getting down to the guts of the thing: The Link Layer.
+Ta đang đi vào phần ruột của vấn đề: Tầng Liên kết (Link Layer).
 
 <!-- CAPTION: Internet Layered Network Model -->
-|Layer|Responsibility|Example Protocols|
+|Tầng|Trách nhiệm|Giao thức ví dụ|
 |:-:|-|-|
-|Application|Structured application data|HTTP, FTP, TFTP, Telnet, SSH, SMTP, POP, IMAP|
-|Transport|Data Integrity, packet splitting and reassembly|TCP, UDP|
-|Internet|Routing|IP, IPv6, ICMP|
-|Link|Physical, signals on wires|Ethernet, PPP, token ring|
+|Application (Ứng dụng)|Dữ liệu ứng dụng có cấu trúc|HTTP, FTP, TFTP, Telnet, SSH, SMTP, POP, IMAP|
+|Transport (Vận chuyển)|Toàn vẹn dữ liệu, chia và ghép gói tin|TCP, UDP|
+|Internet (Mạng)|Định tuyến|IP, IPv6, ICMP|
+|Link (Liên kết)|Vật lý, tín hiệu trên dây|Ethernet, PPP, token ring|
 
-The link layer is where all the action happens, where bytes turn into
-electricity.
+Tầng link là nơi mọi hành động xảy ra --- nơi các byte biến thành điện.
 
-This is where Ethernet lives, as we'll soon see.
+Đây cũng là nơi Ethernet tồn tại, như ta sẽ sớm thấy.
 
-## A Quick Note on Octets
+## A Quick Note on Octets (Một lưu ý nhỏ về Octet)
 
-We've been using "byte" as a word meaning 8 bits, but now it's time to
-get more specific.
+Ta đã dùng "byte" để chỉ 8 bit, nhưng giờ là lúc cần chính xác hơn.
 
-Historically, see, a byte didn't have to be 8 bits. (Famously, the C
-programming language doesn't specify how many bits are in a byte,
-exactly.) And there's nothing preventing computer designers from just
-making things up. It only so happens that basically every modern
-computer uses 8 bits for a byte.
+Về mặt lịch sử, byte không nhất thiết phải là 8 bit. (Nổi tiếng là ngôn ngữ
+lập trình C không quy định chính xác bao nhiêu bit trong một byte.) Và không
+có gì ngăn các nhà thiết kế máy tính tự đặt ra quy tắc riêng. Chỉ tình cờ
+là hầu hết mọi máy tính hiện đại đều dùng 8 bit cho một byte.
 
-In order to be more precise, people sometimes use the word _octet_ to
-represent 8 bits. It's defined to be exactly 8 bits, period.
+Để chính xác hơn, người ta đôi khi dùng từ _octet_ để biểu thị 8 bit. Nó
+được định nghĩa chính xác là 8 bit, không có gì tranh cãi.
 
-When someone casually says (or writes) "byte", they probably mean 8
-bits. When someone says "octet" they most definitely mean exactly 8
-bits, end of story.
+Khi ai đó nói (hay viết) "byte" theo kiểu thông thường, họ thường có ý là
+8 bit. Khi ai đó nói "octet" thì chắc chắn họ có ý là chính xác 8 bit, hết.
 
-## Frames versus Packets
+## Frames versus Packets (Frame so với Packet)
 
-When we get to the Link Layer, we've got a bit more terminology to get
-used to. Data sent out over Ethernet is a packet, but within that packet
-is a _frame_. It's like a sub-packet.
+Khi đến Tầng Liên kết, ta có thêm một chút thuật ngữ cần làm quen. Dữ liệu
+gửi qua Ethernet là một packet (gói tin), nhưng bên trong packet đó có một
+_frame_ (khung). Nó giống như một sub-packet (gói con).
 
-Conversationally, people use Ethernet "frame" and "packet"
-interchangeably. But as we'll see later, there is a differentiation in
-the full ISO OSI layered network model.
+Trong giao tiếp hàng ngày, người ta dùng "frame" và "packet" của Ethernet
+thay thế cho nhau. Nhưng như ta sẽ thấy sau, có sự phân biệt trong mô hình
+mạng ISO OSI đầy đủ.
 
-In the simplified Internet layered network model, the differentiation
-is not made, thus leading to the confusing terminology.
+Trong mô hình mạng phân tầng Internet đơn giản hóa, sự phân biệt này không
+được thực hiện, dẫn đến thuật ngữ gây nhầm lẫn đó.
 
-More on this captivating tale later in this chapter.
+Câu chuyện hấp dẫn này sẽ tiếp tục ở phần sau của chương.
 
-## MAC Addresses
+## MAC Addresses (Địa chỉ MAC)
 
-Every network interface device has a MAC (Media Access Control) address.
-This is an address that's unique on the LAN (local area network) that's
-used for sending and receiving data.
+Mọi thiết bị giao diện mạng (network interface device) đều có một địa chỉ
+MAC (Media Access Control, Kiểm soát truy cập phương tiện). Đây là địa chỉ
+duy nhất trên LAN (mạng cục bộ) được dùng để gửi và nhận dữ liệu.
 
-An Ethernet MAC address comes in the form of 6 hex bytes (12 hex digits)
-separated by colons (or hyphens or periods). For example, these are all
-ways you might see a MAC address represented:
+Địa chỉ MAC Ethernet có dạng 6 byte hex (12 chữ số hex) được ngăn cách bởi
+dấu hai chấm (hoặc gạch ngang hoặc dấu chấm). Ví dụ, đây là các cách bạn có
+thể thấy một địa chỉ MAC được biểu diễn:
 
 ``` {.default}
 ac:d1:b8:df:20:85
@@ -64,230 +60,216 @@ ac-d1-b8-df-20-85
 acd1.b8df.2085
 ```
 
-MAC address must be unique on the LAN. The numbers are assigned at
-manufacturer and are not typically changed by the end user. (You'd only
-want to change them if you happened to get unlucky and buy two network
-cards that happened to have been assigned the same MAC address.)
+Địa chỉ MAC phải là duy nhất trên LAN. Các con số được gán bởi nhà sản xuất
+và thường không được thay đổi bởi người dùng cuối. (Bạn chỉ muốn thay đổi
+nếu xui xẻo mua hai card mạng tình cờ được gán cùng địa chỉ MAC.)
 
-The first three bytes of an Ethernet MAC address are called the _OUI_
-(Organizationally Unique Identifier) that is assigned to a manufacturer.
-This leaves each manufacturer three bytes to uniquely represent the
-cards they make. (That's 16,777,216 possible unique combinations. If a
-manufacturer runs out, they can always get another OUI--there are 16
-million of those available, too!)
+Ba byte đầu tiên của địa chỉ MAC Ethernet gọi là _OUI_ (Organizationally
+Unique Identifier, Định danh duy nhất theo tổ chức) được gán cho nhà sản
+xuất. Điều này để lại cho mỗi nhà sản xuất ba byte để định danh duy nhất cho
+các card họ sản xuất. (Đó là 16.777.216 tổ hợp duy nhất có thể. Nếu nhà sản
+xuất hết, họ có thể luôn xin thêm OUI khác --- có đến 16 triệu OUI khả dụng!)
 
-> Funny Internet rumor: there was once a manufacturer of knockoffs of a
-> network card called the NE2000, itself already known as a "bargain"
-> network card. The knockoff manufacturer took the shortcut of burning
-> the same MAC address into every card they made. This was discovered
-> when a company bought a large number of them and found that only one
-> computer would work at a time. Of course, in a home LAN where someone
-> was only likely to have one of these cards, it wouldn't be a
-> problem--which is what the manufacturer was banking on. To add insult
-> (or perhaps injury) to injury, there was no way to change the MAC
-> address in the knockoff cards. The company was forced to discard them
-> all.
+> Tin đồn vui trên Internet: có một nhà sản xuất hàng nhái của card mạng
+> NE2000, vốn đã được biết đến là card mạng "hàng bình dân". Nhà sản xuất
+> hàng nhái đó lười đến mức ghi cùng một địa chỉ MAC vào mọi card họ làm.
+> Điều này bị phát hiện khi một công ty mua một số lượng lớn và thấy chỉ có
+> một máy tính hoạt động tại một thời điểm. Tất nhiên, ở mạng gia đình nơi
+> ai đó chỉ có thể có một trong những card này, sẽ không có vấn đề --- đó là
+> điều nhà sản xuất đang tính. Để thêm phần tức, không có cách nào thay đổi
+> địa chỉ MAC trong các card nhái đó. Công ty buộc phải vứt bỏ tất cả.
 >
-> Except one, presumably.
+> Trừ một cái, chắc vậy.
 
-## We're All In The Same Room (Typically)
+## We're All In The Same Room (Typically) (Tất cả chúng ta đều trong cùng một phòng)
 
-Lots of modern link layer protocols that you'll be directly exposed to
-operate on the idea that they're all broadcasting into a shared medium
-and listening for traffic that's addressed to them.
+Nhiều giao thức tầng link hiện đại mà bạn sẽ tiếp xúc trực tiếp hoạt động
+dựa trên ý tưởng rằng tất cả chúng đang phát trên một phương tiện dùng chung
+và lắng nghe lưu lượng được địa chỉ hóa đến chúng.
 
-It's like being in a room full of talkative people and someone shouts
-your name--you get the data that's addressed to you and everyone else
-ignores it.
+Giống như đang trong phòng đông người và ai đó hét tên bạn --- bạn nhận dữ
+liệu được địa chỉ hóa đến bạn và mọi người khác bỏ qua nó.
 
-This works in real life and in protocols like Ethernet. When you
-transmit a packet on an Ethernet network, everyone else on the same
-Ethernet LAN can see that traffic. It's just that their network cards
-ignore the traffic unless it's specifically addressed to them.
+Điều này hoạt động trong cuộc sống thực và trong các giao thức như Ethernet.
+Khi bạn truyền một packet trên mạng Ethernet, mọi người khác trên cùng LAN
+Ethernet đều có thể thấy lưu lượng đó. Chỉ là card mạng của họ bỏ qua lưu
+lượng trừ khi nó được địa chỉ hóa cụ thể đến họ.
 
-> Asterisks: there are a couple handwavey things in that paragraph.
+> Lưu ý: có một vài điểm xấp xỉ trong đoạn đó.
 >
-> One is that in a modern wired Ethernet, a device called a _switch_
-> typically prevents packets from going out to nodes that they're not
-> supposed to. So the network isn't really as loud as the crowded-room
-> analogy suggests. Back before switches, we used things called `hubs`,
-> which didn't have the brains to discriminate between destinations.
-> They'd broadcast all Ethernet packets to all destinations.
+> Một là trong mạng Ethernet có dây hiện đại, một thiết bị gọi là _switch_
+> (bộ chuyển mạch) thường ngăn các packet đi đến các node không được đến.
+> Vậy mạng không thực sự ồn ào như hình ảnh phòng đông người gợi ý. Trước
+> khi có switch, chúng ta dùng thứ gọi là `hub` (bộ tập trung), không đủ
+> thông minh để phân biệt các đích. Chúng broadcast tất cả gói Ethernet đến
+> tất cả đích.
 
-Not every link layer protocol works this way, however. The common goal
-of all of them is that we're going to send and receive data at the wire
-level.
+Tuy nhiên, không phải mọi giao thức tầng link đều hoạt động như vậy. Mục
+tiêu chung của tất cả chúng là gửi và nhận dữ liệu ở cấp độ dây.
 
-## Multiple Access Method
+## Multiple Access Method (Phương thức truy cập đa điểm)
 
-Ready for some more backstory?
+Sẵn sàng nghe thêm lịch sử không?
 
-If everyone on the same Ethernet is in the same room yelling at other
-people, how does that actually work on the wire? How do multiple
-entities access a shared medium in a way that they don't conflict?
+Nếu tất cả mọi người trên cùng Ethernet đều ở trong cùng phòng hét vào người
+khác, điều đó thực sự hoạt động trên dây như thế nào? Làm sao nhiều thực thể
+truy cập một phương tiện dùng chung mà không xung đột?
 
-> When we're talking "medium" here, we mean wires (if you've plugged
-> your computer into the network) or radio (if you're on WiFi).
+> Khi nói "phương tiện" ở đây, ta có ý là dây (nếu bạn đã cắm máy vào mạng)
+> hoặc sóng radio (nếu bạn dùng WiFi).
 
-The method particular link layer protocols use to allow multiple
-entities access the shared medium is called the _multiple access
-method_, or _channel access method_.
+Phương thức mà các giao thức tầng link cụ thể dùng để cho phép nhiều thực
+thể truy cập phương tiện dùng chung gọi là _multiple access method_ (phương
+thức truy cập đa điểm) hay _channel access method_ (phương thức truy cập
+kênh).
 
-There are [a number of ways of doing
-this](https://en.wikipedia.org/wiki/Channel_access_method). On the same
-medium:
+Có [nhiều cách để làm điều
+này](https://en.wikipedia.org/wiki/Channel_access_method). Trên cùng phương tiện:
 
-* You could transmit packets on different frequencies.
-* You could send packets at different times, like timesharing.
-* You could use spread spectrum or frequency hopping.
-* You could split the network into different "cells".
-* You could add another wire to allow traffic to flow both directions at
-  once.
+* Bạn có thể truyền packet trên các tần số khác nhau.
+* Bạn có thể gửi packet vào các thời điểm khác nhau, như timesharing.
+* Bạn có thể dùng spread spectrum hoặc frequency hopping.
+* Bạn có thể chia mạng thành các "cell" khác nhau.
+* Bạn có thể thêm một dây khác để cho phép lưu lượng chạy hai chiều cùng lúc.
 
-Let's again use Ethernet as an example. Ethernet is most like the
-"timesharing" mode, above.
+Hãy lại dùng Ethernet làm ví dụ. Ethernet giống nhất với chế độ "timesharing"
+ở trên.
 
-But that still leaves a lot of options open for exactly how we do
-_that_.
+Nhưng điều đó vẫn để ngỏ nhiều lựa chọn về cách chúng ta thực hiện _điều đó_.
 
-Wired Ethernet uses something called
+Ethernet có dây dùng thứ gọi là
 [CSMA/CD](https://en.wikipedia.org/wiki/Carrier-sense_multiple_access_with_collision_detection)
-(Carrier-Sense Multiple Access with Collision Detection). Easy for you
-to say.
+(Carrier-Sense Multiple Access with Collision Detection, Đa truy cập cảm nhận
+sóng mang có phát hiện xung đột). Dễ nói thật.
 
-This method works like this:
+Phương thức này hoạt động như sau:
 
-1. The Ethernet card waits for quiet in the room--when no other network
-   card is transmitting. (This is the "CSMA" part of CSMA/CD.)
+1. Card Ethernet chờ yên tĩnh trong phòng --- khi không có card mạng nào
+   khác đang truyền. (Đây là phần "CSMA" của CSMA/CD.)
 
-2. It starts sending.
+2. Bắt đầu gửi.
 
-3. It also listens while it's sending.
+3. Cũng lắng nghe trong khi gửi.
 
-4. If it receives the same thing that it sent, all is well.
+4. Nếu nhận được đúng thứ đã gửi, mọi thứ ổn.
 
-   If it doesn't receive the same thing it sent, it means that another
-   network device also started transmitting at the same time. This is a
-   collision detection, the "CD" part of CSMA/CD.
+   Nếu không nhận được đúng thứ đã gửi, có nghĩa là một thiết bị mạng khác
+   cũng bắt đầu truyền cùng lúc. Đây là phát hiện xung đột, phần "CD" của
+   CSMA/CD.
 
-5. To resolve the situation, the network card transmits a special signal
-   called the "jam signal" to alert other cards on the network that a
-   collision has occurred and they should stop transmitting. The network
-   card then waits a small, partly random amount of time, and then goes
-   back to step 1 to retry the transmission.
+5. Để giải quyết tình huống, card mạng truyền một tín hiệu đặc biệt gọi là
+   "jam signal" (tín hiệu gây nhiễu) để cảnh báo các card khác trên mạng
+   rằng xung đột đã xảy ra và chúng nên ngừng truyền. Card mạng sau đó chờ
+   một khoảng thời gian ngẫu nhiên nhỏ, rồi quay lại bước 1 để thử lại.
 
-WiFi (wireless) Ethernet uses something similar, except it's
+WiFi (Ethernet không dây) dùng thứ tương tự, ngoại trừ đó là
 [CSMA/CA](https://en.wikipedia.org/wiki/Carrier-sense_multiple_access_with_collision_avoidance)
-(Carrier-Sense Multiple Access with Collision Avoidance). Also easy for
-you to say.
+(Carrier-Sense Multiple Access with Collision Avoidance, Đa truy cập cảm nhận
+sóng mang có tránh xung đột). Cũng dễ nói thật.
 
-This method works like this:
+Phương thức này hoạt động như sau:
 
-1. The Ethernet card waits for quiet in the room--when no other network
-   card is transmitting. (This is the "CSMA" part of CSMA/CA.)
+1. Card Ethernet chờ yên tĩnh trong phòng --- khi không có card mạng nào
+   khác đang truyền. (Đây là phần "CSMA" của CSMA/CA.)
   
-2. If the channel isn't quiet, the network card waits a small, random
-   amount of time, then goes back to step 1 to retry.
+2. Nếu kênh không yên tĩnh, card mạng chờ một khoảng thời gian ngẫu nhiên
+   nhỏ, rồi quay lại bước 1 để thử lại.
 
-There are a few more details omitted there, but that's the gist of it.
+Có một vài chi tiết bị bỏ qua ở đó, nhưng đó là ý chính.
 
 ## Ethernet
 
-Remember with the layered network model how each layer _encapsulates_
-the previous layer's data into its own header?
+Nhớ lại mô hình mạng phân tầng cách mỗi tầng _đóng gói_ (encapsulate) dữ
+liệu của tầng trước vào header của chính nó không?
 
-For example, HTTP data (Application Layer) gets wrapped up in a TCP
-(Transport Layer) header. And then all of that gets wrapped up in an IP
-(Network Layer) header. And then **all** of that gets wrapped up in an
-Ethernet (Link Layer) frame.
+Ví dụ, dữ liệu HTTP (Tầng Application) được gói vào header TCP (Tầng
+Transport). Sau đó tất cả được gói vào header IP (Tầng Network). Rồi **tất cả
+những thứ đó** được gói vào frame Ethernet (Tầng Link).
 
-And recall that each protocol had its own header structure that helped
-it perform its job.
+Và nhớ rằng mỗi giao thức có cấu trúc header riêng để giúp nó thực hiện
+công việc.
 
-Ethernet is no different. It's going to encapsulate the data from the
-layer above it.
+Ethernet cũng không ngoại lệ. Nó sẽ đóng gói dữ liệu từ tầng bên trên.
 
-Now, I want to get a little picky about terminology. The whole chunk of
-data that's transmitted is the Ethernet _packet_. But within it is the
-Ethernet _frame_. As we'll see later, these correspond to two layers of
-the ISO OSI layered network model (that have been condensed into a
-single "Link layer" in the Internet layered network model).
+Giờ, mình muốn chỉn chu về thuật ngữ. Toàn bộ khối dữ liệu được truyền là
+Ethernet _packet_ (gói tin Ethernet). Nhưng bên trong đó là Ethernet _frame_
+(khung Ethernet). Như ta sẽ thấy sau, chúng tương ứng với hai tầng của mô
+hình mạng ISO OSI 7 tầng (đã được gom lại thành một "Tầng Link" duy nhất
+trong mô hình mạng phân tầng Internet).
 
-Though I've written the frame "inside" the packet here, note that they
-are all transmitted as a single bitstream.
+Dù mình viết frame "bên trong" packet ở đây, lưu ý rằng chúng đều được
+truyền như một luồng bit duy nhất.
 
-* **The Packet:**
-  * 7 octets: Preamble (in hex: `AA AA AA AA AA AA AA`)
-  * 1 octet: Start frame delimiter (in hex: `AB`)
-  * **The Frame:**
-    * 6 octets: Destination MAC address
-    * 6 octets: Source MAC address
-    * 4 octets: ["Dot1q" tag](https://en.wikipedia.org/wiki/IEEE_802.1Q)
-      for [virtual LAN](https://en.wikipedia.org/wiki/VLAN)
-      differentiation.
-    * 2 octets: Payload Length/Ethertype (see below)
-    * 46-1500 octets: Payload
-    * 4 octets: [CRC-32 checksum](https://en.wikipedia.org/wiki/Cyclic_redundancy_check#CRC-32_algorithm)
-  * End of frame marker, loss of carrier signal
-  * Interpacket gap, enough time to transmit 12 octets
+* **Packet:**
+  * 7 octet: Preamble (tiền tố) (dạng hex: `AA AA AA AA AA AA AA`)
+  * 1 octet: Start frame delimiter (dấu phân cách bắt đầu frame) (dạng hex: `AB`)
+  * **Frame:**
+    * 6 octet: Địa chỉ MAC đích
+    * 6 octet: Địa chỉ MAC nguồn
+    * 4 octet: ["Dot1q" tag](https://en.wikipedia.org/wiki/IEEE_802.1Q)
+      dành cho phân biệt [virtual LAN](https://en.wikipedia.org/wiki/VLAN)
+      (mạng LAN ảo).
+    * 2 octet: Payload Length/Ethertype (xem bên dưới)
+    * 46--1500 octet: Payload (tải trọng)
+    * 4 octet: [CRC-32 checksum](https://en.wikipedia.org/wiki/Cyclic_redundancy_check#CRC-32_algorithm)
+  * Dấu hiệu kết thúc frame, mất tín hiệu carrier
+  * Khoảng trống giữa các packet, đủ thời gian để truyền 12 octet
 
-The Payload Length/[EtherType](https://en.wikipedia.org/wiki/EtherType)
-field is used for the payload length in normal usage. But other values
-can be put there that indicate an alternate payload structure.
+Trường Payload Length/[EtherType](https://en.wikipedia.org/wiki/EtherType)
+được dùng cho độ dài payload trong cách dùng thông thường. Nhưng các giá trị
+khác có thể được đặt ở đó để chỉ ra một cấu trúc payload thay thế.
 
-The largest payload that can be transmitted is 1500 octets. This is
-known as the MTU (Maximum Transmission Unit) of the network. Data that
-is larger must be fragmented down to this size.
+Payload lớn nhất có thể truyền là 1500 octet. Đây được gọi là MTU (Maximum
+Transmission Unit, Đơn vị truyền tối đa) của mạng. Dữ liệu lớn hơn phải
+được phân mảnh xuống kích thước này.
 
-> Ethernet hardware can use this 1500 number to differentiate the
-> Payload Length/EtherType header field. If it's 1500 octets or fewer,
-> it's a length. Otherwise it's an EtherType value.
+> Phần cứng Ethernet có thể dùng con số 1500 này để phân biệt trường header
+> Payload Length/EtherType. Nếu là 1500 octet hoặc ít hơn, đó là độ dài.
+> Ngược lại là giá trị EtherType.
 
-After the frame, there's an end-of-frame marker. This is indicated by
-loss of carrier signal on the wire, or by some explicit transmission in
-some versions of Ethernet.
+Sau frame, có một dấu hiệu kết thúc frame. Điều này được chỉ ra bởi sự mất
+tín hiệu carrier trên dây, hoặc bởi một số truyền tải rõ ràng trong một số
+phiên bản Ethernet.
 
-Lastly, there's a time gap between Ethernet packets which corresponds to
-the amount of time it would take to transmit 12 octets.
+Cuối cùng, có một khoảng thời gian giữa các gói Ethernet tương ứng với thời
+gian cần để truyền 12 octet.
 
-### Two Layers of Ethernet?
+### Two Layers of Ethernet? (Hai tầng Ethernet?)
 
-If you recall, our simplified layer model is actually a crammed-down
-version of the full ISO OSI 7-Layer model:
+Nhớ lại, mô hình tầng đơn giản hóa của ta thực sự là phiên bản rút gọn của
+mô hình ISO OSI đầy đủ 7 tầng:
 
 <!-- CAPTION: ISO OSI Network Layer Model -->
-|ISO OSI Layer|Responsibility|Example Protocols|
+|Tầng ISO OSI|Trách nhiệm|Giao thức ví dụ|
 |:-:|-|-|
-|Application|Structured application data|HTTP, FTP, TFTP, Telnet, SMTP, POP, IMAP|
-|Presentation|Encoding translation, encryption, compression|MIME, SSL/TLS, XDR|
-|Session|Suspending, terminating, restarting sessions between computers|Sockets, TCP|
-|Transport|Data integrity, packet splitting and reassembly|TCP, UDP|
-|Network|Routing|IP IPv6, ICMP|
-|Data link|Encapsulation into frames|Ethernet, PPP, SLIP|
-|Physical|Physical, signals on wires|Ethernet physical layer, DSL, ISDN|
+|Application (Ứng dụng)|Dữ liệu ứng dụng có cấu trúc|HTTP, FTP, TFTP, Telnet, SMTP, POP, IMAP|
+|Presentation (Trình bày)|Dịch mã hóa, mã hóa, nén|MIME, SSL/TLS, XDR|
+|Session (Phiên)|Tạm dừng, kết thúc, khởi động lại phiên giữa các máy tính|Sockets, TCP|
+|Transport (Vận chuyển)|Toàn vẹn dữ liệu, chia và ghép gói tin|TCP, UDP|
+|Network (Mạng)|Định tuyến|IP IPv6, ICMP|
+|Data link (Liên kết dữ liệu)|Đóng gói vào frame|Ethernet, PPP, SLIP|
+|Physical (Vật lý)|Vật lý, tín hiệu trên dây|Tầng vật lý Ethernet, DSL, ISDN|
 
-What we call the Internet "Link Layer" is the "Data Link" layer _and_
-the "Physical" layer.
+Cái ta gọi là "Tầng Link" Internet chính là tầng "Data Link" _và_ tầng
+"Physical".
 
-The Data Link layer of Ethernet is the _frame_. It's a subset of the
-entire _packet_ (outlined above) which is defined at the Physical Layer.
+Tầng Data Link của Ethernet là _frame_. Nó là tập con của toàn bộ _packet_
+(được phác thảo ở trên) được định nghĩa ở Tầng Physical.
 
-Another way to consider this is that the Data Link Layer is busy
-thinking about logical entities like who has what MAC address and what
-the payload checksum is. And that that Physical Layer is all about
-figuring out which patterns of signals to send that correspond to the
-start and end of the packet and frame, when to lower the carrier signal,
-and how long to delay between transmissions.
+Một cách khác để xem xét là Tầng Data Link bận tâm đến các thực thể logic
+như ai có địa chỉ MAC nào và checksum payload là gì. Còn Tầng Physical thì
+bận tâm đến việc xác định các mẫu tín hiệu nào cần gửi tương ứng với bắt đầu
+và kết thúc của packet và frame, khi nào hạ tín hiệu carrier, và trì hoãn bao
+lâu giữa các lần truyền.
 
-## Reflect
+## Reflect (Ôn lại)
 
-* What's your MAC address on your computer? Do an Internet search to
-  find how to look it up.
+* Địa chỉ MAC của bạn trên máy tính là gì? Tìm kiếm Internet để biết cách
+  tra cứu.
 
-* What's the deal with _frames_ versus _packets_ in Ethernet? Where in
-  the ISO OSI network stack do they live?
+* Sự khác biệt giữa _frame_ và _packet_ trong Ethernet là gì? Chúng nằm ở
+  đâu trong mô hình mạng ISO OSI?
 
-* What's the difference between a byte and an octet?
+* Sự khác biệt giữa byte và octet là gì?
 
-* What's the main difference between CSMA/CD and CSMA/CA?
-
+* Sự khác biệt chính giữa CSMA/CD và CSMA/CA là gì?
