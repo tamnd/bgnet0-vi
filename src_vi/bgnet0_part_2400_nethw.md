@@ -1,240 +1,226 @@
-# Network Hardware
+# Phần Cứng Mạng
 
-In this chapter we'll take a look at a number of hardware networking
-components.
+Trong chương này ta sẽ xem qua một số thành phần phần cứng mạng.
 
-Some of these you have at home or on your computer already.
+Một số thứ trong đó bạn đã có ở nhà hoặc trên máy tính rồi.
 
-## Terminology and Components
+## Thuật Ngữ và Các Thành Phần
 
-* **Network Topology**: describes the layout of a network, how devices
-  and nodes are connected, and how data flows from one part of the
-  network to another.
+* **Network Topology (cấu trúc liên kết mạng)**: mô tả bố cục của một mạng,
+  cách các thiết bị và node kết nối với nhau, và cách dữ liệu di chuyển
+  từ phần này sang phần khác của mạng.
 
-* **Mbs**: Megabits per second (compare to "MBs", megabytes per second).
+* **Mbs**: Megabit mỗi giây (so sánh với "MBs", megabyte mỗi giây).
 
-* **Gbs**: Gigabits per second, 1000 Mbs (compare to "GBs", gigabytes per second).
+* **Gbs**: Gigabit mỗi giây, 1000 Mbs (so sánh với "GBs", gigabyte mỗi giây).
 
-* **Bandwidth**: Measured in bits per second, how much data a certain
-  type of cable can carry over a certain amount of time. e.g. 500 Mbs.
+* **Bandwidth (băng thông)**: Đo bằng bit mỗi giây, lượng dữ liệu một loại
+  cáp nhất định có thể truyền trong một khoảng thời gian nhất định.
+  Ví dụ: 500 Mbs.
 
-* **ISP**: Internet Service Provider, the company that you pay for your
-  Internet connection. (Or that provides it, even if you aren't paying!)
+* **ISP**: Internet Service Provider (nhà cung cấp dịch vụ Internet), công ty
+  bạn trả tiền để có kết nối Internet. (Hoặc là công ty cung cấp nó,
+  dù bạn có trả tiền hay không!)
 
-* **Twisted Pair Cable**: What people typically think of as "Ethernet
-  cable". It's a cable with plug-in jacks on either end. Internally,
-  pairs of wires are twisted together to reduce interference. These
-  cables have published maximum length "runs" that determine how far you
-  can string a cable before you run into trouble, usually 50-100 meters
-  depending on the cable and traffic speed.
-  * **10baseT**: 10 Mbs twisted-pair for Ethernet
-  * **100baseTX**: 100 Mbs twisted-pair for _Fast Ethernet_.
-  * **1000baseT**: 1 Gbs twisted-pair for _Gigabit Ethernet_.
-  * **10GbaseT**: 10 Gbs twisted-pair for _10 Gigabit Ethernet_.
-  * **Category-5**: Called _cat-5_ for short, a twisted pair wire built
-    to category-5 specs. Good for Fast Ethernet.
-  * **Category-6**: Called _cat-6_ for short, a twisted pair wire built
-    to category-6 specs. Good for Gigabit Ethernet.
+* **Twisted Pair Cable (cáp xoắn đôi)**: Thứ mà người ta thường nghĩ đến
+  khi nói đến "cáp Ethernet". Đó là cáp có jack cắm ở cả hai đầu. Bên trong,
+  các cặp dây được xoắn lại với nhau để giảm nhiễu. Các loại cáp này có
+  chiều dài "chạy" tối đa được công bố để xác định bạn có thể kéo cáp bao xa
+  trước khi gặp vấn đề, thường là 50-100 mét tùy loại cáp và tốc độ lưu lượng.
+  * **10baseT**: 10 Mbs twisted-pair cho Ethernet
+  * **100baseTX**: 100 Mbs twisted-pair cho _Fast Ethernet_.
+  * **1000baseT**: 1 Gbs twisted-pair cho _Gigabit Ethernet_.
+  * **10GbaseT**: 10 Gbs twisted-pair cho _10 Gigabit Ethernet_.
+  * **Category-5**: Gọi tắt là _cat-5_, dây xoắn đôi theo chuẩn category-5.
+    Tốt cho Fast Ethernet.
+  * **Category-6**: Gọi tắt là _cat-6_, dây xoắn đôi theo chuẩn category-6.
+    Tốt cho Gigabit Ethernet.
 
-* **Network Port**: Not to be confused with TCP or UDP port numbers,
-  which are completely different, in this context refers to a physical
-  socket on a device where you can plug in a network cable.
+* **Network Port (cổng mạng)**: Không nhầm với số port TCP hay UDP vốn hoàn
+  toàn khác nhé --- trong ngữ cảnh này là ổ cắm vật lý trên thiết bị để
+  bạn cắm cáp mạng vào.
 
-* **Ethernet Cable**: Conversational term meaning a twisted pair cable
-  that you plug into Ethernet devices.
+* **Ethernet Cable (cáp Ethernet)**: Thuật ngữ thông thường chỉ cáp xoắn đôi
+  mà bạn cắm vào các thiết bị Ethernet.
 
-* **Crossover Cable**: Cable where the transmit and receive pins are
-  swapped on one end of the cable. This is typically used when
-  connecting two devices directly to each other when normally a switch
-  or hub would be used as an intermediary. If you're plugging one
-  computer directly into another with an Ethernet cable, it should
-  probably be a crossover cable. Opposite of _straight-through_ cable.
+* **Crossover Cable (cáp đấu chéo)**: Cáp mà các chân transmit (phát) và
+  receive (nhận) bị hoán đổi ở một đầu. Thường dùng khi kết nối hai thiết
+  bị trực tiếp với nhau mà bình thường phải qua switch hay hub làm trung gian.
+  Nếu cắm một máy tính trực tiếp vào máy tính khác bằng cáp Ethernet,
+  thì nên dùng crossover cable. Ngược lại với cáp _straight-through_.
 
-* **Auto-sensing**: A network port that can tell if it has a
-  straight-through or cross-over cable plugged into it, and can reverse
-  the transmit and receive signals if it has to.
+* **Auto-sensing (tự cảm nhận)**: Cổng mạng có thể phát hiện xem đang có
+  cáp straight-through hay cross-over cắm vào, và có thể đảo ngược tín hiệu
+  transmit và receive nếu cần.
 
-* **Thin-net/Thick-net**: Obsolete coaxial cabling used for Ethernet.
+* **Thin-net/Thick-net**: Cáp đồng trục lỗi thời dùng cho Ethernet.
 
-* **LAN**: Local Area Network. For Ethernet, this would be the network
-  at your house. Think of a single IP subnet.
+* **LAN**: Local Area Network (mạng cục bộ). Với Ethernet, đây là mạng
+  ở nhà bạn. Hãy nghĩ đến một subnet IP đơn lẻ.
 
-* **WAN**: Wide Area Network. Network that's not LAN. Think of a
-  collection of LANs on University or company campus.
+* **WAN**: Wide Area Network (mạng diện rộng). Mạng không phải LAN. Hãy nghĩ
+  đến tập hợp các LAN trên khuôn viên trường đại học hoặc công ty.
 
-* **Dynamic IP**: This is when your IP gets set automatically with
-  [DHCP](https://en.wikipedia.org/wiki/Dynamic_Host_Configuration_Protocol),
-  for example. Your IP address might change over time.
+* **Dynamic IP (IP động)**: Là khi IP của bạn được cài đặt tự động bằng
+  [DHCP](https://en.wikipedia.org/wiki/Dynamic_Host_Configuration_Protocol)
+  chẳng hạn. Địa chỉ IP có thể thay đổi theo thời gian.
 
-* **Static IP**: This is when you hardcode the IP address for a certain
-  device. The IP address doesn't change until you actively enter a new
-  one.
+* **Static IP (IP tĩnh)**: Là khi bạn hardcode (cài cứng) địa chỉ IP cho
+  một thiết bị nhất định. Địa chỉ IP không đổi cho đến khi bạn chủ động
+  nhập địa chỉ mới.
 
-* **Network Interface Controller (NIC)**, **Network Interface Card**,
-  **Network Adapter**, **LAN Adapter**, **Network Card**: A bunch of
-  different names for a hardware device that allows a computer to get on
-  the network. This card might have Ethernet ports on it, or maybe it's
-  just pure wireless. It's probably not even be a proper
-  [card](https://en.wikipedia.org/wiki/Expansion_card) these days--maybe
-  it's all on-board the same chip as a bunch of other I/O devices built
-  into the motherboard.
+* **Network Interface Controller (NIC)** (bộ điều khiển giao diện mạng),
+  **Network Interface Card** (card giao diện mạng),
+  **Network Adapter** (bộ chuyển đổi mạng),
+  **LAN Adapter**, **Network Card**: Một mớ tên khác nhau cho cùng một thiết
+  bị phần cứng cho phép máy tính kết nối mạng. Card này có thể có cổng
+  Ethernet, hoặc chỉ thuần wireless. Ngày nay có thể không còn là một
+  [card](https://en.wikipedia.org/wiki/Expansion_card) đúng nghĩa nữa ---
+  có thể tất cả đều tích hợp trên cùng chip với nhiều thiết bị I/O khác
+  được gắn vào mainboard.
 
-* **Network Device (OS)**: A software device structure in the operating
-  system that typically maps to a NIC. Some network devices like the
-  _loopback device_ don't actually use a physical piece of hardware and
-  just "transmit" data internally within the OS. On Unix-likes, these
-  devices are named things like `eth0`, `en1`, `wlan2` and so on. The
-  loopback device is typically called `lo`.
+* **Network Device (OS) (thiết bị mạng trong hệ điều hành)**: Cấu trúc thiết
+  bị phần mềm trong hệ điều hành thường map (ánh xạ) tới một NIC. Một số
+  thiết bị mạng như _loopback device_ thực ra không dùng phần cứng vật lý
+  mà chỉ "truyền" dữ liệu nội bộ trong OS. Trên Unix-like, các thiết bị này
+  được đặt tên như `eth0`, `en1`, `wlan2` và tương tự. Loopback device thường
+  được gọi là `lo`.
 
-* **MAC address**: Media Access Control address. A unique Link Layer
-  address for computers. With Ethernet, the MAC address is 6 bytes, and
-  is usually written as hex bytes separated by colons:
-  `12:34:56:78:9A:BC`. These address must be unique on a LAN for
-  Ethernet to function correctly.
+* **MAC address**: Media Access Control address (địa chỉ kiểm soát truy cập
+  phương tiện). Địa chỉ Link Layer duy nhất cho máy tính. Với Ethernet,
+  địa chỉ MAC dài 6 byte, thường viết dạng hex bytes cách nhau bằng dấu
+  hai chấm: `12:34:56:78:9A:BC`. Các địa chỉ này phải là duy nhất trên
+  một LAN để Ethernet hoạt động đúng.
 
-* **Hub**: A device that allows you to connect several computers via
-  Ethernet cables. It'll have 4, 8, or more ports on the front. All
-  these devices plugged into those ports are effectively on the same
-  "wire" once connected, which is to say that any Ethernet packet
-  transmitted is seen by **all** devices plugged into the HUB. You don't
-  typically see these any longer, since switches perform the same role
-  better.
+* **Hub**: Thiết bị cho phép kết nối nhiều máy tính qua cáp Ethernet. Có 4,
+  8 hoặc nhiều cổng hơn ở mặt trước. Tất cả thiết bị cắm vào các cổng đó
+  thực chất trên cùng một "dây" khi được kết nối --- nghĩa là bất kỳ gói tin
+  Ethernet nào được truyền đều được **tất cả** thiết bị cắm vào HUB nhìn thấy.
+  Ngày nay bạn không còn thấy loại này nữa, vì switch thực hiện cùng chức năng
+  nhưng tốt hơn.
 
-* **Switch**: A hub with some brains. It knows the MAC addresses on the
-  other side of the ports so it doesn't have to retransmit Ethernet
-  packets to _everyone_. It just sends them down the proper wire to the
-  correct destination. Help prevent network overload.
+* **Switch**: Hub có thêm não. Nó biết địa chỉ MAC ở phía bên kia các cổng
+  nên không cần truyền lại gói tin Ethernet tới _tất cả mọi người_. Nó chỉ
+  gửi xuống đúng dây tới đúng đích. Giúp ngăn quá tải mạng.
 
-* **Router**: A Network Layer device that have multiple interfaces and
-  chooses the correct one to send traffic down so that it will
-  eventually reach its destination. Routers contain _routing tables_
-  that let them decide where to forward a packet with a given IP
-  address.
+* **Router (bộ định tuyến)**: Thiết bị Network Layer có nhiều interface và
+  chọn interface đúng để gửi lưu lượng đi sao cho cuối cùng đến được đích.
+  Router chứa _routing table (bảng định tuyến)_ giúp quyết định nơi forward
+  (chuyển tiếp) một gói tin với địa chỉ IP nhất định.
 
-* **Default Gateway**: A router that handles traffic to all other
-  destinations, if a specific route to the destination isn't known. A
-  computer's routing table specifies the default gateway. On a home LAN,
-  this is the IP of the "router" the ISP gave you.
+* **Default Gateway (cổng mặc định)**: Router xử lý lưu lượng đến tất cả
+  các đích khác, khi không biết route (tuyến đường) cụ thể đến đích đó.
+  Routing table của máy tính chỉ định default gateway. Trên LAN gia đình,
+  đây là IP của "router" mà ISP cấp cho bạn.
 
-  Imagine an island with a small town on it. The island is connected to
-  the mainland by a single bridge. If someone wants to know where to go
-  in town, you give them directions in town. For **all other
-  destinations**, they drive across the bridge. In this analogy, the
-  bridge is the default gateway for traffic.
+  Hãy tưởng tượng một hòn đảo có một thị trấn nhỏ. Đảo được nối với đất
+  liền bằng một cây cầu duy nhất. Nếu ai đó muốn biết đi đâu trong thị trấn,
+  bạn chỉ đường trong thị trấn. Với **tất cả các điểm đến khác**, họ lái xe
+  qua cầu. Trong ví dụ này, cây cầu là default gateway cho lưu lượng.
 
-* **Broadcast**: To send traffic to everyone on the LAN. This can be
-  done at the Link Layer by sending an Ethernet frame to MAC address
-  `ff:ff:ff:ff:ff`, or at the Network Layer by sending an IP packet with
-  all the host bits set to `1`. For instance, if the network is
-  `192.168.0.0/16`, the broadcast address would be `192.168.255.255`.
-  You can also broadcast to `255.255.255.255` for the same effect.
-  IP routers do not forward IP broadcast packets, so they are always
-  restricted to the LAN.
+* **Broadcast (phát sóng)**: Gửi lưu lượng đến tất cả mọi người trên LAN.
+  Có thể làm ở Link Layer bằng cách gửi Ethernet frame đến địa chỉ MAC
+  `ff:ff:ff:ff:ff`, hoặc ở Network Layer bằng cách gửi gói IP với tất cả
+  bit host đặt là `1`. Ví dụ, nếu mạng là `192.168.0.0/16`, địa chỉ
+  broadcast sẽ là `192.168.255.255`. Bạn cũng có thể broadcast đến
+  `255.255.255.255` để đạt hiệu quả tương tự. IP router không forward
+  gói IP broadcast, nên chúng luôn bị giới hạn trong LAN.
 
-* **Wi-Fi**: Short for _Wireless Fidelity_ (a non-technical marketing
-  trademark presumably meant to pun
-  [Hi-Fi](https://en.wikipedia.org/wiki/High_fidelity)), this is your
-  wireless LAN connection. Speaks Ethernet at the Link Layer. Very
-  similar to using an Ethernet cable, except instead of electricity over
-  copper, it uses radio waves.
+* **Wi-Fi**: Viết tắt của _Wireless Fidelity_ (một thương hiệu marketing
+  phi kỹ thuật được cho là chơi chữ với
+  [Hi-Fi](https://en.wikipedia.org/wiki/High_fidelity)), đây là kết nối
+  LAN không dây của bạn. Nói chuyện bằng Ethernet ở Link Layer. Rất giống
+  dùng cáp Ethernet, chỉ khác là thay vì điện qua đồng, nó dùng sóng radio.
 
-* **Firewall**: A computer or device at or near where your LAN connects
-  to your ISP that filters traffic, preventing unwanted traffic from
-  being transmitted on your LAN. Keeps the bad guys out, hopefully.
+* **Firewall (tường lửa)**: Máy tính hoặc thiết bị tại hoặc gần nơi LAN
+  kết nối với ISP, lọc lưu lượng, ngăn lưu lượng không mong muốn
+  truyền qua LAN. Giữ bọn xấu ở ngoài --- hy vọng vậy.
 
-* **NAT**: Network Address Translation. A way to have a private IP
-  subnet behind the NAT device that is not visible to the rest of the
-  Internet. The NAT device translates internal IP addresses and ports to
-  an external IP on the router. This is why if you go to Google and ask
-  "what is my ip", you'll get a different number than you'll see when
-  you look at the settings on your computer. NAT is in the middle,
-  translating between your internal LAN IP address and the external,
-  publicly-visible IP address. We'll talk more about the details of this
-  mechanism later.
+* **NAT**: Network Address Translation (dịch địa chỉ mạng). Cách để có
+  một subnet IP riêng tư đằng sau thiết bị NAT mà phần còn lại của
+  Internet không nhìn thấy. Thiết bị NAT dịch địa chỉ IP và port nội bộ
+  thành IP bên ngoài trên router. Đó là lý do nếu bạn hỏi Google "ip của
+  tôi là gì", bạn sẽ nhận số khác so với khi nhìn vào cài đặt máy tính.
+  NAT đứng ở giữa, dịch giữa địa chỉ IP LAN nội bộ và địa chỉ IP bên
+  ngoài, công khai. Ta sẽ nói thêm về cơ chế chi tiết này sau.
 
-* **Private Network IPv4 Addresses**: For LANs not connected to the
-  Internet or LANs behind NAT, there are three common subnets that are
-  used: `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`. These are
-  reserved for private use; no public sites will ever use them, so you
-  can put them on your LAN without worrying about conflicts.
+* **Private Network IPv4 Addresses (địa chỉ IPv4 mạng riêng tư)**: Cho các
+  LAN không kết nối Internet hoặc LAN đằng sau NAT, có ba subnet phổ biến
+  được dùng: `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`. Chúng được
+  dành riêng cho sử dụng cá nhân; không có trang web công khai nào dùng
+  chúng, nên bạn có thể dùng trên LAN mà không lo xung đột.
 
-* **WiFi Modem/WiFi Router**: Loosely refers to a consumer-grade device
-  that you get when you sign up with an ISP for service. Often does a
-  variety of things 
+* **WiFi Modem/WiFi Router**: Nói lỏng lẻo về thiết bị cấp người dùng bình
+  thường bạn nhận được khi đăng ký dịch vụ ISP. Thường làm nhiều việc cùng lúc.
 
-* **Rack-mount**: If a device doesn't come in a nice plastic case or
-  isn't meant to be plugged directly into a computer, it might be
-  rack-mount. These are larger non-consumer devices like routers,
-  switches, or banks of disks, that get stacked up in "racks". 
+* **Rack-mount**: Nếu thiết bị không đến trong vỏ nhựa đẹp hoặc không được
+  cắm trực tiếp vào máy tính, nó có thể là rack-mount. Đây là những thiết bị
+  phi người dùng cỡ lớn hơn như router, switch, hoặc dãy đĩa, được xếp chồng
+  trong "rack" (giá đỡ).
 
-* **Upload**: Transferring a file from your local device to a remote
-  device.
+* **Upload (tải lên)**: Chuyển file từ thiết bị cục bộ của bạn lên thiết bị
+  từ xa.
 
-* **Download**: Transferring a file from a remote device to your local
-  device.
+* **Download (tải xuống)**: Chuyển file từ thiết bị từ xa về thiết bị cục bộ
+  của bạn.
 
-* **Symmetric**: In the context of transfer speeds, means that a
-  connection offers the same speeds in both directions. "1 Gbs
-  symmetric" means that upload and download speeds are 1 Gbs.
+* **Symmetric (đối xứng)**: Trong ngữ cảnh tốc độ truyền, nghĩa là kết nối
+  cung cấp tốc độ như nhau ở cả hai chiều. "1 Gbs symmetric" nghĩa là tốc độ
+  upload và download đều là 1 Gbs.
 
-* **Asymmetric**: In the context of transfer speeds, means that a
-  connection offers different speeds in either direction. Usually
-  written as something like "600 Mbs down, 20 Mbs up", for example,
-  indicating download and upload speeds. Often shortened to "600 by 20"
-  conversationally. Most general usage is people download things, not
-  uploading, so companies that provide service allocate more of their
-  total bandwidth on the download side.
+* **Asymmetric (bất đối xứng)**: Trong ngữ cảnh tốc độ truyền, nghĩa là kết
+  nối cung cấp tốc độ khác nhau ở mỗi chiều. Thường viết như "600 Mbs down,
+  20 Mbs up" chẳng hạn, chỉ tốc độ download và upload. Thường gọi ngắn là
+  "600 by 20" khi nói chuyện. Vì đại đa số người dùng tải xuống nhiều hơn
+  tải lên, các công ty cung cấp dịch vụ phân bổ nhiều băng thông hơn cho
+  phía download.
 
-* **Cable** (from the cable company): Many cable television companies
-  offer Internet connectivity over the coaxial cable line they've run to
-  your house. Speeds up to 1 Gbs aren't unheard of. Typically a
-  neighborhood shares bandwidth, so your speeds will drop in the evening
-  when everyone living around you is watching movies. Most cable
-  offerings are asymmetric.
+* **Cable (từ công ty cáp)**: Nhiều công ty truyền hình cáp cung cấp kết nối
+  Internet qua đường cáp đồng trục đã lắp đến nhà bạn. Tốc độ lên đến
+  1 Gbs không phải hiếm. Thường một khu phố chia sẻ băng thông, nên tốc độ
+  sẽ giảm vào buổi tối khi mọi người xung quanh đang xem phim. Hầu hết cáp
+  là bất đối xứng.
 
-* **DSL**: Digital Subscriber Line. Many telephone companies offer
-  Internet connectivity over the phone lines they've run to your house.
-  It's slower than cable at around 100 Mbs, but bandwidth is not shared
-  with neighbors. Most DSL offerings are asymmetric.
+* **DSL**: Digital Subscriber Line (đường dây thuê bao số). Nhiều công ty
+  điện thoại cung cấp kết nối Internet qua đường dây điện thoại đã lắp đến
+  nhà bạn. Chậm hơn cáp ở khoảng 100 Mbs, nhưng băng thông không chia sẻ
+  với hàng xóm. Hầu hết DSL là bất đối xứng.
 
-* **Fiber**: Short for _optical fiber_, uses light through glass "wires"
-  instead of electricity through copper wires. Very quick. Many ISPs
-  that offer relatively-cheap fiber have packages that deliver 1 Gbs
-  symmetric.
+* **Fiber (cáp quang)**: Viết tắt của _optical fiber_ (sợi quang), dùng ánh
+  sáng qua sợi thủy tinh thay vì điện qua dây đồng. Rất nhanh. Nhiều ISP
+  cung cấp cáp quang giá tương đối rẻ với các gói 1 Gbs đối xứng.
 
-* **Modem**: Short for _Modulator/Demodulator_, converts signals in one
-  form to signals in another form. Historically, this meant turning
-  sounds transmitted over a telephone landline into data. In modern
-  usage, it means converting the signals on your Ethernet LAN to
-  whatever form is needed by the ISP, e.g. cable or DSL.
+* **Modem**: Viết tắt của _Modulator/Demodulator_ (điều chế/giải điều chế),
+  chuyển đổi tín hiệu từ dạng này sang dạng khác. Truyền thống, điều này có
+  nghĩa là chuyển âm thanh truyền qua đường dây điện thoại thành dữ liệu.
+  Trong cách dùng hiện đại, là chuyển đổi tín hiệu trên LAN Ethernet của bạn
+  thành dạng cần thiết cho ISP, ví dụ cáp hoặc DSL.
 
-* **Bridge**: A device that connects two networks at the link level,
-  allowing them to behave as a single network. Some bridges blindly
-  forward all traffic, other bridges are smarter about it. Cable modems
-  are a type of bridge, though they often come built into the same box
-  as a router and switch.
+* **Bridge (cầu nối)**: Thiết bị kết nối hai mạng ở link level (tầng liên
+  kết), cho phép chúng hoạt động như một mạng duy nhất. Một số bridge
+  chuyển tiếp mù quáng toàn bộ lưu lượng, bridge khác thông minh hơn.
+  Cable modem là một loại bridge, dù chúng thường đi kèm trong cùng hộp
+  với router và switch.
 
-* **Vampire Tap**: Back in the old days, when you wanted to connect a
-  computer to a thicknet cable, you used one of [these awesomely-named
-  devices](https://en.wikipedia.org/wiki/Vampire_tap) to do it. Included
-  here just for fun.
+* **Vampire Tap**: Ngày xưa, khi muốn kết nối máy tính với cáp thicknet, bạn
+  dùng một trong [những thiết bị có tên tuyệt vời
+  này](https://en.wikipedia.org/wiki/Vampire_tap). Đưa vào đây chỉ để vui thôi.
 
-## Reflect
+## Suy Ngẫm
 
-* What's the difference between a hub and a switch?
+* Sự khác biệt giữa hub và switch là gì?
 
-* What does a router do?
+* Router làm gì?
 
-* Why would a router with only one network connection not make any
-  sense?
+* Tại sao một router chỉ có một kết nối mạng lại không có ý nghĩa gì?
 
-* What kind of device do you connect to with your laptop where you live?
-  Do you use a physical cable to connect?
+* Bạn kết nối với loại thiết bị nào ở nơi bạn sống?
+  Bạn có dùng cáp vật lý để kết nối không?
   
-* No need to write anything for this reflection point unless you're
-  inclined, but ponder what life was like [with 300 bps
-  modems](https://www.youtube.com/watch?v=PjwnIm5Y6XE). The author's
-  first modem was a
+* Không cần viết gì cho điểm suy ngẫm này trừ khi bạn thích, nhưng hãy suy
+  nghĩ về cuộc sống [với modem 300 bps
+  này](https://www.youtube.com/watch?v=PjwnIm5Y6XE). Modem đầu tiên của tác
+  giả là một chiếc
   [VICMODEM](https://www.oldcomputr.com/commodore-vicmodem-1982/),
-  literally two million times slower than a modern cable connection.
-  That was 40 years ago. Now imagine network speeds in the year 2062.
+  chậm hơn kết nối cáp hiện đại đúng hai triệu lần.
+  Đó là 40 năm trước. Giờ hãy tưởng tượng tốc độ mạng vào năm 2062.
