@@ -1,61 +1,49 @@
-# The Internet Protocol version 4
+# Giao Thức Internet Phiên Bản 4
 
-This is the first popular version of the Internet Protocol, and it lives
-to this day in common use.
+Đây là phiên bản đầu tiên phổ biến của Giao thức Internet, và nó vẫn đang được sử dụng phổ biến cho đến ngày nay.
 
-## IP Addresses
+## Địa Chỉ IP
 
-An IPv4 address is written in "dots and numbers" notation, like so:
+Địa chỉ IPv4 được viết theo ký hiệu "chấm và số", như thế này:
 
 ``` {.default}
 198.51.100.125
 ```
 
-It's always four numbers. Each number represents a byte, so it can go
-from 0 to 255 (`00000000` to `11111111` binary).
+Luôn luôn là bốn con số. Mỗi số đại diện cho một byte, vì vậy nó có thể từ 0 đến 255 (`00000000` đến `11111111` nhị phân).
 
-This means that every IPv4 address is four bytes (32 bits) in size.
+Điều này có nghĩa là mọi địa chỉ IPv4 đều có kích thước bốn byte (32 bit).
 
-## Subnets
+## Subnet (Mạng Con)
 
-The entire space of IP addresses is split up into _subnets_. The first
-part of the IP address indicates the subnet number we're talking about.
-The remaining part indicates the computer on that subnet in question.
+Toàn bộ không gian địa chỉ IP được chia thành các _subnet_ (mạng con). Phần đầu tiên của địa chỉ IP cho biết số subnet ta đang nói đến. Phần còn lại cho biết máy tính trên subnet đó là máy nào.
 
-And how many bits "the first part of the IP" constitutes is variable.
+Và có bao nhiêu bit "phần đầu tiên của IP" cấu thành là biến đổi được.
 
-When you set up a network with public-facing IP addresses, you are
-allocated a subnet by whomever you are paying to provide you with a
-connection. The more hosts your subnet supports, the more expensive it
-is.
+Khi bạn thiết lập một mạng với các địa chỉ IP công cộng, bạn được cấp phát một subnet bởi bất kỳ ai bạn đang trả tiền để cung cấp kết nối. Subnet hỗ trợ càng nhiều host thì càng đắt.
 
-So you might say, "I need 180 IP static IP addresses."
+Vì vậy bạn có thể nói, "Tôi cần 180 địa chỉ IP tĩnh."
 
-And your provider says, OK, that means you'll have 180 IPs and 2 reserved
-(0 and the highest number), so 182 total. We need 8 bits to represent the
-numbers 0-255, which is the smallest number of bits that includes 182.
+Và nhà cung cấp của bạn nói, OK, có nghĩa là bạn sẽ có 180 IP và 2 dành riêng (0 và số cao nhất), vậy tổng là 182. Chúng ta cần 8 bit để biểu diễn các số 0-255, đây là số bit nhỏ nhất bao gồm 182.
 
-And so they allocate you a subnet that has 24 network bits and 8 host
-bits.
+Vì vậy họ cấp phát cho bạn một subnet có 24 bit mạng và 8 bit host.
 
-They could write out something like:
+Họ có thể viết ra như thế này:
 
 ``` {.default}
 Your subnet is 198.51.100.0 and there are 24 network bits and 8 host
 bits.
 ```
 
-But that's really verbose. So we use slash notation:
+Nhưng điều đó rất dài dòng. Vì vậy ta dùng ký hiệu slash (gạch chéo):
 
 ``` {.default}
 198.51.100.0/24
 ```
 
-This tells us that 24 bits of the IP address represent the network
-number. (And therefore `32-24=8` bits represent the host.) But what does
-that mean?
+Điều này cho ta biết 24 bit của địa chỉ IP đại diện cho số mạng. (Và do đó `32-24=8` bit đại diện cho host.) Nhưng điều đó có nghĩa gì?
 
-Drawing it out:
+Vẽ ra:
 
 ``` {.default}
 24 network bits
@@ -65,7 +53,7 @@ Drawing it out:
          8 host bits
 ```
 
-Or converting all those numbers to binary:
+Hoặc chuyển đổi tất cả những số đó sang nhị phân:
 
 ``` {.default}
        24 network bits         | 8 host bits
@@ -74,11 +62,9 @@ Or converting all those numbers to binary:
      198         51        100          0
 ```
 
-The upshot is that every single IP on our make-believe network here is
-going to start with `198.51.100.x`. And that last byte is going to
-indicate which host we're talking about.
+Kết quả là mỗi IP duy nhất trên mạng giả tưởng của chúng ta ở đây sẽ bắt đầu bằng `198.51.100.x`. Và byte cuối cùng đó sẽ cho biết host nào ta đang nói đến.
 
-Here are some example IPs on our network:
+Đây là một số ví dụ IP trên mạng của chúng ta:
 
 ``` {.default}
 198.51.100.2
@@ -88,26 +74,24 @@ Here are some example IPs on our network:
 198.51.100.212
 ```
 
-But these two addresses have special meaning (see below):
+Nhưng hai địa chỉ này có ý nghĩa đặc biệt (xem bên dưới):
 
 ``` {.default}
 198.51.100.0     Reserved
 198.51.100.255   Broadcast (see below)
 ```
 
-but other than those, we can use the other IPs as we see fit.
+nhưng ngoài những cái đó, ta có thể dùng các IP khác tùy ý.
 
-Now, I deliberately chose an example there where the subnet ended on a
-byte boundary because it's easier to see if the entire last byte is the
-host number.
+Bây giờ, tôi cố tình chọn một ví dụ ở đó subnet kết thúc trên ranh giới byte vì dễ thấy hơn nếu toàn bộ byte cuối là số host.
 
-But there's no law about that. We could easily have a subnet like this:
+Nhưng không có quy định nào về điều đó. Ta có thể dễ dàng có một subnet như thế này:
 
 ``` {.default}
 198.51.100.96/28
 ```
 
-In that case we have:
+Trong trường hợp đó ta có:
 
 ``` {.default}
            28 network bits           | 4 host bits
@@ -116,15 +100,12 @@ In that case we have:
      198         51        100          96
 ```
 
-and we could only fill those last 4 bits with different numbers to
-represent our hosts.
+và ta chỉ có thể điền vào 4 bit cuối đó với các số khác nhau để đại diện cho các host của ta.
 
-`0000` and `1111` are reserved and broadcast, leaving us with 14 more we
-could use for host numbers.
+`0000` và `1111` được dành riêng và broadcast, để lại cho ta 14 cái nữa ta có thể dùng làm số host.
 
-For example, we could fill in those last [4
-bits](https://en.wikipedia.org/wiki/Nibble) with host number 2 (which is
-`0010` binary):
+Ví dụ, ta có thể điền vào [4
+bit](https://en.wikipedia.org/wiki/Nibble) cuối đó với số host 2 (là `0010` nhị phân):
 
 ``` {.default}
            28 network bits           | 4 host bits
@@ -133,23 +114,13 @@ bits](https://en.wikipedia.org/wiki/Nibble) with host number 2 (which is
      198         51        100          98
 ```
 
-Giving the IP address `198.51.100.98`.
+Cho địa chỉ IP `198.51.100.98`.
 
-All the IP addresses on this subnet are, exhaustively `198.51.100.96`
-through `198.51.100.111` (though these first and last IPs are reserved
-and broadcast, respectively).
+Tất cả địa chỉ IP trên subnet này là, đầy đủ `198.51.100.96` đến `198.51.100.111` (mặc dù IP đầu tiên và cuối cùng này được dành riêng và broadcast, tương ứng).
 
-Finally, if you have a subnet you own, there's nothing stopping you for
-further subnetting it down--declaring that more bits are reserved for
-the network portion of the address.
+Cuối cùng, nếu bạn có một subnet bạn sở hữu, không có gì ngăn bạn tiếp tục subnetting nó --- khai báo rằng nhiều bit hơn được dành riêng cho phần mạng của địa chỉ.
 
-ISPs (Internet Service Providers, like your cable or DSL company) do
-this all the time. They've given a big subnet with, say, 12 network bits
-(20 host bits, for 1 million possible hosts). And they have customers
-who want their own subnets. So the ISP decides the next 9 bits (for
-example) are going to be used to uniquely identify additional subnets
-within the ISP's subnet. And it sells those to customers, and each
-customer gets 11 bits for hosts (supporting 2048 hosts).
+Các ISP (Internet Service Provider --- Nhà cung cấp dịch vụ Internet, như công ty cáp hay DSL của bạn) làm điều này mọi lúc. Họ được giao một subnet lớn với, chẳng hạn, 12 bit mạng (20 bit host, cho 1 triệu host có thể). Và họ có các khách hàng muốn subnet riêng. Vì vậy ISP quyết định 9 bit tiếp theo (ví dụ) sẽ được dùng để xác định duy nhất các subnet bổ sung trong subnet của ISP. Và nó bán những cái đó cho khách hàng, và mỗi khách hàng nhận được 11 bit cho host (hỗ trợ 2048 host).
 
 ``` {.default}
   ISP network  |   Subnets  |    Hosts
@@ -158,26 +129,17 @@ customer gets 11 bits for hosts (supporting 2048 hosts).
 11010110 . 1100 0101 . 11011 001 . 00101101   [example IP]
 ```
 
-But it doesn't even stop there, necessarily. Maybe one of those
-customers you sold an 11-bit subnet to wants to further subdivide
-it--they can add more network bits to define their own subnets. Of
-course, every time you add more network bits, you're taking away from
-the number of hosts you can have, but that's the tradeoff you have to
-make with subnetting.
+Nhưng thậm chí không dừng ở đó nhất thiết. Có thể một trong những khách hàng bạn bán subnet 11-bit muốn chia nhỏ nó thêm --- họ có thể thêm bit mạng hơn để định nghĩa subnet riêng của họ. Tất nhiên, mỗi lần bạn thêm bit mạng hơn, bạn đang lấy đi từ số host bạn có thể có, nhưng đó là sự đánh đổi bạn phải thực hiện với subnetting.
 
-## Subnet Masks
+## Subnet Mask (Mặt Nạ Mạng Con)
 
-Another way of writing subnet is with a _subnet mask_. This is a number
-that when bitwise-ANDed with any IP address will give you the subnet
-number.
+Một cách khác để viết subnet là với một _subnet mask_ (mặt nạ mạng con). Đây là một số mà khi AND bit-wise với bất kỳ địa chỉ IP nào sẽ cho bạn số subnet.
 
-What does that mean? And why?
+Điều đó có nghĩa gì? Và tại sao?
 
-The subnet mask is also written with dots-and-numbers notation, and
-looks like an IP address with all the subnet bits set to `1`.
+Subnet mask cũng được viết theo ký hiệu chấm-và-số, và trông giống như một địa chỉ IP với tất cả các bit subnet được đặt thành `1`.
 
-For example, if we have the subnet `198.51.100.0/24`, that means we
-have:
+Ví dụ, nếu ta có subnet `198.51.100.0/24`, điều đó có nghĩa là ta có:
 
 ``` {.default}
        24 network bits         | 8 host bits
@@ -186,7 +148,7 @@ have:
      198         51        100          0
 ```
 
-Putting a `1` in for all the network bits, we end up with:
+Đặt `1` vào cho tất cả các bit mạng, ta nhận được:
 
 ``` {.default}
        24 network bits         | 8 host bits
@@ -195,15 +157,11 @@ Putting a `1` in for all the network bits, we end up with:
      255        255        255          0
 ```
 
-So the subnet mask for `198.51.100.0/24` is `255.255.255.0`. It's the
-same subnet mask for _any_ `/24` subnet.
+Vì vậy subnet mask cho `198.51.100.0/24` là `255.255.255.0`. Đó là cùng subnet mask cho _bất kỳ_ subnet `/24` nào.
 
-The subnet mask for a `/16` subnet has the first 16 bits set to `1`:
-`255.255.0.0`.
+Subnet mask cho subnet `/16` có 16 bit đầu được đặt thành `1`: `255.255.0.0`.
 
-But why? Turns out a router can take any IP address and quickly
-determine its destination subnet by ANDing the IP address with the
-subnet mask.
+Nhưng tại sao? Hóa ra một router có thể lấy bất kỳ địa chỉ IP nào và nhanh chóng xác định subnet đích của nó bằng cách AND địa chỉ IP với subnet mask.
 
 
 ``` {.default}
@@ -215,75 +173,59 @@ subnet mask.
   11000110 . 00110011 . 01100100 . 00000000    198. 51.100. 0
 ```
 
-And so the subnet for the IP address `198.51.100.67` with subnet mask
-`255.255.255.0` is `198.51.100.0`.
+Và vì vậy subnet cho địa chỉ IP `198.51.100.67` với subnet mask `255.255.255.0` là `198.51.100.0`.
 
-## Historic Subnets
+## Subnet Lịch Sử
 
-_(This information is only included for historical interest.)_
+_(Thông tin này chỉ được đưa vào vì mục đích lịch sử.)_
 
-Before the idea that any number of bits could be reserved for the
-network, subnets were split into 3 main classes:
+Trước khi có ý tưởng rằng bất kỳ số bit nào đều có thể được dành riêng cho mạng, các subnet được chia thành 3 lớp chính:
 
-* **Class A** - Subnet mask `255.0.0.0` (or `/8`), supports 16,777,214 hosts
-* **Class B** - Subnet mask `255.255.0.0` (or `/16`), supports 65,534 hosts
-* **Class C** - Subnet mask `255.255.255.0` (or `/24`) supports 254 hosts
+* **Class A** --- Subnet mask `255.0.0.0` (hoặc `/8`), hỗ trợ 16.777.214 host
+* **Class B** --- Subnet mask `255.255.0.0` (hoặc `/16`), hỗ trợ 65.534 host
+* **Class C** --- Subnet mask `255.255.255.0` (hoặc `/24`) hỗ trợ 254 host
 
-The problem was that this caused a really uneven distribution of
-subnets, with some large companies getting 16 million hosts (that they
-didn't need), and there was no subnet class that supported a sensible
-number of computers, like 1,000.
+Vấn đề là điều này gây ra phân phối subnet không đều, với một số công ty lớn nhận được 16 triệu host (mà họ không cần), và không có lớp subnet nào hỗ trợ số lượng máy tính hợp lý, như 1.000.
 
-So we switched to the more-flexible "any number of bits in the mask"
-approach.
+Vì vậy ta đã chuyển sang cách tiếp cận linh hoạt hơn là "bất kỳ số bit nào trong mặt nạ".
 
-## Special Addresses
+## Địa Chỉ Đặc Biệt
 
-There are a few common addresses that are worth noting:
+Có một vài địa chỉ phổ biến đáng ghi nhớ:
 
-* **127.0.0.1** - this is the computer you are on now. It's often
-  mapped to the name `localhost`.
+* **127.0.0.1** --- đây là máy tính bạn đang dùng bây giờ. Nó thường được ánh xạ với tên `localhost`.
 
-* **0.0.0.0** - Reserved. Host 0 on any subnet is reserved.
+* **0.0.0.0** --- Dành riêng. Host 0 trên bất kỳ subnet nào được dành riêng.
 
-* **255.255.255.255** - Broadcast. Intended for all hosts on a subnet.
-  Though it seems like this would broadcast to the entire Internet,
-  routers don't forward packets intended for this address.
+* **255.255.255.255** --- Broadcast (phát sóng). Dành cho tất cả host trên subnet. Mặc dù có vẻ như điều này sẽ phát sóng đến toàn bộ Internet, nhưng router không chuyển tiếp các gói tin dành cho địa chỉ này.
 
-  You can also broadcast to your local subnet by sending to the host
-  with all bits set to 1. For example, the subnet broadcast address for
-  `198.51.100.0/24` is `198.51.100.255`.
+  Bạn cũng có thể broadcast đến subnet cục bộ của mình bằng cách gửi đến host với tất cả bit được đặt thành 1. Ví dụ, địa chỉ broadcast subnet cho `198.51.100.0/24` là `198.51.100.255`.
 
-## Special Subnets
+## Subnet Đặc Biệt
 
-There are some reserved subnets you might come across:
+Có một số subnet được dành riêng mà bạn có thể gặp:
 
-* **10.0.0.0/8** - Private network addresses (_very common_)
-* **127.0.0.0/8** - This computer, via the _loopback_ device.
-* **172.16.0.0/12** - Private network addresses
-* **192.0.0.0/24** - Private network addresses
-* **192.0.2.0/24** - Documentation
-* **192.168.0.0/16** - Private network addresses (_very common_)
-* **198.18.0.0/15** - Private network addresses
-* **198.51.100.0/24** - Documentation
-* **203.0.113.0/24** - Documentation
-* **233.252.0.0/24** - Documentation
+* **10.0.0.0/8** --- Địa chỉ mạng riêng tư (_rất phổ biến_)
+* **127.0.0.0/8** --- Máy tính này, qua thiết bị _loopback_.
+* **172.16.0.0/12** --- Địa chỉ mạng riêng tư
+* **192.0.0.0/24** --- Địa chỉ mạng riêng tư
+* **192.0.2.0/24** --- Tài liệu
+* **192.168.0.0/16** --- Địa chỉ mạng riêng tư (_rất phổ biến_)
+* **198.18.0.0/15** --- Địa chỉ mạng riêng tư
+* **198.51.100.0/24** --- Tài liệu
+* **203.0.113.0/24** --- Tài liệu
+* **233.252.0.0/24** --- Tài liệu
 
-You'll find your home IPs are in one of the "Private" address ranges.
-Probably `192.168.x.x`.
+Bạn sẽ thấy IP nhà bạn nằm trong một trong các dải địa chỉ "Riêng tư". Có lẽ là `192.168.x.x`.
 
-Any documentation that you write that requires example (not real) IP
-addresses should use any of the ones marked "Documentation", above.
+Bất kỳ tài liệu nào bạn viết cần địa chỉ IP ví dụ (không phải thực) đều nên dùng bất kỳ cái nào được đánh dấu "Tài liệu" ở trên.
 
 ## Reflect
 
-* `192.168.262.12` is not a valid IP address. Why?
+* `192.168.262.12` không phải là địa chỉ IP hợp lệ. Tại sao?
 
-* Reflect on some of the advantages of the subnet concept as a way of
-  dividing the global address space.
+* Hãy suy nghĩ về một số lợi thế của khái niệm subnet như một cách chia không gian địa chỉ toàn cầu.
 
-* What is your computer's IPv4 address and subnet mask right now? (You
-  might have to search how to find this for your particular OS.)
+* Địa chỉ IPv4 và subnet mask của máy tính bạn hiện tại là gì? (Bạn có thể phải tìm cách tìm điều này cho hệ điều hành cụ thể của bạn.)
 
-* If a IP address is listed as 10.37.129.212/17, how many bits are used
-  to represent the hosts?
+* Nếu một địa chỉ IP được liệt kê là 10.37.129.212/17, có bao nhiêu bit được dùng để đại diện cho các host?
