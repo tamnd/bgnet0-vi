@@ -1,62 +1,50 @@
-# The Internet Protocol (IP)
+# Giao Thức Internet (IP)
 
-This protocol is responsible for routing packets of data around the
-Internet, analogous to how the post office is responsible for routing
-letters around the mail network.
+Giao thức này chịu trách nhiệm định tuyến các gói dữ liệu quanh Internet, tương tự như cách bưu điện chịu trách nhiệm định tuyến thư qua mạng thư tín.
 
-Like with the post office, data on the Internet has to be labeled with a
-source and destination address, called the _IP address_.
+Giống như với bưu điện, dữ liệu trên Internet phải được dán nhãn với địa chỉ nguồn và đích, gọi là _địa chỉ IP_ (IP address).
 
-The IP address is a sequence of bytes that uniquely identifies every
-computer on the Internet.
+Địa chỉ IP là một chuỗi byte xác định duy nhất mọi máy tính trên Internet.
 
-## Terminology
+## Thuật Ngữ
 
-* **Host** - another name for "computer".
+* **Host** --- tên gọi khác của "máy tính".
 
-## Two Common Versions
+## Hai Phiên Bản Phổ Biến
 
-There are two commonly used versions of IP: version 4 and version 6.
+Có hai phiên bản IP thường dùng: phiên bản 4 và phiên bản 6.
 
-IP version 4 is referred to as "IPv4" or just plain "IP".
+IP phiên bản 4 được gọi là "IPv4" hoặc đơn giản là "IP".
 
-IP version 6 is usually explicitly specified as "IPv6".
+IP phiên bản 6 thường được chỉ định rõ ràng là "IPv6".
 
-You can tell the difference between the two by glancing at an IP
-address:
+Bạn có thể phân biệt hai loại bằng cách nhìn nhanh vào một địa chỉ IP:
 
-* Version 4 IP address example: 192.168.1.3
+* Ví dụ địa chỉ IP phiên bản 4: 192.168.1.3
 
-* Version 6 IP address example: fe80::c2b6:f9ff:fe7e:4b4
+* Ví dụ địa chỉ IP phiên bản 6: fe80::c2b6:f9ff:fe7e:4b4
 
-The main difference is the number of bytes that make up the address
-space. IPv4 uses 4 bytes per address, and IPv6 uses 16 bytes.
+Sự khác biệt chính là số byte tạo nên không gian địa chỉ. IPv4 dùng 4 byte mỗi địa chỉ, và IPv6 dùng 16 byte.
 
-## Subnets
+## Subnet (Mạng Con)
 
-Every IP address is split into two portions.
+Mỗi địa chỉ IP được chia thành hai phần.
 
-The initial bits of the IP address identify individual networks.
+Các bit đầu của địa chỉ IP xác định các mạng riêng lẻ.
 
-The trailing bits of an IP address identify individual hosts (i.e.
-computers) on that network.
+Các bit cuối của địa chỉ IP xác định các host riêng lẻ (tức là các máy tính) trên mạng đó.
 
-These individual networks are called _subnets_ and the number of hosts
-they can support depends on how many bits they're reserved for
-identifying hosts on that subnet.
+Các mạng riêng lẻ này được gọi là _subnet_ (mạng con) và số host chúng có thể hỗ trợ phụ thuộc vào có bao nhiêu bit được dành cho việc xác định host trên subnet đó.
 
-As a contrived non-Internet example, let's look at an 8-bit "address",
-and we'll say the first 6 bits are the network number and the last 2
-bits are the host number.
+Như một ví dụ giả định không phải Internet, hãy xem một "địa chỉ" 8-bit, và ta nói 6 bit đầu là số mạng và 2 bit cuối là số host.
 
-So an address like this:
+Vậy một địa chỉ như thế này:
 
 ``` {.default}
 00010111
 ```
 
-is split into two parts (because we said the first 6 bits were the
-network number):
+được chia thành hai phần (vì ta nói 6 bit đầu là số mạng):
 
 ``` {.default}
 Network  Host
@@ -64,100 +52,60 @@ Network  Host
 000101   11
 ```
 
-So this is network 5 (`101` binary), host 3 (`11` binary).
+Vậy đây là mạng 5 (`101` nhị phân), host 3 (`11` nhị phân).
 
-The network part always comes before the host part.
+Phần mạng luôn đứng trước phần host.
 
-Note that if there are only two "host" bits, there can only be 4 hosts
-on the network, numbered 0, 1, 2, and 3 (or `00`, `01`, `10`, and `11`
-in binary).
+Lưu ý rằng nếu chỉ có hai bit "host", chỉ có thể có 4 host trên mạng, được đánh số 0, 1, 2 và 3 (hoặc `00`, `01`, `10` và `11` nhị phân).
 
-And with IP, it would actually only be two hosts, because hosts with
-all zero bits or all one bits are reserved.
+Và với IP, thực ra chỉ có hai host, vì các host có tất cả bit bằng không hoặc tất cả bit bằng một đều được dành riêng.
 
-The next chapters will look at specific subnet examples for IPv4 and
-IPv6. The important part now is that each address is split into network
-and host parts, with the network part first.
+Các chương tiếp theo sẽ xem xét các ví dụ subnet cụ thể cho IPv4 và IPv6. Điều quan trọng bây giờ là mỗi địa chỉ được chia thành phần mạng và phần host, với phần mạng đứng trước.
 
-## Additional IP-layer Protocols
+## Các Giao Thức Bổ Sung Tầng IP
 
-There are some related protocols that also work in concert with IP and
-at the same layer in the network stack.
+Có một số giao thức liên quan cũng hoạt động cùng với IP và ở cùng lớp trong network stack.
 
-* **ICMP**: Internet Control Message Protocol, a mechanism for
-  communicating IP nodes to talk about IP control metadata with one
-  another.
+* **ICMP**: Internet Control Message Protocol (Giao thức Thông điệp Kiểm soát Internet), một cơ chế cho phép các IP node giao tiếp về metadata kiểm soát IP với nhau.
 
-* **IPSec**: Internet Protocol Security, encryption and authentication
-  functionality. Commonly used with VPNs (Virtual Private Networks).
+* **IPSec**: Internet Protocol Security (Bảo mật Giao thức Internet), chức năng mã hóa và xác thực. Thường dùng với VPN (Virtual Private Networks --- Mạng riêng ảo).
 
-Users commonly interface with ICMP when using the `ping` utility. This
-uses ICMP "echo request" and "echo response" messages.
+Người dùng thường tương tác với ICMP khi dùng tiện ích `ping`. Tiện ích này dùng các thông điệp ICMP "echo request" (yêu cầu phản hồi) và "echo response" (phản hồi).
 
-The `traceroute` utility uses ICMP "time exceeded" messages to find out
-how packets are being routed.
+Tiện ích `traceroute` dùng các thông điệp ICMP "time exceeded" (hết thời gian) để tìm hiểu cách các gói tin được định tuyến.
 
-## Private Networks
+## Mạng Riêng Tư
 
-There are private networks hidden behind routers that do not have
-globally unique IP addresses on their machines. (Though they do have
-unique addresses within the LAN itself.)
+Có các mạng riêng tư ẩn sau các router không có địa chỉ IP duy nhất toàn cầu trên máy của chúng. (Mặc dù chúng có địa chỉ duy nhất trong LAN đó.)
 
-This is made possible through the magic of a mechanism called NAT
-(Network Address Translation). But this is a story for the future.
+Điều này được thực hiện thông qua cơ chế NAT (Network Address Translation --- Dịch địa chỉ mạng). Nhưng đây là câu chuyện cho tương lai.
 
-For now, let's just pretend all our addresses are globally unique.
+Bây giờ, hãy cứ giả vờ tất cả địa chỉ của ta đều là duy nhất toàn cầu.
 
-## Static versus Dynamic IP Addresses, and DHCP
+## Địa Chỉ IP Tĩnh Và Động, Và DHCP
 
-If you have clients hitting your website, or you have a server that you
-want to SSH into repeatedly, you'll need a _static IP_. This means you
-get a globally-unique IP address assigned to you and it never changes.
+Nếu bạn có client truy cập vào website của bạn, hoặc bạn có một server mà bạn muốn SSH vào nhiều lần, bạn sẽ cần một _static IP_ (địa chỉ IP tĩnh). Điều này có nghĩa là bạn được gán một địa chỉ IP duy nhất toàn cầu và nó không bao giờ thay đổi.
 
-This is like having a house number that never changes. If you need
-people to be able to find your house repeatedly, this needs to be the
-case.
+Điều này giống như có một số nhà không bao giờ thay đổi. Nếu bạn cần người khác có thể tìm thấy nhà bạn nhiều lần, điều này cần phải như vậy.
 
-But since there are a limited number of IPv4 addresses, static IPs cost
-more money. Often an ISP will have a block of IPs on a subnet that they
-_dynamically_ allocate on-demand.
+Nhưng vì số lượng địa chỉ IPv4 có hạn, IP tĩnh tốn thêm tiền. Thông thường một ISP (nhà cung cấp dịch vụ Internet) sẽ có một khối IP trên subnet mà họ _động_ (dynamic) phân bổ theo nhu cầu.
 
-This means when you reboot your broadband modem, it might end up with a
-different public-facing IP address when it comes back to life. (Unless
-you've paid for a static IP.)
+Điều này có nghĩa là khi bạn khởi động lại modem broadband, nó có thể nhận được địa chỉ IP công cộng khác khi khởi động lại. (Trừ khi bạn đã trả tiền cho IP tĩnh.)
 
-Indeed, when you connect your laptop to WiFi, you also typically get a
-dynamic IP address. Your computer connects to the LAN and broadcasts a
-packet saying, "Hey, I'm here! Can anyone tell me my IP address? Pretty
-please with sugar on top?"
+Thật vậy, khi bạn kết nối laptop vào WiFi, bạn cũng thường nhận được địa chỉ IP động. Máy tính của bạn kết nối với LAN và phát một gói tin nói, "Này, tôi ở đây! Ai có thể cho tôi biết địa chỉ IP của tôi không? Xin vui lòng?"
 
-And this is OK because people aren't generally trying to connect to
-servers on your laptop. It's usually the laptop that's connecting to
-other servers.
+Và điều này ổn vì người ta thường không cố kết nối đến server trên laptop của bạn. Thường là laptop đang kết nối đến các server khác.
 
-How does it work? On one of the servers on the LAN is a program that is
-listening for such requests, which conform to DHCP (the _Dynamic Host
-Configuration Protocol_). The DHCP server keeps track of which IP
-addresses on the subnet are already allocated for use, and which are
-free. It allocates a free one and sends back a DHCP response that has
-your laptop's new IP address, as well as other data about the LAN your
-computer needs (like subnet mask, etc.).
+Nó hoạt động như thế nào? Trên một trong các server trên LAN là một chương trình đang lắng nghe các request đó, theo chuẩn DHCP (_Dynamic Host Configuration Protocol_ --- Giao thức Cấu hình Host Động). DHCP server theo dõi địa chỉ IP nào trên subnet đang được cấp phát để sử dụng, và cái nào còn trống. Nó cấp phát một cái trống và gửi lại DHCP response có địa chỉ IP mới của laptop bạn, cũng như dữ liệu khác về LAN mà máy tính bạn cần (như subnet mask, v.v.).
 
-If you have WiFi at home, you very likely already have a DHCP server.
-Most routers come from your ISP with DHCP already set up, which is how
-your laptop gets its IP address on your LAN.
+Nếu bạn có WiFi ở nhà, rất có thể bạn đã có DHCP server rồi. Hầu hết các router từ ISP của bạn đều đã cài DHCP sẵn, đó là cách laptop bạn nhận địa chỉ IP trên LAN của bạn.
 
 ## Reflect
 
-* How many times more IPv6 addresses are there than IPv4 addresses?
+* Có bao nhiêu địa chỉ IPv6 nhiều hơn địa chỉ IPv4?
 
-* Applications commonly also implement their own encryption (e.g. ssh or
-  web browsers with HTTPS). Speculate on the advantages or disadvantages
-  for having IPSec at the Internet layer instead of doing encryption at
-  the Application layer.
+* Các ứng dụng thường cũng triển khai mã hóa riêng của chúng (ví dụ: ssh hoặc trình duyệt web với HTTPS). Hãy suy đoán về lợi thế hay bất lợi của việc có IPSec ở tầng Internet thay vì mã hóa ở tầng Application.
 
-* If subnet reserved 5 bits to identify hosts, how many hosts can it
-  support? Don't forget that all-zero-bits and all-one-bits for the host
-  are reserved.
+* Nếu subnet dành 5 bit để xác định host, nó có thể hỗ trợ bao nhiêu host? Đừng quên rằng tất cả-bit-không và tất cả-bit-một cho host đều được dành riêng.
 
-* What is the benefit to having a static IP? How does it relate to DNS?
+* Lợi ích của việc có IP tĩnh là gì? Nó liên quan đến DNS như thế nào?
