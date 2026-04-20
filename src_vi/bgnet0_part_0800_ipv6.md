@@ -1,138 +1,106 @@
-# The Internet Protocol version 6
+# Giao thức Internet phiên bản 6 (IPv6)
 
-This is the new big thing! Since there are so few addresses
-representable in 32 bits (only 4,294,967,296 not counting the reserved
-ones), the Powers That Be decided we needed a new addressing scheme. One
-with more bits. One that could last, for all intents and purposes,
-forever.
+Đây là điều lớn lao mới! Vì chỉ có quá ít địa chỉ biểu diễn được trong 32 bit (chỉ 4.294.967.296 địa chỉ, chưa tính các địa chỉ dành riêng), những người có quyền lực đã quyết định chúng ta cần một sơ đồ đánh địa chỉ mới. Một sơ đồ có nhiều bit hơn. Một sơ đồ có thể tồn tại, theo mọi nghĩa thực tế, mãi mãi.
 
-There was a problem: we were running out of IP addresses. Back in the
-1970s, a world with billions of computers was beyond imagination. But
-today, we've already exceeded this by orders of magnitude.
+Vấn đề là: chúng ta đang cạn kiệt địa chỉ IP. Vào những năm 1970, một thế giới với hàng tỷ máy tính là điều ngoài sức tưởng tượng. Nhưng ngày nay, chúng ta đã vượt quá con số đó nhiều bậc độ lớn.
 
-So they decided to increase the size of IP addresses from 32 bits to 128
-bits, which gives us 79,228,162,514,264,337,593,543,950,336 times as
-much address space. This should genuinely last a looooooong time.
+Vì vậy họ quyết định tăng kích thước địa chỉ IP từ 32 bit lên 128 bit, cho chúng ta nhiều hơn 79.228.162.514.264.337.593.543.950.336 lần không gian địa chỉ. Cái này chắc chắn sẽ tồn tại được một thời gian rất, rất dài.
 
-> Lots of this address space is reserved, so there aren't really that
-> many addresses. But there are still a **LOT**, both imperial and
-> metric.
+> Nhiều không gian địa chỉ trong số này được dành riêng, nên thực ra không có đến
+> nhiều địa chỉ như vậy. Nhưng vẫn còn **RẤT NHIỀU**, dù đo theo hệ thống nào.
 
-That's the main difference between IPv4 and IPv6.
+Đó là sự khác biệt chính giữa IPv4 và IPv6.
 
-For demonstration purposes, we'll stick with IPv4 because it's still
-common and a little easier to write out. But this is good background
-information to know, since someday IPv6 will be the only game in town.
+Để minh họa, chúng ta sẽ tiếp tục dùng IPv4 vì nó vẫn phổ biến và dễ viết hơn một chút. Nhưng đây là thông tin nền tảng tốt cần biết, vì một ngày nào đó IPv6 sẽ là thứ duy nhất còn lại.
 
-Someday.
+Một ngày nào đó.
 
-## Representation
+## Biểu diễn
 
-With that much address space, dots-and-decimal numbers won't cut it.  So
-they came up with a new way of displaying IPv6 addresses: colons-and-hex
-numbers. And each hex number is 16 bits (4 hex digits), so we need 8 of
-those numbers to get us to 128 bits.
+Với không gian địa chỉ lớn như vậy, cách viết dấu chấm-và-thập phân (dots-and-decimal) không còn phù hợp nữa. Vì vậy họ nghĩ ra một cách mới để hiển thị địa chỉ IPv6: dấu hai chấm-và-hex (colons-and-hex). Mỗi số hex là 16 bit (4 chữ số hex), nên chúng ta cần 8 số đó để đạt 128 bit.
 
-For example:
+Ví dụ:
 
 ``` {.default}
 2001:0db8:6ffa:8939:163b:4cab:98bf:070a
 ```
 
-Slash notation is used for subnetting just like IPv4. Here's an example
-with 64 bits for network (as specified with `/64`) and 64 bits for host
-(since `128-64=64`):
+Ký hiệu slash (dấu gạch chéo) được dùng để chia subnet (mạng con) giống như IPv4. Đây là ví dụ với 64 bit cho phần network (được chỉ định bởi `/64`) và 64 bit cho phần host (vì `128-64=64`):
 
 ``` {.default}
 2001:0db8:6ffa:8939:163b:4cab:98bf:070a/64
 ```
 
-64 bits for host! That means this subnet can have
-18,446,744,073,709,551,616 hosts!
+64 bit cho host! Điều đó có nghĩa là subnet này có thể có 18.446.744.073.709.551.616 host!
 
-There's a lot of space in an IPv6 address!
+Có rất nhiều không gian trong một địa chỉ IPv6!
 
-> When we're talking about standard IPv6 addresses for particular hosts,
-> `/64` is the strongly-suggested rule for how big your subnet is. Some
-> protocols rely on it.
-> 
-> But when we're just talking about subnets, you might see smaller
-> numbers there representing larger address spaces. But the expectation
-> is that eventually that space will be partitioned down into `/64`
-> subnets for use by individual hosts.
+> Khi nói về địa chỉ IPv6 tiêu chuẩn cho các host cụ thể,
+> `/64` là quy tắc được khuyến nghị mạnh mẽ cho kích thước subnet của bạn. Một số
+> giao thức dựa vào điều này.
+>
+> Nhưng khi chỉ nói về các subnet, bạn có thể thấy các con số nhỏ hơn ở đó
+> đại diện cho không gian địa chỉ lớn hơn. Nhưng kỳ vọng là cuối cùng không gian đó
+> sẽ được phân chia thành các subnet `/64` để sử dụng bởi các host riêng lẻ.
 
-Now, writing all those hex numbers can be unwieldy, especially if there
-are large runs of zeros in them. So there are a couple shortcut rules.
+Bây giờ, viết hết tất cả những số hex đó rất cồng kềnh, đặc biệt nếu có nhiều chuỗi số không trong đó. Vì vậy có một vài quy tắc rút gọn.
 
-1. Leading zeros on any 16-bit number can be removed.
-2. Runs of multiple zeros after rule 1 has been applied can be replaced
-   with two sequential colons.
+1. Các số 0 đứng đầu của bất kỳ số 16-bit nào có thể được bỏ đi.
+2. Các chuỗi nhiều số không sau khi áp dụng quy tắc 1 có thể được thay thế
+   bằng hai dấu hai chấm liên tiếp.
 
-For example, we might have the address:
+Ví dụ, chúng ta có thể có địa chỉ:
 
 ``` {.default}
 2001:0db8:6ffa:0000:0000:00ab:98bf:070a
 ```
 
-And we apply the first rule and get rid of leading zeros:
+Áp dụng quy tắc đầu tiên và loại bỏ các số 0 đứng đầu:
 
 ``` {.default}
 2001:db8:6ffa:0:0:ab:98bf:70a
 ```
 
-And we see we have a run of two `0`s in the middle, and we can replace
-that with two colons:
+Và chúng ta thấy có một chuỗi hai `0` ở giữa, có thể thay thế bằng hai dấu hai chấm:
 
 ``` {.default}
 2001:db8:6ffa::ab:98bf:70a
 ```
 
-In this way we can get a more compact representation.
+Theo cách này chúng ta có thể có được biểu diễn gọn hơn.
 
-## Link-Local Addresses
+## Địa chỉ Link-Local
 
-[This is "good to know" information, but just file it away under "IPv6
-automatically gives all interfaces an IP address".]
+[Đây là thông tin "nên biết", nhưng chỉ cần ghi nhớ dưới dạng "IPv6 tự động cấp địa chỉ IP cho tất cả các interface".]
 
-There are addresses in IPv6 and IPv4 that are reserved for hosts on this
-particular LAN. These aren't commonly used in IPv4, but they're required
-in IPv6. The addresses are all on subnet `fe80::/10`.
+Có các địa chỉ trong IPv6 và IPv4 được dành riêng cho các host trên LAN (mạng cục bộ) cụ thể này. Chúng không được dùng phổ biến trong IPv4, nhưng bắt buộc phải có trong IPv6. Tất cả các địa chỉ này thuộc subnet `fe80::/10`.
 
-> Expanded out, this is:
+> Khai triển đầy đủ, đây là:
 > ``` {.default}
 > fe80:0000:0000:0000:0000:0000:0000:0000
 > ```
 
-The first 10 bits being the network portion. In an IPv6 link-local
-address, the next 54 bits are reserved (`0`) and then there are 64 bits
-remaining to identify the host.
+10 bit đầu là phần mạng. Trong một địa chỉ link-local IPv6, 54 bit tiếp theo được dành riêng (`0`) và sau đó còn lại 64 bit để xác định host.
 
-When an IPv6 interface is brought up, it automatically computes its
-link-local address based on its Ethernet address and other things.
+Khi một interface IPv6 được khởi động, nó tự động tính toán địa chỉ link-local của mình dựa trên địa chỉ Ethernet và các thông tin khác.
 
-Link-local addresses are unique on the LAN, but might not be
-globally-unique. Routers do not forward any link-local packets out of
-the LAN to prevent issues with duplicate IPs.
+Địa chỉ link-local là duy nhất trên LAN, nhưng có thể không là duy nhất toàn cầu. Router không chuyển tiếp bất kỳ gói tin link-local nào ra khỏi LAN để tránh các vấn đề với IP trùng lặp.
 
-An interface might get a different IP later if a DHCP server hands one
-out, for example, in which case it'll have two IPs.
+Một interface có thể nhận được IP khác sau đó nếu một máy chủ DHCP cấp phát, ví dụ như vậy, lúc đó nó sẽ có hai IP.
 
-## Special IPv6 Addresses and Subnets
+## Các Địa Chỉ và Subnet IPv6 Đặc Biệt
 
-Like with IPv4, there are a lot of addresses that have special meaning.
+Giống như IPv4, có nhiều địa chỉ mang ý nghĩa đặc biệt.
 
-* **`::1`** - localhost, this computer, IPv6 version of `127.0.0.1`
-* **`2001:db8::/32`** - for use in documentation
-* **`fe80::/10`** - link local address
+* **`::1`** - localhost, máy tính này, phiên bản IPv6 của `127.0.0.1`
+* **`2001:db8::/32`** - dùng trong tài liệu hướng dẫn
+* **`fe80::/10`** - địa chỉ link local
 
-There are other IPv6 ranges with special meanings, but those are the
-common ones you'll see.
+Có các dải IPv6 khác với ý nghĩa đặc biệt, nhưng đó là những dải phổ biến bạn sẽ thấy.
 
-## IPv6 and DNS
+## IPv6 và DNS
 
-DNS maps human-readable names to IPv6 addresses, as well. You can look
-them up with `dig` by telling it to look for an `AAAA` record (which is
-what DNS calls IPv6 address records).
+DNS cũng ánh xạ các tên mà con người có thể đọc sang địa chỉ IPv6. Bạn có thể tra cứu chúng bằng `dig` bằng cách yêu cầu nó tìm bản ghi `AAAA` (đó là tên DNS đặt cho bản ghi địa chỉ IPv6).
 
 ``` {.default}
 $ dig example.com AAAA
@@ -159,25 +127,20 @@ example.com.		81016	IN	AAAA	2606:2800:220:1:248:1893:25c8:1946
 ;; MSG SIZE  rcvd: 68
 ```
 
-You can see the IPv6 address of `example.com` in the `ANSWER SECTION`,
-above.
+Bạn có thể thấy địa chỉ IPv6 của `example.com` trong phần `ANSWER SECTION` ở trên.
 
-## IPv6 and URLs
+## IPv6 và URL
 
-Since a URL uses the `:` character to delimit a port number, that
-meaning collides with the `:` characters used in an IPv6 address.
+Vì URL dùng ký tự `:` để phân tách số cổng, nghĩa đó xung đột với các ký tự `:` được dùng trong địa chỉ IPv6.
 
-If you run your server on port 33490, you can connect to it in your web
-browser by putting the IPv6 address in square brackets. For example, to
-connect to localhost on address `::1`, you can:
+Nếu bạn chạy máy chủ trên cổng 33490, bạn có thể kết nối đến nó trong trình duyệt web bằng cách đặt địa chỉ IPv6 trong dấu ngoặc vuông. Ví dụ, để kết nối đến localhost tại địa chỉ `::1`, bạn có thể:
 
 ``` {.default}
 http://[::1]:33490/
 ```
 
-## Reflect
+## Suy Ngẫm
 
-* What are some benefits of IPv6 over IPv4?
+* IPv6 có những ưu điểm gì so với IPv4?
 
-* How can the address `2001:0db8:004a:0000:0000:00ab:ab4d:000a` be
-  written more simply?
+* Địa chỉ `2001:0db8:004a:0000:0000:00ab:ab4d:000a` có thể được viết đơn giản hơn như thế nào?
