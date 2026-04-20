@@ -1,102 +1,91 @@
 # Project: Validating a TCP Packet
 
-In this project you'll write some code that validates a TCP packet,
-making sure it hasn't been corrupted in transit.
+Trong project này bạn sẽ viết code để xác thực một TCP packet, đảm bảo
+nó không bị hỏng trong quá trình truyền.
 
-**Inputs**: A sequence of pairs of files:
+**Đầu vào (Inputs)**: Một chuỗi cặp file:
 
-* One contains the source and destination IPv4 addresses in
-  dots-and-numbers notation.
+* Một file chứa địa chỉ IPv4 nguồn và đích dưới dạng ký hiệu
+  dots-and-numbers (chấm và số).
 
-* The other contains the raw TCP packet, both the TCP header and the
-  payload.
+* File kia chứa TCP packet thô (raw), bao gồm cả TCP header và payload.
 
-You can [fls[download the input files from the exercises
-folder|tcpcksum/tcp_data.zip]].
+Bạn có thể [fls[tải các file đầu vào từ thư mục exercises|tcpcksum/tcp_data.zip]].
 
-**Outputs**:
+**Đầu ra (Outputs)**:
 
-* For each pair of files, print `PASS` if the TCP checksum is correct.
-  Otherwise print `FAIL`.
+* Với mỗi cặp file, in `PASS` nếu TCP checksum chính xác. Ngược lại in
+  `FAIL`.
 
-There are a lot of parts to this project, so it is suggested you write
-and test as you go.
+Project này có nhiều phần, vậy nên hãy viết và test từng bước một.
 
-**You should understand this specification 100% before you begin to plan
-your approach! Get clarification before proceeding to the planning
-stage!**
+**Bạn phải hiểu 100% đặc tả này trước khi bắt đầu lên kế hoạch! Hãy
+làm rõ trước khi tiến đến giai đoạn lập kế hoạch!**
 
-**The ABSOLUTE HARDEST PART of this project is understanding it! Your
-code will never work before you understand it!**
+**PHẦN KHÓ NHẤT TUYỆT ĐỐI của project này là hiểu nó! Code của bạn sẽ
+không bao giờ chạy được trước khi bạn hiểu nó!**
 
-**The model solution is 37 lines of code!** (Not including whitespace
-and comments.) This is not a number to beat, but is an indication of how
-much effort you need to put in to understanding this spec versus typing
-in code!
+**Model solution chỉ có 37 dòng code!** (Không tính dòng trống và
+comment.) Đây không phải là con số để đập lại, mà là dấu hiệu cho thấy
+bạn cần dành bao nhiêu công sức để hiểu đặc tả này so với việc gõ code!
 
-## Banned Functions
+## Hàm bị cấm (Banned Functions)
 
-You may not use anything in the `socket` library.
+Bạn không được dùng bất cứ thứ gì trong thư viện `socket`.
 
-## How To Code This
+## Cách code
 
-You can do this however you like, but I recommend this order. Details
-for each of these steps is included in the following sections.
+Bạn có thể làm theo cách nào bạn thích, nhưng tôi khuyến nghị thứ tự
+sau. Chi tiết cho từng bước được bao gồm trong các mục tiếp theo.
 
-1. Read in the `tcp_addrs_0.txt` file.
-1. Split the line in two, the source and destination addresses.
-1. Write a function that converts the dots-and-numbers IP addresses into
-   bytestrings.
-1. Read in the `tcp_data_0.dat` file.
-1. Write a function that generates the IP pseudo header bytes from the
-   IP addresses from `tcp_addrs_0.txt` and the TCP length from the
-   `tcp_data_0.dat` file.
-1. Build a new version of the TCP data that has the checksum set to
-   zero.
-1. Concatenate the pseudo header and the TCP data with zero checksum.
-1. Compute the checksum of that concatenation
-1. Extract the checksum from the original data in `tcp_data_0.dat`.
-1. Compare the two checksums. If they're identical, it works!
-1. Modify your code to run it on all 10 of the data files. **The first
-   5 files should have matching checksums! The second five files should
-   not!** That is, the second five files are simulating being corrupted
-   in transit.
+1. Đọc file `tcp_addrs_0.txt`.
+1. Tách dòng thành hai phần, địa chỉ nguồn và địa chỉ đích.
+1. Viết một hàm chuyển đổi địa chỉ IP dạng dots-and-numbers thành
+   bytestring.
+1. Đọc file `tcp_data_0.dat`.
+1. Viết một hàm tạo ra các byte IP pseudo header từ địa chỉ IP trong
+   `tcp_addrs_0.txt` và TCP length từ file `tcp_data_0.dat`.
+1. Xây dựng phiên bản mới của TCP data với checksum được đặt về zero.
+1. Nối pseudo header và TCP data với checksum bằng zero.
+1. Tính checksum của chuỗi nối đó.
+1. Trích xuất checksum từ dữ liệu gốc trong `tcp_data_0.dat`.
+1. So sánh hai checksum. Nếu chúng giống nhau, là đúng!
+1. Chỉnh sửa code để chạy trên tất cả 10 file dữ liệu. **5 file đầu
+   phải có checksum khớp! 5 file sau không khớp!** Tức là 5 file sau
+   mô phỏng bị hỏng trong quá trình truyền.
 
-## Checksum in General
+## Checksum nói chung
 
-The checksum in TCP is a 16-bit value that represents a "sum total" of
-all the bytes in the packet. (Plus a bit more. And it's not just the
-total of the bytes--don't just add them up!!! More below.)
+Checksum trong TCP là giá trị 16-bit đại diện cho "tổng" của tất cả
+các byte trong packet. (Cộng thêm một chút nữa. Và không phải chỉ là
+tổng cộng các byte --- đừng cộng thẳng vào!!! Chi tiết bên dưới.)
 
-The TCP header itself contains the checksum from the sending host.
+Bản thân TCP header chứa checksum từ host gửi.
 
-The receiving host (which is what you're pretending to be, here)
-computes its own checksum from the incoming data, and makes sure it
-matches the value in the packet.
+Host nhận (đó là bạn đang giả vờ làm ở đây) tính checksum của riêng mình
+từ dữ liệu đến và đảm bảo nó khớp với giá trị trong packet.
 
-If it does, the packet is good. If it doesn't, it means something got
-corrupted. Either the source or destination IP addresses are wrong, or
-the TCP header is corrupted, or the data is wrong. Or the checksum
-itself got corrupted.
+Nếu khớp, packet tốt. Nếu không khớp, nghĩa là có gì đó bị hỏng. Địa
+chỉ IP nguồn hoặc đích sai, hoặc TCP header bị hỏng, hoặc dữ liệu sai.
+Hay chính checksum bị hỏng.
 
-In any case, the TCP software in the OS will request a resend if the
-checksums don't match.
+Trong bất kỳ trường hợp nào, phần mềm TCP trong hệ điều hành sẽ yêu cầu
+gửi lại nếu các checksum không khớp.
 
-Your job in this project is to re-compute the checksum of the given
-data, and make sure it matches (or doesn't) the checksum already in the
-given data.
+Nhiệm vụ của bạn trong project này là tính lại checksum của dữ liệu đã
+cho và đảm bảo nó khớp (hoặc không khớp) với checksum đã có trong dữ
+liệu đó.
 
-## Input File Details
+## Chi tiết File đầu vào
 
-**Download [fls[this ZIP|tcpcksum/tcp_data.zip]] with the input files**.
+**Tải [fls[ZIP này|tcpcksum/tcp_data.zip]] với các file đầu vào**.
 
-There are 10 sets of them. The first 5 have valid checksums. The second
-5 are corrupted.
+Có 10 bộ file. 5 bộ đầu có checksum hợp lệ. 5 bộ sau bị hỏng.
 
-In case you didn't notice, the previous line tells you what you have to
-do to get 100% on this project!
+Phòng khi bạn không để ý, dòng trên cho bạn biết phải làm gì để đạt
+100% ở project này!
 
-The files are named like so:
+Các file được đặt tên như sau:
 
 ``` {.default}
 tcp_addrs_0.txt
@@ -106,29 +95,26 @@ tcp addrs_1.txt
 tcp addrs_1.dat
 ```
 
-and so on, up to the index number 9. Each pair of files is related.
+và tương tự, đến chỉ số 9. Mỗi cặp file có liên quan đến nhau.
 
-### The `.txt` File
+### File `.txt`
 
-You can look at the `tcp_addrs_n.txt` files in an editor and you'll see
-it contains a pair of random IP addresses, similar to the following:
+Bạn có thể mở file `tcp_addrs_n.txt` trong editor và thấy nó chứa một
+cặp địa chỉ IP ngẫu nhiên, tương tự như:
 
 ``` {.default}
 192.0.2.207 192.0.2.244
 ```
 
-These are the _source IP address_ and _destination IP address_ for this
-TCP packet.
+Đây là _địa chỉ IP nguồn_ và _địa chỉ IP đích_ cho TCP packet này.
 
-Why do we need to know IP information if this is a TCP checksum? Stay
-tuned!
+Tại sao cần biết thông tin IP nếu đây là TCP checksum? Hẹn ngay!
 
-### The `.dat` File
+### File `.dat`
 
-This is a binary file containing the raw TCP header followed by payload
-data. It'll look like garbage in an editor. If you have a hexdump
-program, you can view the bytes with that. For example, here's the
-output from `hexdump`:
+Đây là file nhị phân chứa TCP header thô tiếp theo là dữ liệu payload.
+Nó sẽ trông như rác trong editor. Nếu bạn có chương trình hexdump, bạn
+có thể xem các byte với nó. Ví dụ, đây là output từ `hexdump`:
 
 ``` {.sh}
 hexdump -C tcp_data_0.dat
@@ -141,56 +127,54 @@ hexdump -C tcp_data_0.dat
 00000023
 ```
 
-But for this project, the only things in that file you really will care
-about are:
+Nhưng cho project này, những thứ duy nhất trong file đó bạn thực sự cần
+quan tâm là:
 
-* The length (in bytes) of the data
-* The 16-bit big-endian checksum that's stored at offset 16-17
+* Độ dài (tính bằng bytes) của dữ liệu
+* Checksum big-endian 16-bit được lưu tại offset 16-17
 
-More on that later!
+Chi tiết hơn sau!
 
-Note: these files contain "semi-correct" TCP headers. All the parts are
-there, but the various values (especially in the flags and options
-fields) might make no sense.
+Lưu ý: các file này chứa TCP header "gần đúng". Tất cả các phần đều có
+mặt, nhưng các giá trị khác nhau (đặc biệt trong các trường flags và
+options) có thể không có nghĩa gì.
 
-## How On Earth Do You Compute A TCP Checksum?
+## Làm thế nào để tính TCP Checksum?
 
-It's not easy.
+Không dễ đâu.
 
-The TCP checksum is there to verify the integrity of several things:
+TCP checksum ở đó để xác minh tính toàn vẹn của nhiều thứ:
 
-* The TCP header
-* The TCP payload
-* The source and destination IP addresses (to protect against misrouted
-  data ending up in the TCP stream).
+* TCP header
+* TCP payload
+* Địa chỉ IP nguồn và đích (để bảo vệ chống lại dữ liệu bị định tuyến
+  sai vào TCP stream).
 
-The last part is interesting, because the IP addresses aren't in the TCP
-header or data at all, so how do we get them included in the checksum?
+Phần cuối rất thú vị, vì địa chỉ IP hoàn toàn không có trong TCP header
+hay data, vậy làm sao ta đưa chúng vào checksum?
 
-A TCP checksum is a two-byte number that is computed like this, given
-TCP header data, the payload, and the source and destination IP
-addresses:
+TCP checksum là một số 2-byte được tính như sau, cho TCP header data,
+payload và địa chỉ IP nguồn và đích:
 
-* Build a sequence of bytes representing the IP Pseudo header (see
-  below).
+* Xây dựng một chuỗi byte đại diện cho IP Pseudo header (xem bên dưới).
 
-* Set the existing TCP header checksum to zero.
+* Đặt checksum TCP header hiện tại về zero.
 
-* Concatenate the IP pseudo header + the TCP header and payload.
+* Nối IP pseudo header + TCP header và payload.
 
-* Compute the checksum of that concatenation.
+* Tính checksum của chuỗi nối đó.
 
-That's how you compute a TCP checksum.
+Đó là cách tính TCP checksum.
 
-But there are a lot of details.
+Nhưng có rất nhiều chi tiết.
 
-## The IP Pseudo Header
+## IP Pseudo Header
 
-Since we want to make sure that the IP addresses are correct for this
-data, as well, we need to include the IP header in our checksum.
+Vì chúng ta muốn đảm bảo rằng các địa chỉ IP cũng đúng cho dữ liệu này,
+chúng ta cần đưa IP header vào checksum.
 
-Except we don't include the real IP header. We make a fake one. And it
-looks like this (stolen straight out of the TCP RFC):
+Ngoại trừ chúng ta không đưa IP header thật vào. Chúng ta tạo một cái
+giả. Và nó trông như thế này (lấy thẳng từ TCP RFC):
 
 ``` {.default}
 +--------+--------+--------+--------+
@@ -202,35 +186,33 @@ looks like this (stolen straight out of the TCP RFC):
 +--------+--------+--------+--------+
 ```
 
-Don't let the grid layout fool you: the IP pseudo header is a string of
-bytes. It's just in this layout for easier human consumption.
+Đừng để bố cục lưới đánh lừa bạn: IP pseudo header là một chuỗi bytes.
+Nó chỉ ở bố cục này để con người đọc dễ hơn thôi.
 
-Each `+` sign in diagram represents a byte delimiter.
+Mỗi dấu `+` trong sơ đồ đại diện cho ranh giới byte.
 
-So the Source Address is 4 bytes. (Hey! IPv4 addresses are 4 bytes
-long!) **You get this out of the `tcp_addrs_n.txt` files**.
+Vậy Source Address (địa chỉ nguồn) là 4 bytes. (Này! Địa chỉ IPv4 là 4
+bytes!) **Bạn lấy cái này từ các file `tcp_addrs_n.txt`**.
 
-The Destination Address is 4 bytes. **You get this out of the
-`tcp_addrs_n.txt` files, as well**.
+Destination Address (địa chỉ đích) là 4 bytes. **Bạn cũng lấy cái này
+từ các file `tcp_addrs_n.txt`**.
 
-Zero is one byte, just set to byte value `0x00`.
+Zero là một byte, chỉ đặt bằng giá trị byte `0x00`.
 
-PTCL is the protocol, and that is always set to a byte value of `0x06`.
-(IP has some magic numbers that represent the higher level protocol
-above it. TCP's number is 6. That's where it comes from.)
+PTCL là giao thức, và nó luôn được đặt bằng giá trị byte `0x06`. (IP có
+một số số ma thuật đại diện cho giao thức cấp cao hơn trên nó. Số của
+TCP là 6. Đó là nguồn gốc của nó.)
 
-TCP Length is the total length, in bytes of the TCP packet and data,
-big-endian. **This is the length of the data you'll read out of the
-`tcp_data_n.dat` files**.
+TCP Length là tổng chiều dài, tính bằng bytes của TCP packet và data,
+big-endian. **Đây là chiều dài của dữ liệu bạn sẽ đọc từ các file
+`tcp_data_n.dat`**.
 
-So before you can compute the TCP checksum, you have to fabricate an IP
-pseudo header!
+Vậy trước khi tính TCP checksum, bạn phải tự tạo một IP pseudo header!
 
-### Example Pseudo Header
+### Pseudo Header ví dụ
 
-If the source IP is `255.0.255.1` and the dest IP is `127.255.0.1`, and
-the TCP length is 3490 (hex 0x0da2), the pseudo header would be this
-sequence of bytes:
+Nếu IP nguồn là `255.0.255.1` và IP đích là `127.255.0.1`, và TCP length
+là 3490 (hex 0x0da2), pseudo header sẽ là chuỗi bytes này:
 
 ``` {.default}
  Source IP |  Dest IP  |Z |P |TCP length
@@ -238,40 +220,40 @@ sequence of bytes:
 ff 00 ff 01 7f ff 00 01 00 06 0d a2
 ```
 
-`Z` is the zero section. And `P` is the protocol (always 6).
+`Z` là phần zero. Và `P` là giao thức (luôn là 6).
 
-See how the bytes line up to the inputs? (255 is hex 0xff, 127 is hex
-0x7f, etc.)
+Thấy cách các byte tương ứng với các đầu vào không? (255 là hex 0xff,
+127 là hex 0x7f, v.v.)
 
-### Getting the IP Address Bytes
+### Lấy bytes địa chỉ IP
 
-If you noticed, the IP addresses in the `tcp_addrs_n.txt` files are in
-dots and numbers format, not binary.
+Nếu để ý, địa chỉ IP trong các file `tcp_addrs_n.txt` ở dạng dots-and-
+numbers, không phải nhị phân.
 
-**You're going to need to write a function that turns a dots-and-numbers
-string into a sequence of 4 bytes.**
+**Bạn sẽ cần viết một hàm chuyển chuỗi dots-and-numbers thành chuỗi 4
+bytes.**
 
-Algorithm:
+Thuật toán:
 
-* Split the dots and numbers into an array of 4 integers.
-* Convert each of those to a byte with `.to_bytes()`
-* Concatenate them all together into a single bytestring.
+* Tách dots and numbers thành mảng 4 số nguyên.
+* Chuyển mỗi cái thành byte bằng `.to_bytes()`
+* Nối tất cả lại thành một bytestring duy nhất.
 
-This function will take a dots-and-numbers IPv4 address and return a
-four-byte bytestring with the result.
+Hàm này sẽ nhận địa chỉ IPv4 dạng dots-and-numbers và trả về bytestring
+bốn byte với kết quả.
 
-Here's a test:
+Đây là bài test:
 
 * Input: `"1.2.3.4"`
 * Output: `b'\x01\x02\x03\x04'`
 
-Then you can run this function on each of the IP addresses in the input
-file and append them to the pseudoheader.
+Sau đó bạn có thể chạy hàm này trên mỗi địa chỉ IP trong file đầu vào
+và append chúng vào pseudoheader.
 
-### Getting the TCP Data Length
+### Lấy chiều dài TCP Data
 
-This is easy: once you read in one of the `tcp_data_n.dat` files, just
-get the length of the data.
+Cái này dễ: một khi bạn đọc một trong các file `tcp_data_n.dat`, chỉ
+cần lấy chiều dài của dữ liệu.
 
 ``` {.py}
 with open("tcp_data_0.dat", "rb") as fp:
@@ -279,19 +261,19 @@ with open("tcp_data_0.dat", "rb") as fp:
     tcp_length = len(tcp_data)  # <-- right here
 ```
 
-**Be sure to use `"rb"` when reading binary data! That's what the `b` is
-for! If you don't do this, it might break everything!**
+**Nhớ dùng `"rb"` khi đọc dữ liệu nhị phân! Đó là ý nghĩa của `b`! Nếu
+không làm vậy, có thể phá vỡ mọi thứ!**
 
-## The TCP Header Checksum
+## TCP Header Checksum
 
-When computing the checksum, we need a TCP header with its checksum
-field set to zero.
+Khi tính checksum, chúng ta cần TCP header với trường checksum được đặt
+về zero.
 
-And we also need to extract the existing checksum from the TCP header we
-received so that we can compare it against the one we compute!
+Và chúng ta cũng cần trích xuất checksum hiện có từ TCP header đã nhận
+để có thể so sánh với checksum chúng ta tính được!
 
-This diagram is massive, but we actually only care about one part. So
-skim this and move on to the next paragraph:
+Sơ đồ này rất lớn, nhưng thực ra chúng ta chỉ quan tâm đến một phần.
+Vậy nên lướt qua và chuyển đến đoạn tiếp theo:
 
 ``` {.default}
  0                   1                   2                   3
@@ -315,96 +297,94 @@ skim this and move on to the next paragraph:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ```
 
-(Again, like the IP pseudo header, this is encoded as a stream of
-bytes and the grid is only here to make our human lives easier. This
-grid is 32-bits across, numbered along the top.)
+(Một lần nữa, giống như IP pseudo header, cái này được mã hóa như một
+luồng bytes và lưới chỉ ở đây để làm cho cuộc sống của chúng ta dễ hơn.
+Lưới này rộng 32-bit, được đánh số dọc theo trên cùng.)
 
-See where it says `Checksum`? That's the bit we care about for this
-project. And it's a two-byte number (big-endian) at byte offsets 16 and
-17 inside the TCP header.
+Bạn thấy chỗ viết `Checksum` không? Đó là phần chúng ta quan tâm cho
+project này. Và nó là số 2-byte (big-endian) tại byte offset 16 và 17
+bên trong TCP header.
 
-It will also be at byte offset 16-17 in the files `tcp_data_n.dat` since
-those files start with the TCP header. (Followed by the TCP payload.)
+Nó cũng sẽ nằm tại byte offset 16-17 trong các file `tcp_data_n.dat` vì
+các file đó bắt đầu bằng TCP header. (Tiếp theo là TCP payload.)
 
-**You'll need the checksum from that file. Use a slice to get those two
-bytes and then use `.from_bytes()` to convert it into a number. This is
-the original checksum you'll compare against at the end of the day!**
+**Bạn sẽ cần checksum từ file đó. Dùng slice để lấy hai bytes đó rồi
+dùng `.from_bytes()` để chuyển thành số. Đây là checksum gốc bạn sẽ so
+sánh ở cuối cùng!**
 
-**You'll also need to generate a version of that TCP header and data
-where the checksum is set to zero. You can do it like this:**
+**Bạn cũng sẽ cần tạo một phiên bản của TCP header và data đó với
+checksum được đặt về zero. Bạn có thể làm như thế này:**
 
 ``` {.py}
 tcp_zero_cksum = tcp_data[:16] + b'\x00\x00' + tcp_data[18:]
 ```
 
-See how we made a new version of the TCP data there? We sliced
-everything before and after the existing checksum, and put two zero
-bytes in the middle.
+Thấy cách chúng ta tạo phiên bản mới của TCP data chưa? Chúng ta slice
+mọi thứ trước và sau checksum hiện có, và đặt hai byte zero vào giữa.
 
-## Actually Computing the Checksum
+## Thực sự tính Checksum
 
-We're getting there. So far we've done these steps:
+Chúng ta gần đến rồi. Cho đến nay chúng ta đã làm các bước sau:
 
-* Build the IP pseudo header
-* Extract the checksum from the existing TCP header
-* Build a version of the TCP header with a zero checksum
+* Xây dựng IP pseudo header
+* Trích xuất checksum từ TCP header hiện có
+* Xây dựng phiên bản TCP header với checksum bằng zero
 
-And now we get to do the math. Here's what the spec says to do:
+Và bây giờ chúng ta đến phần toán học. Đây là những gì đặc tả nói:
 
 > The checksum field is the 16 bit one's complement of the one's
 > complement sum of all 16 bit words in the header and text.
 
-All right, we're already in trouble. The what of the what?
+Ờ thôi, chúng ta đã gặp vấn đề rồi. Cái gì của cái gì?
 
-One's complement is a way of representing positive and negative integers
-in binary. We don't need to know the details for this, gratefully.
+One's complement (bù một) là cách biểu diễn số nguyên dương và âm trong
+nhị phân. Chúng ta không cần biết chi tiết cho việc này, may mắn thay.
 
-But one thing we do need to notice is that we're talking about all the
-"16 bit words"... what is that?
+Nhưng một điều chúng ta cần chú ý là chúng ta đang nói về tất cả "các
+từ 16 bit"... cái đó là gì?
 
-It means that instead of considering all this data to be a bunch of
-bytes, we're considering it to be a bunch of 16-bit values packed
-together.
+Nó có nghĩa là thay vì coi tất cả dữ liệu này là một loạt bytes, chúng
+ta coi nó là một loạt các giá trị 16-bit được đóng gói cùng nhau.
 
-So if you have the bytes:
+Vậy nếu bạn có các bytes:
 
 ``` {.default}
 01 02 03 04 05 06
 ```
 
-we're going to think of that as 3 16-bit values:
+chúng ta sẽ coi đó là 3 giá trị 16-bit:
 
 ``` {.default}
 0102 0304 0506
 ```
 
-And we're going to be adding those together. With one's complement
-addition. Whatever that means.
+Và chúng ta sẽ cộng những cái đó lại. Với phép cộng one's complement.
+Dù sao đi nữa.
 
-Hey--but what if there are an odd number of bytes?
+Này --- nhưng nếu có số lẻ bytes thì sao?
 
 > If a segment contains an odd number of header and text octets to be
 > checksummed, the last octet is padded on the right with zeros to form
 > a 16 bit word for checksum purposes.
 
-So we're going to have to look at the `tcp_length` we got from taking
-the length of the data from the `tcp_data_0.dat` file. If it's odd, just
-add a zero to the end of the entire data.
+Vậy nên chúng ta sẽ phải xem xét `tcp_length` mà chúng ta lấy được
+bằng cách lấy độ dài của dữ liệu từ file `tcp_data_0.dat`. Nếu nó lẻ,
+chỉ cần thêm một byte zero vào cuối toàn bộ dữ liệu.
 
-Conveniently, we have a copy of the TCP data we can use already: the
-version we made with the checksum zeroed out. Since we're going to be
-iterating over this anyway, might as well append the zero byte to that:
+Thuận tiện là, chúng ta đã có một bản sao của TCP data có thể dùng: phiên
+bản chúng ta tạo ra với checksum bằng zero. Vì chúng ta sẽ iterate qua
+cái này dù sao, cũng tiện để append byte zero vào đó:
 
 ``` {.py}
 if len(tcp_zero_cksum) % 2 == 1:
     tcp_zero_cksum += b'\x00'
 ```
 
-That will force it to be even length.
+Cái đó sẽ bắt buộc nó có độ dài chẵn.
 
-We can extract all those 16-bit values doing something like the
-following. Remember that the data to be checksummed includes the pseudo
-header and TCP data (with the checksum field set to zero):
+Chúng ta có thể trích xuất tất cả các giá trị 16-bit đó bằng cách làm
+gì đó như sau. Nhớ rằng dữ liệu cần được tính checksum bao gồm pseudo
+header và TCP data (với trường checksum được đặt về zero):
 
 ``` {.py}
 data = pseudoheader + tcp_zero_cksum
@@ -419,18 +399,18 @@ while offset < len(data):
     offset += 2   # Go to the next 2-byte value
 ```
 
-Great. That iterates over all the words in the whole chunk of data. But
-what does that buy us?
+Tuyệt. Cái đó iterate qua tất cả các từ trong toàn bộ đoạn dữ liệu.
+Nhưng điều đó mua cho chúng ta điều gì?
 
-What's the checksum, already?
+Checksum là gì rồi?
 
-Let's take that loop above and add the checksum code to it.
+Hãy lấy vòng lặp đó và thêm code checksum vào.
 
-Here we're back to that one's-complement stuff. And some 16-bit stuff,
-which is tricky in Python because it uses arbitrary-precision integers.
+Ở đây chúng ta quay lại với cái one's-complement. Và một số thứ 16-bit,
+khá khó chịu trong Python vì nó dùng số nguyên có độ chính xác tùy ý.
 
-But here's how we want to do it. In the following example, `tcp_data` is
-the TCP data padded to an even length with zero for the checksum.
+Nhưng đây là cách chúng ta muốn làm. Trong ví dụ sau, `tcp_data` là TCP
+data được padding đến độ dài chẵn với zero cho checksum.
 
 ``` {.py}
 # Pseudocode
@@ -448,33 +428,31 @@ function checksum(pseudo_header, tcp_data)
     return (~total) & 0xffff  # one's complement
 ```
 
-That "carry around" thing is part of the one's complement math. The
-`&0xffff` stuff all over the place is forcing Python to give us 16-bit
-integers.
+Cái "carry around" đó là một phần của toán one's complement. Các thứ
+`&0xffff` khắp nơi là để buộc Python cho chúng ta số nguyên 16-bit.
 
-Remember what the spec said?
+Nhớ đặc tả nói gì không?
 
 > The checksum field is the 16 bit one's complement of the one's
 > complement sum of all 16 bit words in the header and text.
 
-The loop is getting us the "one's complement sum". The `~total` at the
-end is getting us the "one's complement" of that.
+Vòng lặp đang cho chúng ta "one's complement sum" (tổng bù một). `~total`
+ở cuối đang cho chúng ta "one's complement" của cái đó.
 
-## Final Comparison
+## So sánh cuối cùng (Final Comparison)
 
-Now that you've computed the checksum for the TCP data and extracted the
-existing checksum from the TCP data, it's time to compare the two.
+Bây giờ bạn đã tính được checksum cho TCP data và trích xuất checksum
+hiện có từ TCP data, đã đến lúc so sánh hai cái.
 
-If they are equal, the data is intact and correct. If they are unequal,
-the data corrupted.
+Nếu chúng bằng nhau, dữ liệu nguyên vẹn và chính xác. Nếu không bằng,
+dữ liệu bị hỏng.
 
-In the sample data, the first 5 files are intact, and the last 5 are
-corrupted.
+Trong dữ liệu mẫu, 5 file đầu nguyên vẹn, và 5 file cuối bị hỏng.
 
-## Output
+## Đầu ra (Output)
 
-The output of your program should show which TCP data passes and which
-fails. That is, this should be your output:
+Đầu ra của chương trình của bạn phải hiển thị TCP data nào pass và cái
+nào fail. Tức là, đây phải là đầu ra của bạn:
 
 ``` {.default}
 PASS
@@ -489,9 +467,10 @@ FAIL
 FAIL
 ```
 
-## Success
+## Thành công! (Success)
 
-That was no easy thing. Treat yourself! You earned it.
+Đó không phải là chuyện dễ dàng. Hãy tự thưởng cho mình! Bạn xứng đáng
+được vậy.
 
 <!-- Rubric
 
