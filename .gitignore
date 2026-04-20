@@ -1,0 +1,14 @@
+docs/
+release/
+src_vi/*.html
+src_vi/*.pdf
+src_vi/*.epub
+src_vi/split/
+src_vi/split-wide/
+src_vi/*.toc
+src_vi/*.log
+src_vi/*.aux
+src_vi/*.out
+src_vi/*.fls
+src_vi/*.fdb_latexmk
+*.DS_Store
