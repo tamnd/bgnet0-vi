@@ -1,158 +1,121 @@
-# Project: Atomic Time
+# Dự Án: Giờ Nguyên Tử
 
-You're going to reach out to the atomic clock at NIST (National
-Institute of Standards and Technology) and get the number of seconds
-since January 1, 1900 from their clocks. (That's a lot of seconds.)
+Bạn sẽ kết nối đến đồng hồ nguyên tử tại NIST (Viện Tiêu Chuẩn và Công Nghệ Quốc Gia Hoa Kỳ) và lấy số giây kể từ ngày 1 tháng 1 năm 1900 từ đồng hồ của họ. (Đó là rất nhiều giây.)
 
-And you'll print it out.
+Và bạn sẽ in nó ra.
 
-And then you're going to print out the system time from the clock on
-your computer.
+Sau đó bạn sẽ in ra thời gian hệ thống từ đồng hồ trên máy tính của bạn.
 
-If your computer's clock is accurate, the numbers should be very close
-in the output:
+Nếu đồng hồ máy tính của bạn chính xác, các con số sẽ rất gần nhau trong kết quả đầu ra:
 
 ``` {.default}
 NIST time  : 3874089043
 System time: 3874089043
 ```
 
-We're just writing a client in this case. The server already exists and
-is already running.
+Chúng ta chỉ viết một client trong trường hợp này. Server đã tồn tại và đang chạy rồi.
 
-## Note On Legality
+## Lưu Ý Về Tính Hợp Pháp
 
-The NIST runs this server for public use. Generally speaking, you don't
-want to be connecting to servers where the owner doesn't want you to.
-It's a quick way to run afoul of the law.
+NIST vận hành server này để sử dụng công khai. Nói chung, bạn không muốn kết nối đến các server mà chủ sở hữu không muốn bạn làm. Đó là cách nhanh chóng để vi phạm pháp luật.
 
-But in this case, the general public is welcome to use it.
+Nhưng trong trường hợp này, công chúng nói chung được chào đón sử dụng nó.
 
-## Note On Allowable Use
+## Lưu Ý Về Sử Dụng Được Phép
 
-**The NIST server should never be queried more than once every four
-seconds**. They might start refusing service if you exceed this rate.
+**Server NIST không bao giờ được truy vấn nhiều hơn một lần mỗi bốn giây**. Họ có thể bắt đầu từ chối dịch vụ nếu bạn vượt quá tốc độ này.
 
-If you're running the code frequently and want to be sure you've waited
-4 seconds, you can buffer the run with a `sleep` call on the command
-line:
+Nếu bạn chạy code thường xuyên và muốn chắc chắn rằng bạn đã chờ 4 giây, bạn có thể đệm thời gian chạy bằng lệnh `sleep` trên dòng lệnh:
 
 ``` {.sh}
 sleep 4; python3 timeclient.py
 ```
 
-## Epoch
+## Epoch (Điểm Gốc Thời Gian)
 
-In computer parlance, we refer to "epoch" as meaning "the beginning of
-time" from a computer perspective.
+Trong ngôn ngữ máy tính, chúng ta gọi "epoch" (kỷ nguyên) là "điểm bắt đầu của thời gian" từ góc độ máy tính.
 
-Lots of libraries measure time in "number of seconds since epoch",
-meaning since the dawn of time.
+Nhiều thư viện đo thời gian bằng "số giây kể từ epoch", tức là kể từ buổi bình minh của thời gian.
 
-What do we mean by the dawn of time? Well, it's depends.
+Chúng ta có nghĩa là gì với buổi bình minh của thời gian? Chà, điều đó tùy thuộc.
 
-But in Unix-land, the dawn of time is very specifically January 1, 1970
-at 00:00 UTC (AKA Greenwich Mean Time).
+Nhưng trong thế giới Unix, buổi bình minh của thời gian rất cụ thể là ngày 1 tháng 1 năm 1970 lúc 00:00 UTC (còn gọi là Greenwich Mean Time --- Giờ Trung Bình Greenwich).
 
-In other epochs, the dawn of time might be another date. For example,
-the Time Protocol that we'll be speaking uses January 1, 1900 00:00 UTC,
-70 years before Unix's.
+Trong các epoch khác, buổi bình minh của thời gian có thể là ngày khác. Ví dụ, Time Protocol (Giao thức Thời gian) mà chúng ta sẽ nói đến sử dụng ngày 1 tháng 1 năm 1900 lúc 00:00 UTC, trước Unix 70 năm.
 
-This means we'll have to do some conversion. But luckily for you, we'll
-just give you the code that will return the value for you and you don't
-have to worry about it.
+Điều này có nghĩa là chúng ta sẽ phải thực hiện một số chuyển đổi. Nhưng may mắn cho bạn, chúng ta sẽ chỉ cung cấp cho bạn code sẽ trả về giá trị cho bạn và bạn không phải lo lắng về nó.
 
-## A Dire Warning about Zeros
+## Cảnh Báo Nghiêm Trọng Về Số Không
 
-For reasons I don't understand, sometimes the NIST server will return 4
-bytes of all zeros. And other times it will just send zero bytes and
-close the connection.
+Vì những lý do tôi không hiểu, đôi khi server NIST sẽ trả về 4 byte toàn số không. Và đôi khi nó sẽ chỉ gửi không byte và đóng kết nối.
 
-If this happens, you'll probably see `0` show up as the NIST time.
+Nếu điều này xảy ra, bạn có thể sẽ thấy `0` xuất hiện làm thời gian NIST.
 
-Just try running your client again to see if you get good results after
-one or two more tries, keeping in mind the restriction of one query
-every 4 seconds.
+Chỉ cần thử chạy lại client để xem bạn có kết quả tốt sau một hoặc hai lần thử nữa không, lưu ý giới hạn một truy vấn mỗi 4 giây.
 
-They're on a rotating IP for `time.nist.gov` and it seems like one or
-two of the servers might not be working right.
+Họ có một IP xoay vòng cho `time.nist.gov` và có vẻ như một hoặc hai server có thể không hoạt động đúng.
 
-If it keeps coming up zero, something else might be wrong.
+Nếu nó tiếp tục ra số không, có thể có sự cố khác.
 
-## The Gameplan
+## Kế Hoạch
 
-The is what we'll be doing:
+Đây là những gì chúng ta sẽ làm:
 
-1. Connect to the server `time.nist.gov` on port `37` (the Time Protocol
-   port).
+1. Kết nối đến server `time.nist.gov` trên cổng `37` (cổng Time Protocol).
 
-2. Receive data. (You don't need to send anything.) You should get 4
-   bytes.
+2. Nhận dữ liệu. (Bạn không cần gửi bất cứ thứ gì.) Bạn nên nhận được 4 byte.
 
-3. The 4 bytes represent a 4-byte big-endian number. Decode the 4 bytes
-   with `.from_bytes()` into a numeric variable.
+3. 4 byte đại diện cho một số big-endian 4 byte. Giải mã 4 byte đó với `.from_bytes()` vào một biến số.
 
-4. Print out the value from the time server, which should be the number
-   of seconds since January 1, 1900 00:00.
+4. In ra giá trị từ time server, đó sẽ là số giây kể từ ngày 1 tháng 1 năm 1900 lúc 00:00.
 
-5. Print the system time as number of seconds since January 1, 1900
-   00:00.
+5. In ra thời gian hệ thống tính bằng số giây kể từ ngày 1 tháng 1 năm 1900 lúc 00:00.
 
-The two times should loosely (or exactly) agree if your computer's clock
-is accurate.
+Hai lần sẽ đại khái (hoặc chính xác) đồng ý nếu đồng hồ máy tính của bạn chính xác.
 
-The number should be a bit over 3,870,000,000, to give you a ballpark
-idea. And it should increment once per second.
+Con số nên hơn 3.870.000.000 một chút, để cho bạn ý tưởng sơ bộ. Và nó nên tăng thêm một lần mỗi giây.
 
-### 1. Connect to the Server
+### 1. Kết Nối Đến Server
 
-The Time Protocol in general works with both UDP and TCP. For this
-project you must use TCP sockets, just like we have been for other
-projects.
+Time Protocol nói chung hoạt động với cả UDP và TCP. Cho dự án này bạn phải dùng TCP sockets, giống như chúng ta đã làm cho các dự án khác.
 
-So make a socket and connect to `time.nist.gov` on port `37`, the Time
-Protocol port.
+Vì vậy hãy tạo một socket và kết nối đến `time.nist.gov` trên cổng `37`, cổng Time Protocol.
 
-### 2. Receive the Data
+### 2. Nhận Dữ Liệu
 
-Technically you should use a loop to do this, but it's very unlikely
-that such a small amount of data will be split into multiple packets.
+Về mặt kỹ thuật bạn nên dùng một vòng lặp để làm điều này, nhưng rất khó xảy ra là một lượng dữ liệu nhỏ như vậy sẽ bị chia thành nhiều gói tin.
 
-You'll receive 4 bytes max, no matter how many you ask for.
+Bạn sẽ nhận được tối đa 4 byte, dù bạn yêu cầu bao nhiêu.
 
-You can close the socket right after the data is received.
+Bạn có thể đóng socket ngay sau khi nhận dữ liệu.
 
-### 3. Decode the Data
+### 3. Giải Mã Dữ Liệu
 
-The data is an integer encoded as 4 bytes, big-endian.
+Dữ liệu là một số nguyên được mã hóa dưới dạng 4 byte, big-endian.
 
-Use the `.from_bytes()` method mentioned in the earlier chapters to
-convert the bytestream from `recv()` to a value.
+Dùng phương thức `.from_bytes()` được đề cập trong các chương trước để chuyển đổi bytestream từ `recv()` thành một giá trị.
 
+### 4. In Ra Thời Gian NIST
 
-### 4. Print Out NIST's Time
-
-It should be in this format:
+Nó nên ở định dạng này:
 
 ``` {.default}
 NIST time  : 3874089043
 ```
 
-### 5. Print Out the System Time
+### 5. In Ra Thời Gian Hệ Thống
 
-Here's some Python code that get the number of seconds since January 1
-1900 00:00 from your system clock.
+Đây là một đoạn code Python lấy số giây kể từ ngày 1 tháng 1 năm 1900 lúc 00:00 từ đồng hồ hệ thống của bạn.
 
-You can paste this right into your code and call it to get the system
-time.
+Bạn có thể dán cái này ngay vào code của mình và gọi nó để lấy thời gian hệ thống.
 
-Print the system time right after the NIST time in the following format:
+In thời gian hệ thống ngay sau thời gian NIST theo định dạng sau:
 
 ``` {.default}
 System time: 3874089043
 ```
 
-Here's the code:
+Đây là code:
 
 ``` {.py}
 import time
@@ -173,17 +136,15 @@ def system_seconds_since_1900():
     return seconds_since_1900_epoch
 ```
 
-Assuming NIST's number isn't zero:
+Giả sử con số của NIST không phải là số không:
 
-* If this number is within 10 seconds of NIST's number, that's great.
+* Nếu con số này trong vòng 10 giây so với con số của NIST, thật tuyệt.
 
-* If it's within 86,400 seconds, that's OK. And I'd like to hear about
-  it because it might be a bug in the above code.
+* Nếu nó trong vòng 86.400 giây, đó là OK. Và tôi muốn nghe về điều đó vì có thể là bug trong code trên.
 
-* If it's within a million seconds, I really want to hear about it.
+* Nếu nó trong vòng một triệu giây, tôi thực sự muốn nghe về điều đó.
 
-* If it's outside of that, it's probably a bug in your code. Did you use
-  `"big"` endian? Are you receiving 4 bytes?
+* Nếu nó ngoài phạm vi đó, có thể là bug trong code của bạn. Bạn có dùng `"big"` endian không? Bạn có đang nhận 4 byte không?
 
 <!-- Rubric
 
