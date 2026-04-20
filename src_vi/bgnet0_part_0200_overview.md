@@ -1,283 +1,275 @@
-# Networking Overview
+# Tổng quan về Mạng
 
-The Big Idea of networking is that we're going to get arbitrary bytes of
-data exchanged between two (or more) computers on the Internet or LAN.
+Ý tưởng lớn của mạng là chúng ta sẽ trao đổi các byte dữ liệu tùy ý
+giữa hai (hoặc nhiều) máy tính trên Internet hoặc LAN.
 
-So we need:
+Vậy ta cần:
 
-* A way of identifying the source and destination computers.
-* A way of maintaining data integrity.
-* A way of routing data from one computer to another (out of billions).
+* Một cách nhận diện máy tính nguồn và đích.
+* Một cách duy trì tính toàn vẹn dữ liệu.
+* Một cách định tuyến dữ liệu từ máy tính này sang máy tính khác
+  (trong số hàng tỷ chiếc).
 
-And we need all the hardware and software support to make this happen.
+Và cần toàn bộ hỗ trợ phần cứng và phần mềm để làm được chuyện này.
 
-Let's take a look at two basic kinds of communications networks.
+Hãy xem qua hai loại mạng truyền thông cơ bản.
 
-## Circuit Switched
+## Chuyển mạch (Circuit Switched)
 
-Don't be alarmed! The Internet doesn't use this type of network (at
-least not as far as it is aware). So you can read the rest of this
-section with the confident knowledge that you won't have to use it
-again.
+Đừng hoảng! Internet không dùng loại mạng này (ít nhất là không biết
+về nó). Nên bạn có thể đọc phần còn lại của mục này với sự tự tin
+rằng bạn sẽ không cần dùng đến nó nữa.
 
-For this type of network, visualize an old-school telephone operator
-(like a human operator). Back before you could dial numbers directly, a
-call went something like this:
+Để hiểu loại mạng này, hãy hình dung một tổng đài điện thoại kiểu
+cũ (tức là một người thật ngồi điều khiển). Hồi trước khi bạn có thể
+quay số trực tiếp, một cuộc gọi diễn ra kiểu như thế này:
 
-You'd pick up the receiver and turn a crank on it to generate an
-electrical signal that rang a bell at the other end of the phone line,
-which was in some telephone exchange office somewhere.
+Bạn nhấc ống nghe và quay tay cần trên máy để tạo tín hiệu điện gọi
+một cái chuông ở đầu dây kia, tức là trong một tổng đài điện thoại
+nào đó.
 
-An operator would hear the bell and pick up the other end and say
-something appropriate like, "Operator."
+Tổng đài nghe chuông và nhấc đầu dây kia, nói một câu gì đó phù hợp
+kiểu như, "Tổng đài nghe."
 
-And you'd tell (like with your voice) the operator what number you
-wanted to connect to.
+Và bạn nói (bằng giọng) cho tổng đài biết bạn muốn kết nối đến số
+nào.
 
-Then the operator would physically plug jumper wires into the
-switchboard in front of them to physically complete an electrical
-connection between your phone and the phone of the person you wanted to
-call. You'd have a direct wire from your phone to their phone.
+Rồi tổng đài cắm dây jumper vào bảng mạch trước mặt để hoàn tất kết
+nối điện vật lý giữa máy bạn và máy của người bạn muốn gọi. Bạn có
+một đường dây thẳng từ máy của bạn đến máy của họ.
 
-This scales very poorly. And if you had to make a long distance call,
-that cost extra, because an operator would have to call another operator
-over a limited number of long-distance lines.
+Cách này mở rộng rất kém. Và nếu bạn cần gọi đường dài, chi phí sẽ
+cao hơn, vì tổng đài phải liên hệ với tổng đài khác qua một số hữu
+hạn đường dây đường dài.
 
-Eventually, people figured out they could replace the human operators
-with electro-mechanical relays and switches that you could control by
-sending carefully coded signals down the line, either electrical pulses
-(sent by old rotary dial phones) or the still-recognizable "touch"
-tones.
+Cuối cùng, người ta nhận ra họ có thể thay thế các tổng đài người
+bằng các relay và switch điện cơ mà bạn có thể điều khiển bằng cách
+gửi các tín hiệu được mã hóa cẩn thận xuống đường dây, dưới dạng xung
+điện (gửi bởi điện thoại quay số cũ) hoặc các âm thanh "touch"
+còn được nhận ra đến ngày nay.
 
-But we still had problems:
+Nhưng ta vẫn còn vấn đề:
 
-* A dedicated circuit was needed for every call.
-* Even if you sat there quietly saying nothing, the circuit was still
-  occupied and couldn't be used by anyone else.
-* Multiple people couldn't use the same line at the same time.
-* There were a limited number of wires you could string up.
+* Cần một mạch chuyên dụng cho mỗi cuộc gọi.
+* Dù bạn ngồi im không nói gì, mạch vẫn bị chiếm và không ai khác
+  dùng được.
+* Nhiều người không thể dùng cùng một đường dây cùng lúc.
+* Số lượng dây dẫn bạn có thể kéo là có hạn.
 
-So the Internet took a different approach.
+Vậy nên Internet chọn một hướng tiếp cận khác.
 
-## Packet Switched
+## Chuyển gói (Packet Switched)
 
-In a _packet switched_ network, the data you want to send is split up
-into individual packets of varying numbers of bytes. If you want to send
-83,234 bytes of data, that might be split up into 50 or 60 packets.
+Trong mạng _chuyển gói_ (packet switched), dữ liệu bạn muốn gửi
+được chia thành các gói (packet) riêng lẻ với số byte khác nhau. Nếu
+muốn gửi 83.234 byte dữ liệu, nó có thể bị chia thành 50 hoặc 60
+gói.
 
-Then each of these packets are individually sent over the lines as space
-permits.
+Sau đó mỗi gói này được gửi riêng lẻ qua các đường dây khi có chỗ
+trống.
 
-Imagine little packets of data from computers all over North America
-arriving at a router at the edge of the Atlantic Ocean which sends them,
-one at a time, over a thousands-of-miles-long undersea cable to Europe.
+Hãy hình dung các gói dữ liệu nhỏ từ máy tính khắp Bắc Mỹ đổ vào một
+router ở bờ Đại Tây Dương, router này gửi chúng, từng cái một, qua
+một cáp biển dài hàng nghìn dặm sang châu Âu.
 
-Once the packets arrive at their destination computer, that computer
-reconstructs the data from the individual packets.
+Khi các gói đến máy đích, máy đó tái tạo dữ liệu từ các gói riêng lẻ.
 
-This is analogous to writing a snail-mail letter and putting it in the
-post. It ends up in a truck with a bunch of other pieces of mail that
-aren't going to the same place as yours.
+Điều này tương tự như viết một lá thư gửi bưu điện và bỏ vào hộp thư.
+Nó kết thúc trên xe tải cùng với hàng đống thư khác không đi đến cùng
+chỗ với thư của bạn.
 
-The post office routes the letters through the appropriate mailing
-facilities until they arrive.
+Bưu điện định tuyến thư qua các cơ sở bưu chính phù hợp cho đến khi
+chúng đến nơi.
 
-Maybe your letter gets on a plane headed for the opposite side of the
-country with a bunch of other letters. And when the plane arrives, those
-letters might part, with some going north and some going south.
+Có lẽ thư của bạn lên máy bay đến phía bên kia đất nước cùng nhiều
+thư khác. Và khi máy bay đến nơi, những lá thư đó có thể phân nhánh,
+một số đi về hướng Bắc, một số đi về hướng Nam.
 
-They don't use a whole plane for a single letter--the letters are like
-packets, and they get switched from one transportation medium to
-another.
+Họ không dùng nguyên một chiếc máy bay cho một lá thư---các thư giống
+như gói, và chúng được chuyển từ phương tiện vận chuyển này sang
+phương tiện khác.
 
-In the same way, packets of data on the Internet will move from computer
-to computer, sharing the lines between those computers with other
-traffic, until they finally get where they're going.
+Tương tự, các gói dữ liệu trên Internet sẽ di chuyển từ máy tính này
+sang máy tính khác, chia sẻ đường truyền với lưu lượng khác, cho đến
+khi chúng đến đúng chỗ.
 
-And this affords some great advantages in a computer network:
+Và điều này mang lại một số lợi thế tuyệt vời trong mạng máy tính:
 
-* You don't need a dedicated circuit between every communicating pair of
-  computers (this would likely be a physical impossibility if we wanted
-  to support the amount of traffic we currently have today).
+* Không cần mạch chuyên dụng giữa mọi cặp máy tính giao tiếp (điều
+  này có lẽ là bất khả thi về mặt vật lý nếu muốn hỗ trợ lượng lưu
+  lượng hiện có ngày nay).
 
-* Multiple computers can all use the same wire to send data at the
-  "same" time. (The packets actually go one at a time, but they're
-  interleaved so it looks simultaneous.)
+* Nhiều máy tính có thể dùng cùng một đường dây để gửi dữ liệu
+  "đồng thời". (Các gói thực ra đi lần lượt, nhưng chúng xen kẽ nhau
+  nên trông có vẻ đồng thời.)
 
-* A wire can be utilized to full capacity; there's no "dead air" that
-  goes unused if someone wants to use it. One computer's silence is
-  another computer's opportunity to transmit on the same wire.
+* Đường dây có thể được sử dụng hết công suất; không có "không khí
+  chết" bị lãng phí nếu ai đó muốn dùng nó. Sự im lặng của một máy
+  tính là cơ hội của máy tính khác để truyền trên cùng đường dây.
 
-## Client/Server Architecture
+## Kiến trúc Client/Server
 
-You know this from using the web--you've heard of web servers.
+Bạn đã biết điều này từ khi dùng web---bạn đã nghe đến web server.
 
-A _server_ is a program that _listens_ for incoming connections,
-_accepts_ them, and then typically receives a request from the _client_
-and sends back a response to the client.
+_Server_ (máy chủ) là chương trình _lắng nghe_ các kết nối đến,
+_chấp nhận_ chúng, rồi thông thường nhận yêu cầu từ _client_ (máy
+khách) và gửi lại phản hồi cho client.
 
-Actual conversations between the server and client might be far more
-complex depending on what the server does.
+Các cuộc trao đổi thực tế giữa server và client có thể phức tạp hơn
+nhiều tùy thuộc vào việc server làm gì.
 
-But both the client and server are network programs. The practical
-difference is the server is the program sitting there waiting for
-clients to call.
+Nhưng cả client lẫn server đều là các chương trình mạng. Sự khác biệt
+thực tế là server là chương trình ngồi chờ client gọi đến.
 
-Typically one server exists for many clients. Many servers might exist
-in a _server farm_ to serve many, many, many clients. Think about how
-many people use Google at the same time.
+Thông thường một server phục vụ nhiều client. Nhiều server có thể tồn
+tại trong một _server farm_ (trang trại server) để phục vụ rất, rất,
+rất nhiều client. Hãy nghĩ xem có bao nhiêu người dùng Google cùng
+lúc.
 
-## The OS, Network Programming, and Sockets
+## OS, Lập trình Mạng và Sockets
 
-The network is hardware, and the OS controls all access to hardware. So
-if you want to write software to use the network, you have to do it
-through the OS.
+Mạng là phần cứng, và OS kiểm soát mọi truy cập vào phần cứng. Vậy
+nếu muốn viết phần mềm dùng mạng, bạn phải làm qua OS.
 
-Historically, and modernly, this was done using an API called the
-_sockets_ API that was pioneered on Unix.
+Trong lịch sử, và đến tận ngày nay, điều này được thực hiện bằng
+một API gọi là _sockets_ API, tiên phong trên Unix.
 
-The Unix sockets API is very general purpose, but one of the many things
-it can do is give you a way to read and write data over the Internet.
+Sockets API của Unix rất đa năng, nhưng một trong nhiều thứ nó có
+thể làm là cho bạn cách đọc và ghi dữ liệu qua Internet.
 
-Other languages and operating systems have added the same Internet
-functionality over time, and many of them use different calls in their
-APIs. But as an homage to the original, many of these APIs are still
-called "sockets" APIs even if they don't match the original.
+Các ngôn ngữ và hệ điều hành khác đã thêm chức năng Internet tương
+tự theo thời gian, và nhiều trong số chúng dùng các lệnh gọi khác
+trong API. Nhưng như một lời tri ân tới bản gốc, nhiều API này vẫn
+được gọi là "sockets" API dù không khớp với bản gốc.
 
-If you want to use the original sockets API, you can do it programming
-with C in Unix.
+Nếu muốn dùng sockets API gốc, bạn có thể lập trình bằng C trên Unix.
 
-## Protocols
+## Protocol (Giao thức)
 
-You know that conversation that the client and server have? It's written
-down very specifically what bytes get sent when and from and to whom.
-You can't just send any old data to a web server--it has to be wrapped
-up a certain way.
+Bạn biết cuộc trò chuyện giữa client và server đó không? Người ta viết
+rất cụ thể những byte nào được gửi khi nào và từ ai đến ai. Bạn không
+thể gửi bất kỳ dữ liệu nào đến web server---nó phải được đóng gói
+theo một cách nhất định.
 
-Just like you can't take a letter, wrap it up in aluminum foil with no
-address, and expect the post office to deliver it to your intended
-recipient. That's breaking post office _protocol_.
+Giống như bạn không thể lấy một lá thư, bọc nó trong giấy nhôm không
+có địa chỉ, và kỳ vọng bưu điện giao đến người nhận mình muốn. Đó là
+vi phạm _giao thức_ của bưu điện.
 
-Both the sender and recipient have to be speaking the same protocol for
-correct communication to occur.
+Cả người gửi và người nhận phải nói cùng một giao thức thì giao tiếp
+mới đúng.
 
-> "Thank you for calling The Pizza Restaurant. Can I help you?"
-> "Would you like fries with that?"
+> "Cảm ơn đã gọi đến Nhà hàng Pizza. Tôi có thể giúp gì không?"
+> "Bạn có muốn thêm khoai tây chiên không?"
 >
-> A person calling a pizza restaurant breaks protocol.
+> Một người gọi đến nhà hàng pizza bị vi phạm giao thức.
 
-There are many protocols, and we'll cover a few of them in detail later.
-These were invented by people to solve different sorts of problems. If
-you need to pass data between two specialized programs you write, you'll
-have to define a protocol for that, too!
+Có rất nhiều giao thức, và chúng ta sẽ đề cập chi tiết một vài cái
+sau. Chúng được phát minh bởi con người để giải quyết các loại vấn
+đề khác nhau. Nếu bạn cần truyền dữ liệu giữa hai chương trình
+chuyên dụng bạn viết, bạn cũng phải định nghĩa một giao thức cho
+việc đó!
 
-Here are some common ones you might have heard of:
+Dưới đây là một số giao thức phổ biến bạn có thể đã nghe đến:
 
-* TCP - used to transmit data reliably.
-* UDP - used to transmit data quickly and unreliably.
-* IP - used to route packets over the network from one computer to
-  another.
-* HTTP - used to get web pages and make other web requests.
-* Ethernet - used to send data over a LAN.
+* TCP - dùng để truyền dữ liệu đáng tin cậy.
+* UDP - dùng để truyền dữ liệu nhanh và không đáng tin cậy.
+* IP - dùng để định tuyến gói từ máy tính này sang máy tính khác
+  trên mạng.
+* HTTP - dùng để lấy trang web và thực hiện các yêu cầu web khác.
+* Ethernet - dùng để gửi dữ liệu qua LAN.
 
-As we'll see in a moment, these protocols "live" at different layers of
-the network software.
+Như chúng ta sẽ thấy sau, các giao thức này "sống" ở các tầng khác
+nhau của phần mềm mạng.
 
-## Network Layers and Abstraction
+## Các Tầng Mạng và Abstraction
 
-Here's a quick overview of what happens when data goes out on the
-network. We'll cover this in much more detail in the coming modules.
+Dưới đây là tổng quan nhanh về những gì xảy ra khi dữ liệu đi ra
+mạng. Chúng ta sẽ đề cập chi tiết hơn nhiều trong các chương tiếp.
 
-1. A user program says, "I want to send the bytes 'GET / HTTP/1.1' to
-   that web server over there."  (Servers are identified by _IP address_
-   and a _port_ on the Internet--more on that later.)
+1. Một chương trình người dùng nói, "Tôi muốn gửi các byte 'GET /
+   HTTP/1.1' đến web server kia." (Server được xác định bằng _địa chỉ
+   IP_ và một _port_ trên Internet---sẽ nói thêm về sau.)
 
-2. The OS takes the data and wraps it up in a _header_ (that is,
-   prepends some data) that provides error detection (and maybe
-   ordering) information. The exact structure of this header would be
-   defined by a protocol such as TCP or UDP.
+2. OS lấy dữ liệu và bọc nó trong một _header_ (tức là thêm dữ liệu
+   vào đầu) cung cấp thông tin phát hiện lỗi (và có thể là thứ tự).
+   Cấu trúc chính xác của header này được định nghĩa bởi một giao thức
+   như TCP hoặc UDP.
 
-3. The OS takes all of _that_, and wraps it up in another header that
-   helps with routing. This header would be defined by the IP protocol.
+3. OS lấy tất cả _điều đó_, và bọc nó trong một header khác giúp định
+   tuyến. Header này được định nghĩa bởi giao thức IP.
 
-4. The OS hands all that data to the network interface card (the
-   _NIC_--the piece of hardware that's responsible for networking).
+4. OS chuyển toàn bộ dữ liệu đó cho card giao diện mạng (_NIC_---
+   miếng phần cứng chịu trách nhiệm về mạng).
 
-5. The NIC wraps all _that_ data up into another header that's defined
-   by a protocol such as Ethernet that helps with delivery on the LAN.
+5. NIC bọc toàn bộ _dữ liệu đó_ vào một header khác được định nghĩa
+   bởi một giao thức như Ethernet giúp phân phối trên LAN.
 
-6. The NIC sends the entire, multiply-wrapped data out over the wire,
-   or over the air (with WiFi).
+6. NIC gửi toàn bộ dữ liệu đã được bọc nhiều lớp ra qua dây, hoặc
+   qua không khí (với WiFi).
 
-When the receiving computer gets the packet, the reverse process
-happens. Its NIC strips the Ethernet header, the OS makes sure the IP
-address is correct, figures out which program is listening on that port,
-and sends it the fully unwrapped data.
+Khi máy tính nhận được gói, quá trình ngược lại xảy ra. NIC bóc
+header Ethernet, OS kiểm tra địa chỉ IP có đúng không, tìm ra chương
+trình nào đang lắng nghe trên port đó, và gửi dữ liệu đã bóc hết vỏ.
 
-All these different layers that do all this wrapping are together called
-the _protocol stack_. (This is a different usage of the word "stack"
-than the stack abstract data type.)
+Tất cả các tầng khác nhau làm tất cả việc bọc này được gọi chung là
+_protocol stack_ (ngăn xếp giao thức). (Đây là cách dùng khác của từ
+"stack" so với kiểu dữ liệu trừu tượng stack.)
 
-This works well because each layer is responsible for different parts of
-the process, e.g. one layer handles data integrity, and another handles
-routing the packet over the network, and another handles the data itself
-that is being transmitted between the programs. And each layer doesn't
-care about what the layers below it are doing with the data.
+Điều này hoạt động tốt vì mỗi tầng chịu trách nhiệm về các phần khác
+nhau của quy trình, ví dụ một tầng xử lý tính toàn vẹn dữ liệu, tầng
+khác xử lý định tuyến gói qua mạng, và tầng khác xử lý dữ liệu thực
+sự được truyền giữa các chương trình. Và mỗi tầng không quan tâm đến
+những gì các tầng bên dưới đang làm với dữ liệu.
 
-It's that last concept that's really important: when data is going over
-WiFi, the WiFi hardware doesn't even care what the data is, if it's
-Internet data or not, how integrity is assured (or not). All WiFi cares
-about is getting a big chunk of data transmitted over the air to another
-computer. When it arrives at the other computer, that computer will
-strip off the Ethernet stuff and look deeper in the packet, deciding
-what to do with it.
+Chính khái niệm cuối đó mới thực sự quan trọng: khi dữ liệu đi qua
+WiFi, phần cứng WiFi thậm chí không quan tâm dữ liệu là gì, có phải
+dữ liệu Internet không, tính toàn vẹn được đảm bảo (hoặc không) thế
+nào. WiFi chỉ quan tâm đến việc truyền một khối dữ liệu lớn qua
+không khí đến máy tính khác. Khi đến máy tính kia, máy đó sẽ bóc
+phần Ethernet và nhìn sâu hơn vào gói, quyết định làm gì với nó.
 
-And since the layers don't care what data is encapsulated below them,
-you can swap out protocols at various layers and still have the rest of
-them work. So if you're writing a program at the top layer (where we
-tend to write them most commonly), you don't care what's happening at
-the layers below that. It's Somebody Else's Problem.
+Và vì các tầng không quan tâm dữ liệu nào được đóng gói bên dưới,
+bạn có thể hoán đổi các giao thức ở các tầng khác nhau và vẫn để phần
+còn lại hoạt động. Vậy nếu bạn đang viết chương trình ở tầng trên
+cùng (nơi chúng ta thường viết nhiều nhất), bạn không cần quan tâm
+chuyện gì đang xảy ra ở các tầng phía dưới. Đó là Vấn đề của Người
+Khác.
 
-For example, you might be getting a web page with HTTP/TCP/IP/Ethernet,
-or you might be transmitting a file to another computer with
-TFTP/UDP/IP/Ethernet. IP and Ethernet work fine in both cases, because
-they are indifferent about the data they are sending.
+Ví dụ, bạn có thể đang lấy trang web với HTTP/TCP/IP/Ethernet, hoặc
+đang truyền tập tin đến máy tính khác với TFTP/UDP/IP/Ethernet. IP và
+Ethernet đều hoạt động tốt trong cả hai trường hợp, vì chúng thờ ơ
+với dữ liệu chúng đang gửi.
 
-There are many, many details omitted from this description, but we're
-still in high-level overview land.
+Có rất nhiều chi tiết bị bỏ qua trong mô tả này, nhưng chúng ta vẫn
+đang ở vùng tổng quan cấp cao.
 
-## Wired versus Wireless
+## Có dây so với Không dây
 
-When we're talking about LANs, we can think about network programming as
-if these two things were the same:
+Khi nói về LAN, chúng ta có thể coi lập trình mạng như thể hai thứ
+này là giống nhau:
 
-* Computers on a LAN connected by physical Ethernet cables[1].
-* Computers on a LAN all connected to the same WiFi access point.
+* Các máy tính trên LAN kết nối bằng cáp Ethernet vật lý[1].
+* Các máy tính trên LAN đều kết nối đến cùng một điểm truy cập WiFi.
 
-Turns out they both use the Ethernet protocol for low-level
-communication.
+Hóa ra cả hai đều dùng giao thức Ethernet để giao tiếp cấp thấp.
 
-So when we say the computers are on the same LAN, we mean they are
-either wired together or they are using the same WiFi access point.
+Vậy khi chúng ta nói các máy tính ở cùng LAN, chúng ta có nghĩa là
+chúng được kết nối có dây hoặc đang dùng cùng một điểm truy cập WiFi.
 
-[1] It's a bit wrong to call them "Ethernet cables" because they are
-just wires, and Ethernet is a protocol that effectively defines patterns
-of electricity that go over those wires. But what I mean is, "a cable
-that is commonly used with Ethernet".
+[1] Gọi chúng là "cáp Ethernet" hơi không chính xác vì chúng chỉ là
+dây, và Ethernet là giao thức định nghĩa hiệu quả các mẫu điện đi qua
+những dây đó. Nhưng ý tôi là, "một cáp thường được dùng với Ethernet".
 
-## Reflect
+## Ôn lại
 
-* Is the Internet circuit-switched or packet-switched?
+* Internet là chuyển mạch hay chuyển gói?
 
-* What is the relationship between a client program and a server
-  program?
+* Mối quan hệ giữa chương trình client và chương trình server là gì?
 
-* What role does the OS play when you're writing networked programs?
+* OS đóng vai trò gì khi bạn đang viết các chương trình mạng?
 
-* What is a protocol?
+* Giao thức là gì?
 
-* What are the reasons for having a protocol stack and data
-  encapsulation?
+* Lý do nào để có protocol stack và đóng gói dữ liệu?
 
-* What are the practical differences between a WiFi network and a wired
-  network?
+* Sự khác biệt thực tế giữa mạng WiFi và mạng có dây là gì?
