@@ -1,68 +1,68 @@
-# Port Scanning
+# Quét cổng (Port Scanning)
 
-**A NOTE ON LEGALITY**: It's unclear whether or not it is legal to
-portscan a computer you do not own. We'll be doing all our portscanning
-on `localhost`. **Don't portscan computers you do not have permission
-to!**
+**LƯU Ý VỀ PHÁP LÝ**: Chưa rõ việc quét cổng (portscan) một máy tính
+không thuộc sở hữu của bạn có hợp pháp hay không. Chúng ta sẽ chỉ
+quét cổng trên `localhost`. **Đừng quét cổng những máy tính bạn không
+có quyền!**
 
-A port scan is a method of determining which ports on a computer a ready
-to accept connections. In other words, which ports have a server
-listening on them.
+Quét cổng (port scan) là phương pháp xác định những cổng nào trên một
+máy tính đang sẵn sàng chấp nhận kết nối. Nói cách khác --- những
+cổng nào đang có server lắng nghe.
 
-The port scan is often the first line of attack on a system. Before
-being able to connect to see if some vulnerabilities can be found in any
-listening servers, we need to know which servers are running in the
-first place.
+Quét cổng thường là bước tấn công đầu tiên vào một hệ thống. Trước
+khi kết nối để tìm kiếm lỗ hổng trong các server đang lắng nghe, ta
+cần biết những server nào đang chạy.
 
-## Mechanics of a Portscanner
+## Cơ chế hoạt động của Portscanner
 
-A portscanner will attempt to find listening server processes on a range
-of ports on a specified IP. (Sometimes the range is all ports.)
+Một portscanner sẽ cố gắng tìm các tiến trình server đang lắng nghe
+trên một dải cổng tại một IP xác định. (Đôi khi dải đó bao gồm tất cả
+các cổng.)
 
-With TCP, the general approach is to try to set up a connection with the
-`connect()` call on the candidate port. If it works, we have an open
-port, and the portscanner outputs that information. Nothing is sent over
-the connection, and it is closed immediately.
+Với TCP, cách tiếp cận chung là thử thiết lập kết nối bằng lệnh gọi
+`connect()` trên cổng cần kiểm tra. Nếu thành công, đó là cổng mở, và
+portscanner in ra thông tin đó. Không có dữ liệu nào được gửi qua kết
+nối, và kết nối đó bị đóng ngay lập tức.
 
-> The job of the portscanner is to identify open ports, not to send or
-> receive other data unnecessarily.
+> Nhiệm vụ của portscanner là xác định các cổng đang mở, không phải
+> gửi hay nhận dữ liệu không cần thiết.
 
-Calling `connect()` causes the TCP connection to complete its three-way
-handshake. This isn't strictly necessary, since if the portscanner gets
-any reply from the server (i.e. the second part of the three way
-handshake) then we know the port is open. Completing the handshake would
-cause the remote OS to wake up the server on that port for a connection
-we know we're just going to close anyway.
+Việc gọi `connect()` khiến kết nối TCP hoàn thành bắt tay ba bước
+(three-way handshake). Thực ra điều này không bắt buộc --- nếu
+portscanner nhận được bất kỳ phản hồi nào từ server (tức phần thứ hai
+của bắt tay ba bước), ta đã biết cổng đó mở. Hoàn thành bắt tay sẽ
+khiến hệ điều hành phía xa đánh thức server trên cổng đó cho một kết
+nối mà ta biết rõ là sẽ đóng ngay.
 
-Some TCP portscanners will instead build a TCP SYN packet to start the
-handshake and send that to the port. If they get a SYN-ACK reply, they
-know the port is open. But then, instead of completing the handshake
-with an ACK, they send a RST (reset) causing the remote OS to terminate
-the nascent connection entirely--and causing it to not wake up the
-server on that port.
+Một số TCP portscanner sẽ tự tạo gói TCP SYN để khởi động bắt tay và
+gửi đến cổng đó. Nếu nhận được phản hồi SYN-ACK, chúng biết cổng đang
+mở. Nhưng thay vì hoàn thành bắt tay bằng ACK, chúng gửi RST (reset)
+khiến hệ điều hành phía xa hủy kết nối đang hình thành --- và không
+đánh thức server trên cổng đó.
 
-> You can write software that builds custom TCP packets with [raw
-> sockets](https://en.wikipedia.org/wiki/Network_socket#Types). Usually
-> you need to be a superuser/admin to use these.
+> Bạn có thể viết phần mềm tạo các gói TCP tùy chỉnh với [raw
+> sockets](https://en.wikipedia.org/wiki/Network_socket#Types). Thường
+> bạn cần quyền superuser/admin để dùng chúng.
 
-### Portscanning UDP
+### Quét cổng UDP
 
-Since there is no connection with UDP, port scans are a little less
-exact.
+Vì UDP không có kết nối (connectionless), việc quét cổng UDP kém chính
+xác hơn một chút.
 
-One technique is to send a UDP packet to a port and see if you get an
-[ICMP](https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol)
-"destination unreachable" message back. If so, the port is not open.
+Một kỹ thuật là gửi một gói UDP đến một cổng và xem có nhận được thông
+báo [ICMP](https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol)
+"destination unreachable" (đích không thể tiếp cận) không. Nếu có,
+cổng đó không mở.
 
-If you don't get a response, _maybe_ the port is open. Or maybe the UDP
-packet is being filtered out and dropped with no ICMP response.
+Nếu không nhận được phản hồi, _có thể_ cổng đang mở. Hoặc cũng có
+thể gói UDP bị lọc và bỏ đi mà không có phản hồi ICMP nào.
 
-Another option is to send a UDP packet to a known port that might have a
-server behind it. If you get a response from the server, you know the
-port is open. If not, it's closed or your traffic was filtered out.
+Một cách khác là gửi gói UDP đến một cổng đã biết có thể có server.
+Nếu nhận được phản hồi từ server, ta biết cổng đang mở. Nếu không,
+cổng đóng hoặc lưu lượng của ta bị lọc.
 
 ## Reflect
 
-* Why shouldn't you portscan random computers on the Internet?
+* Tại sao không nên quét cổng những máy tính ngẫu nhiên trên Internet?
 
-* What's the purpose of using a portscanner?
+* Mục đích của việc dùng portscanner là gì?
