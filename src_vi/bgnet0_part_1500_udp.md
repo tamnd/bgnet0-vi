@@ -1,41 +1,42 @@
 # User Datagram Protocol (UDP)
 
-If you like to keep things simple and are a positive thinker, UDP is for
-you. It's the near-ultimate in lightweight data transfer over the
+Nếu bạn thích sự đơn giản và có tư duy lạc quan, UDP dành cho bạn. Đây
+là chuẩn mực gần như tối thượng của việc truyền dữ liệu nhẹ nhàng qua
 Internet.
 
-You fire UDP packets off and hope they arrive. Maybe they do, or maybe
-someone put a backhoe through a fiber optic cable, or there were cosmic
-rays, or a router got too congested or irate and just dropped it.
-Unceremoniously.
+Bạn bắn ra các UDP packet và hy vọng chúng đến nơi. Có thể chúng đến,
+hoặc có thể ai đó đào đứt cáp quang bằng máy xúc, hoặc có tia vũ trụ,
+hoặc một router quá tải hay cáu kỉnh và cứ thế vứt bỏ. Không thương
+tiếc.
 
-It's living on the Internet data edge! Virtually all the pleasant
-and reliable guarantees of TCP--gone!
+Đây là sống trên ranh giới dữ liệu Internet! Hầu như tất cả những đảm
+bảo dễ chịu và đáng tin cậy của TCP --- biến mất hết!
 
-## Goals of UDP
+## Mục tiêu của UDP
 
-* Provide a way to send error-free data from one computer to another.
+* Cung cấp cách gửi dữ liệu không có lỗi từ máy tính này sang máy tính
+  khác.
 
-That's about it.
+Chỉ vậy thôi.
 
-The following are **not** goals of UDP:
+Những điều sau đây **không** phải là mục tiêu của UDP:
 
-* Provide data in order
-* Provide data without loss
-* Provide data without duplicates
+* Cung cấp dữ liệu theo đúng thứ tự
+* Cung cấp dữ liệu không bị mất
+* Cung cấp dữ liệu không bị trùng lặp
 
-If those are needed, TCP is a better choice. UDP offers zero protection
-against lost or misordered data. The only guarantee is that _if_ the
-data arrives, it will be correct.
+Nếu những điều đó cần thiết, TCP là lựa chọn tốt hơn. UDP cung cấp zero
+bảo vệ chống lại dữ liệu bị mất hoặc sai thứ tự. Đảm bảo duy nhất là
+_nếu_ dữ liệu đến nơi, nó sẽ là chính xác.
 
-But what it does give you is really low overhead and quick response
-times. It doesn't have any of the packet reassembly or flow control or
-ACK packets or any of the stuff TCP does. As a consequence, the header
-is much smaller.
+Nhưng những gì UDP cho bạn là overhead rất thấp và thời gian phản hồi
+nhanh. Nó không có bất kỳ quá trình tái hợp packet, flow control hay
+packet ACK hay bất cứ thứ gì mà TCP làm. Hệ quả là header nhỏ hơn
+nhiều.
 
-## Location in the Network Stack
+## Vị trí trong Network Stack
 
-Recall the layers of the Network Stack:
+Hãy nhớ lại các tầng của Network Stack:
 
 <!-- CAPTION: Internet Layered Network Model -->
 |Layer|Responsibility|Example Protocols|
@@ -45,56 +46,55 @@ Recall the layers of the Network Stack:
 |Internet|Routing|IP, IPv6, ICMP|
 |Link|Physical, signals on wires|Ethernet, PPP, token ring|
 
-You can see UDP in there at the Transport Layer. IP below it is
-responsible for routing. And the application layer above it takes
-advantage of all the features UDP has to offer. Which isn't a lot.
+Bạn có thể thấy UDP ở tầng Transport (Vận chuyển). IP bên dưới nó chịu
+trách nhiệm routing. Và tầng Application bên trên tận dụng tất cả các
+tính năng UDP cung cấp. Mà không có nhiều lắm.
 
-## UDP Ports
+## UDP Port
 
-UDP uses ports, similar to TCP. In fact, you can have a TCP program
-using the same port number as a different UDP program.
+UDP dùng port (cổng), tương tự TCP. Thực ra, bạn có thể có một chương
+trình TCP dùng cùng số port với một chương trình UDP khác.
 
-IP uses IP addresses to identify hosts.
+IP dùng địa chỉ IP để xác định host.
 
-But once on that host, the port number is what the OS uses to deliver
-the data to the correct process.
+Nhưng khi đã đến host đó, số port là thứ hệ điều hành dùng để chuyển dữ
+liệu đến đúng tiến trình.
 
-By analogy, the IP address is like a street address, and the port number
-is like an apartment number at that street address.
+Dùng phép so sánh: địa chỉ IP giống như địa chỉ đường phố, còn số port
+giống như số căn hộ tại địa chỉ đó.
 
-## UDP Overview
+## Tổng quan về UDP
 
-UDP is _connectionless_. You know how TCP takes the packet-switched
-network and makes it look like it's a reliable connection between two
-computers? UDP doesn't do that.
+UDP là _connectionless_ (không kết nối). Bạn biết TCP nhận mạng
+packet-switched và làm nó trông như một kết nối đáng tin cậy giữa hai
+máy tính không? UDP không làm vậy.
 
-You send a UDP datagram to an IP address and port. IP routes it there
-and the receiving computer sends it to the program that's bound to that
-port.
+Bạn gửi một UDP datagram (gói dữ liệu) đến một địa chỉ IP và port. IP
+định tuyến nó đến đó và máy tính nhận gửi nó đến chương trình đang bind
+vào port đó.
 
-There's no connection. It's all on an individual packet basis.
+Không có kết nối. Tất cả đều dựa trên từng packet riêng lẻ.
 
-When the packet arrives, the receiver can tell which IP and port it came
-from. This way the receiver can send a response.
+Khi packet đến, receiver có thể biết IP và port nó đến từ đâu. Cách này
+receiver có thể gửi phản hồi.
 
-## Data Integrity
+## Tính toàn vẹn dữ liệu (Data Integrity)
 
-There are a lot of things that can go wrong. Data can arrive out of
-order. It can be corrupted. It might be duplicated. Or maybe it doesn't
-arrive at all.
+Có rất nhiều thứ có thể xảy ra sai. Dữ liệu có thể đến không đúng thứ
+tự. Nó có thể bị hỏng. Nó có thể bị trùng lặp. Hoặc có thể không đến
+được.
 
-UDP barely has any mechanisms to handle all these contingencies.
+UDP hầu như không có cơ chế nào để xử lý tất cả những trường hợp này.
 
-In fact, all it does is error detection.
+Thực ra, nó chỉ làm mỗi một thứ: phát hiện lỗi.
 
-### Error Detection
+### Phát hiện lỗi (Error Detection)
 
-Before the sender sends out a segment, a _checksum_ is computed for that
-packet.
+Trước khi sender gửi một segment, một _checksum_ được tính cho packet
+đó.
 
-The checksum works exactly the same way as with TCP, except the UDP
-header is used. Compared to the TCP header, the UDP header is dead
-simple:
+Checksum hoạt động hoàn toàn giống như với TCP, ngoại trừ UDP header
+được dùng. So với TCP header, UDP header cực kỳ đơn giản:
 
 ``` {.default}
  0      7 8     15 16    23 24    31  
@@ -110,112 +110,108 @@ simple:
 +---------------- ...                 
 ```
 
-When the receiver gets the packet, it computes its own checksum of that
-packet.
+Khi receiver nhận packet, nó tính checksum của riêng mình cho packet đó.
 
-If the two checksums match, the data is assumed to be error-free. If
-they differ, the data is discarded.
+Nếu hai checksum khớp nhau, dữ liệu được coi là không có lỗi. Nếu chúng
+khác nhau, dữ liệu bị loại bỏ.
 
-That's it. The receiver never even knows that there was some data
-aimed at it. It just vanishes into the ether.
+Hết. Receiver thậm chí không biết rằng có dữ liệu nào đó nhắm đến mình.
+Nó chỉ tan biến vào hư không.
 
-The checksum is a 16-bit number that is the result of piping all the UDP
-header and payload data and the IP addresses involved into a function
-that digests them down.
+Checksum là một số 16-bit là kết quả của việc đưa toàn bộ dữ liệu UDP
+header, payload và các địa chỉ IP liên quan vào một hàm để tóm tắt chúng.
 
-This works the same way as the TCP checksum. (Jon Postel wrote the first
-RFCs for both TCP and UDP so it's no surprise they use the same
-algorithm.)
+Cái này hoạt động giống như TCP checksum. (Jon Postel đã viết RFC đầu
+tiên cho cả TCP và UDP nên không có gì ngạc nhiên khi chúng dùng cùng
+thuật toán.)
 
-The details of how the checksum works are in this week's project. Just
-substitute the UDP header for the TCP header.
+Chi tiết về cách checksum hoạt động có trong project tuần này. Chỉ cần
+thay UDP header vào chỗ TCP header là xong.
 
-## Maximum Payload Without Fragmentation
+## Payload tối đa không bị phân mảnh (Maximum Payload Without Fragmentation)
 
-It's a little ahead of schedule, but lower layers can decide to split a
-UDP packet up into smaller packets. Maybe there's a part of the internet
-the UDP packet has to pass through that can only handle sending data of
-a certain size.
+Hơi sớm một chút, nhưng các tầng thấp hơn có thể quyết định tách một
+UDP packet thành các packet nhỏ hơn. Có thể có một phần Internet mà UDP
+packet phải đi qua chỉ có thể xử lý dữ liệu kích thước nhất định.
 
-We call this "fragmentation", when a UDP packet is split among multiple
-IP packets.
+Chúng ta gọi điều này là "fragmentation" (phân mảnh), khi một UDP packet
+được chia ra thành nhiều IP packet.
 
-The maximum size packet that can be sent on any particular wire is
-called its MTU (maximum transmission unit). The smallest possible MTU on
-the Internet (IPv4) is 576 bytes. The biggest IP header is 60 bytes. And
-the UDP header is 8 bytes. So that leaves 576-60-8 = 508 bytes of
-payload that you can guarantee won't be fragmented[^If you're sending
-through a VPN, it might be less than this, but we'll ignore that for
-sake of simplicity.]. Since the IP header is sometimes smaller than 60
-bytes, lots of source say 512 bytes is the limit.
+Kích thước packet tối đa có thể gửi trên một đường truyền cụ thể gọi là
+MTU (maximum transmission unit --- đơn vị truyền tối đa). MTU nhỏ nhất
+có thể trên Internet (IPv4) là 576 bytes. IP header lớn nhất là 60 bytes.
+Và UDP header là 8 bytes. Vậy còn lại 576-60-8 = 508 bytes payload mà
+bạn có thể đảm bảo sẽ không bị phân mảnh[^Nếu bạn gửi qua VPN, có thể ít
+hơn thế, nhưng chúng ta bỏ qua điều đó cho đơn giản.]. Vì IP header đôi
+khi nhỏ hơn 60 bytes, nhiều nguồn cho rằng 512 bytes là giới hạn.
 
-Is fragmentation bad? Some routers might drop fragmented UDP packets. So
-staying under the minimum MTU is often a good idea with UDP.
+Phân mảnh có tệ không? Một số router có thể bỏ UDP packet bị phân mảnh.
+Vậy nên giữ dưới MTU tối thiểu thường là ý tưởng hay với UDP.
 
-## What's the Use?
+## Thì dùng UDP để làm gì? (What's the Use?)
 
-If UDP can drop packets all over the place, why ever use it?
+Nếu UDP có thể bỏ packet ở khắp nơi, tại sao lại dùng nó?
 
-Well, the performance gain is notable, so that's a draw.
+Thật ra, lợi ích về hiệu suất rất đáng kể, đó là điểm hấp dẫn.
 
-There are a number of circumstances you would use UDP:
+Có một số trường hợp bạn sẽ dùng UDP:
 
-1. If you don't care if you lose a few packets. If you're transmitting
-   voice or video or even game frame information, it might be OK to drop
-   a few packets. The stream will just glitch out for a moment and then
-   continue when the next packets arrive.
-   
-   This is the most common use. Multiplayer high-framerate games use
-   this from frame-by-frame updates, and also use TCP for lower
-   bandwidth needs like chat messages and player inventory changes.
+1. Nếu bạn không quan tâm đến việc mất vài packet. Nếu bạn đang truyền
+   giọng nói, video hay thậm chí thông tin frame game, có thể ổn khi bỏ
+   vài packet. Luồng chỉ bị giật một chút rồi tiếp tục khi các packet
+   tiếp theo đến.
 
-2. If you can't have packet loss, you can implement another protocol on
-   top of UDP. The TFTP (Trivial File Transfer Protocol) does this. It
-   puts a sequence number in each packet, and waits for the other side
-   to respond with a TFTP ACK packet before sending another. It's not
-   fast because the sender has to wait for an ACK before sending the
-   next packet, but it's really simple to implement.
+   Đây là cách dùng phổ biến nhất. Game nhiều người chơi với tốc độ
+   khung hình cao dùng cái này cho các cập nhật frame-by-frame, và cũng
+   dùng TCP cho các nhu cầu băng thông thấp hơn như tin nhắn chat và
+   thay đổi trang bị của nhân vật.
 
-   This is a rarer use. TFTP is used by diskless computers that don't
-   have an OS installed. They transfer the OS over the network on boot,
-   and need a small built-in network stack to make that happen. It's a
-   lot easier to implement an Ethernet/IP/UDP stack than an
-   Ethernet/IP/TCP stack.
+2. Nếu bạn không thể chấp nhận mất packet, bạn có thể cài đặt một giao
+   thức khác trên UDP. TFTP (Trivial File Transfer Protocol --- Giao thức
+   truyền file đơn giản) làm điều này. Nó đặt sequence number vào mỗi
+   packet và chờ phía kia phản hồi bằng packet TFTP ACK trước khi gửi
+   cái tiếp theo. Không nhanh vì sender phải chờ ACK trước khi gửi
+   packet tiếp theo, nhưng thực sự đơn giản để cài đặt.
 
-3. You want to multiplex different data "streams" without having
-   multiple TCP connections. You could tag each UDP packet with an
-   identifier so that they all go in the right buckets upon arrival.
+   Đây là cách dùng hiếm hơn. TFTP được dùng bởi các máy tính không có
+   đĩa chưa cài OS. Chúng truyền OS qua mạng khi khởi động và cần một
+   network stack nhỏ tích hợp sẵn để làm được điều đó. Cài đặt
+   Ethernet/IP/UDP stack dễ hơn nhiều so với Ethernet/IP/TCP stack.
 
-4. Early processing is possible. Maybe you can start processing packet 4
-   even if packet 3 hasn't arrived yet.
+3. Bạn muốn ghép kênh (multiplex) các "luồng" dữ liệu khác nhau mà
+   không cần nhiều kết nối TCP. Bạn có thể gắn thẻ mỗi UDP packet với
+   một identifier để chúng đều vào đúng bucket khi đến nơi.
 
-5. Etc.
+4. Xử lý sớm là có thể. Có thể bạn có thể bắt đầu xử lý packet 4 dù
+   packet 3 chưa đến.
+
+5. Vân vân.
 
 ## UDP (Datagram) Sockets
 
-With UDP sockets, there are some differences from TCP:
+Với UDP socket, có một số điểm khác biệt so với TCP:
 
-* You no longer call `listen()`, `connect()`, `accept()`, `send()`, or
-  `recv()` because there's no "connection".
-* You call `sendto()` to send UDP data.
-* You call `recvfrom()` to receive UDP data.
+* Bạn không còn gọi `listen()`, `connect()`, `accept()`, `send()`, hay
+  `recv()` nữa vì không có "kết nối".
+* Bạn gọi `sendto()` để gửi dữ liệu UDP.
+* Bạn gọi `recvfrom()` để nhận dữ liệu UDP.
 
-### Server Procedure
+### Quy trình Server
 
-The general procedure for a server is to make a new socket of type
-`SOCK_DGRAM`, which is a datagram/UDP socket. (We have been using the
-default of `SOCK_STREAM` which is a TCP socket.)
+Quy trình chung cho một server là tạo socket mới kiểu `SOCK_DGRAM`, đó
+là datagram/UDP socket. (Chúng ta đã dùng mặc định `SOCK_STREAM` là TCP
+socket.)
 
-Then the server calls `bind()` to bind to a port. This port is where the
-client will send packets.
+Sau đó server gọi `bind()` để bind vào một port. Port này là nơi client
+sẽ gửi packet đến.
 
-After that, the server can loop receiving data and sending responses.
+Sau đó, server có thể vòng lặp nhận dữ liệu và gửi phản hồi.
 
-When it receives data, `recvfrom()` will return the host and port the
-data was sent from. This can be used to reply, sending data back to the
-sender.
+Khi nhận được dữ liệu, `recvfrom()` sẽ trả về host và port mà dữ liệu
+đã được gửi từ đó. Điều này có thể được dùng để trả lời, gửi dữ liệu
+ngược lại cho sender.
 
-Here's an example server:
+Đây là một server ví dụ:
 
 ``` {.py}
 # UDP Server
@@ -246,17 +242,17 @@ while True:
     s.sendto(f"Got your {len(data)} byte(s) of data!".encode(), sender)
 ```
 
-### Client Procedure
+### Quy trình Client
 
-It's about the same as the server procedure, except it's not going to
-`bind()` to a specific port. It'll let the OS choose bind port for it
-the first time it calls `sendto()`.
+Về cơ bản giống quy trình server, ngoại trừ nó sẽ không `bind()` vào
+một port cụ thể. Nó để cho hệ điều hành chọn port bind cho mình lần đầu
+tiên nó gọi `sendto()`.
 
-Remember: UDP is unreliable, so there's a chance the data might not
-arrive! If it doesn't, just try again. (But it will almost certainly
-arrive running on localhost.)
+Nhớ rằng: UDP không đáng tin cậy, vậy nên có khả năng dữ liệu không đến
+nơi! Nếu không đến, thử lại. (Nhưng gần như chắc chắn sẽ đến khi chạy
+trên localhost.)
 
-Example client that can communicate with the above server:
+Client ví dụ có thể giao tiếp với server trên:
 
 ``` {.py}
 # UDP Client
@@ -287,16 +283,16 @@ print(f"Got reply: \"{data.decode()}\"")
 s.close()
 ```
 
-## Reflect
+## Reflect (Suy ngẫm)
 
-* What does TCP provide that UDP does not in terms of delivery
-  guarantees?
+* TCP cung cấp gì mà UDP không cung cấp về mặt đảm bảo phân phối?
 
-* Why do people recommend keeping UDP packets small?
+* Tại sao mọi người khuyến nghị giữ UDP packet nhỏ?
 
-* Why is the UDP header so much smaller than the TCP header?
+* Tại sao UDP header nhỏ hơn nhiều so với TCP header?
 
-* `sendto()` requires you specify a destination IP and port. Why does
-  the TCP-oriented `send()` function not require those arguments?
+* `sendto()` yêu cầu bạn chỉ định IP đích và port. Tại sao hàm `send()`
+  hướng TCP không yêu cầu những đối số đó?
 
-* Why would people use UDP over TCP if it's relatively unreliable?
+* Tại sao người ta lại dùng UDP thay vì TCP nếu nó tương đối không đáng
+  tin cậy?
