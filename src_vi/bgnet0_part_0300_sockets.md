@@ -1,138 +1,88 @@
-# Introducing The Sockets API
+# Giới Thiệu Sockets API
 
-In Unix, the sockets API generally gives processes a way to communicate
-with one another. It supports a variety of methods of communication, and
-one of those methods is over the Internet.
+Trong Unix, sockets API (giao diện lập trình socket) nhìn chung cung cấp cho các tiến trình một cách để giao tiếp với nhau. Nó hỗ trợ nhiều phương thức giao tiếp khác nhau, và một trong số đó là giao tiếp qua Internet.
 
-And that's the one we're interested in right now.
+Và đó chính là thứ chúng ta quan tâm lúc này.
 
-In C and Unix, the sockets API is a blend of library calls and system
-calls (functions that call the OS directly).
+Trong C và Unix, sockets API là sự kết hợp giữa các lời gọi thư viện và lời gọi hệ thống (system call --- các hàm gọi thẳng vào hệ điều hành).
 
-In Python, the Python sockets API is a library that calls the
-lower-level C sockets API. At least on Unix-likes. On other platforms,
-it will call whatever API that OS exposes for network communication.
+Trong Python, Python sockets API là một thư viện gọi xuống C sockets API cấp thấp hơn. Ít nhất là trên các hệ thống giống Unix. Trên các nền tảng khác, nó sẽ gọi bất kỳ API nào mà hệ điều hành đó cung cấp cho giao tiếp mạng.
 
-We're going to use this to write programs that communicate over the
-Internet!
+Chúng ta sẽ dùng thứ này để viết các chương trình giao tiếp qua Internet!
 
-## Client Connection Process
+## Quy Trình Kết Nối Phía Client
 
-The most confusing thing about using sockets is that there are generally
-several steps you have to take to connect to another computer, and
-they're not obvious.
+Phần rắc rối nhất khi dùng socket là thường có nhiều bước bạn phải thực hiện để kết nối đến máy tính khác, và chúng không hề rõ ràng ngay từ đầu.
 
-But they are:
+Nhưng chúng là:
 
-1. **Ask the OS for a socket**. In C, this is just a file descriptor (an
-   integer) that will be used from here on to refer to this network
-   connection. Python will return an object representing the socket.
-   Other language APIs might return different things.
+1. **Yêu cầu OS cấp một socket**. Trong C, đây chỉ là một file descriptor (mô tả tập tin --- một số nguyên) sẽ được dùng từ đây trở đi để chỉ kết nối mạng này. Python sẽ trả về một đối tượng đại diện cho socket. Các API ngôn ngữ khác có thể trả về những thứ khác nhau.
 
-   But the important thing about this step is that you have a way to
-   refer to this socket for upcoming data transmission. Note that it's
-   not connected to anything yet at all.
+   Điều quan trọng ở bước này là bạn có một cách để tham chiếu socket này cho việc truyền dữ liệu sắp tới. Lưu ý rằng nó chưa được kết nối đến bất kỳ đâu cả.
 
-2. **Perform a DNS lookup** to convert the human-readable name (like
-   `example.com`) into an IP address (like 198.51.100.12).  DNS is the
-   distributed database that holds this mapping, and we query it to get
-   the IP address.
+2. **Thực hiện tra cứu DNS** để chuyển đổi tên dễ đọc (như `example.com`) thành địa chỉ IP (như 198.51.100.12). DNS (hệ thống tên miền) là cơ sở dữ liệu phân tán lưu trữ ánh xạ này, và ta truy vấn nó để lấy địa chỉ IP.
 
-   We need the IP address so that we know the machine to connect to.
+   Chúng ta cần địa chỉ IP để biết máy nào cần kết nối đến.
 
-   Python Hint: While you can do DNS lookups in Python with
-   `socket.getaddrinfo()`, just calling `socket.connect()` with a
-   hostname will do the DNS lookup for you. So you can skip this step.
+   Gợi ý Python: Mặc dù bạn có thể tra cứu DNS trong Python với `socket.getaddrinfo()`, chỉ cần gọi `socket.connect()` với hostname là nó sẽ tự tra DNS cho bạn. Vậy nên bạn có thể bỏ qua bước này.
 
-   Optional C Hint: Use `getaddrinfo()` to perform this lookup.
+   Gợi ý C (tùy chọn): Dùng `getaddrinfo()` để thực hiện tra cứu này.
 
-3. **Connect the socket** to that IP address on a specific port.
+3. **Kết nối socket** đến địa chỉ IP đó trên một cổng (port) cụ thể.
 
-   Think of a port number like an open door that you can connect
-   through. They're integers that range from 0 to 65535.
+   Hãy nghĩ số port như một cánh cửa mở mà bạn có thể kết nối qua. Chúng là các số nguyên trong khoảng từ 0 đến 65535.
 
-   A good example port to remember is 80, which is the standard port
-   used for servers that speak the HTTP protocol (unencrypted).
+   Một ví dụ port hay nhớ là 80, đây là port tiêu chuẩn dùng cho các server sử dụng giao thức HTTP (không mã hóa).
 
-   There must be a server listening on that port on that remote
-   computer, or the connection will fail.
+   Phải có một server đang lắng nghe trên port đó ở máy tính từ xa kia, nếu không kết nối sẽ thất bại.
 
-4. **Send data and receive data**. This is the part we've been waiting
-   for.
+4. **Gửi và nhận dữ liệu**. Đây là phần ta đã chờ đợi.
 
-   Data is sent as a sequence of bytes.
+   Dữ liệu được gửi dưới dạng một chuỗi các byte.
 
-5. **Close the connection**. When we're done, we close the socket indicating
-   to the remote side that we have nothing more to say. The remote side
-   can also close the connection any time it wishes.
+5. **Đóng kết nối**. Khi xong việc, ta đóng socket để báo cho phía bên kia biết rằng ta không còn gì để nói nữa. Phía bên kia cũng có thể đóng kết nối bất cứ lúc nào nó muốn.
 
-## Server Listening Process
+## Quy Trình Lắng Nghe Phía Server
 
-Writing a server program is a little bit different.
+Viết một chương trình server thì hơi khác một chút.
 
-1. **Ask the OS for a socket**. Just like with the client.
+1. **Yêu cầu OS cấp một socket**. Giống như với client.
 
-2. **Bind the socket to a port**. This is where you assign a port number
-   to the server that other clients can connect to. "I'm going to be
-   listening on port 80!" for instance.
+2. **Bind (gắn) socket vào một port**. Đây là nơi bạn gán số port cho server mà các client khác có thể kết nối đến. Kiểu như "Tôi sẽ lắng nghe trên port 80!" chẳng hạn.
 
-   Caveat: programs that aren't run as root/administrator can't bind to
-   ports under 1024--those are reserved. Choose a big, uncommon port
-   number for your servers, like something in the 15,000-30,000 range.
-   If you try to bind to a port another server is using, you'll get an
-   "Address already in use" error.
+   Lưu ý: các chương trình không chạy với quyền root/administrator không thể bind vào các port dưới 1024 --- những port đó được dành riêng. Hãy chọn một số port lớn, ít phổ biến cho server của bạn, kiểu như trong khoảng 15.000-30.000. Nếu bạn cố bind vào một port mà server khác đang dùng, bạn sẽ nhận được lỗi "Address already in use" (địa chỉ đã được sử dụng).
 
-   Ports are per-computer. It's OK if two different computers use the
-   same port. But two programs on the same computer cannot use the same
-   port on that computer.
+   Port gắn liền với máy tính. Hai máy tính khác nhau dùng cùng port thì không sao. Nhưng hai chương trình trên cùng một máy tính không thể dùng cùng port trên máy đó.
 
-   Fun fact: clients are bound to a port, as well. If you don't
-   explicitly bind them, they get assigned an unused port when they
-   connect--which is usually what we want.
+   Thú vị là: client cũng được bind vào một port. Nếu bạn không bind tường minh, chúng sẽ được gán một port chưa dùng khi kết nối --- thường thì đó là điều ta muốn.
 
-3. **Listen for incoming connections**. We have to let the OS know
-   when it gets an incoming connection request on the port we selected.
+3. **Lắng nghe các kết nối đến**. Ta phải cho OS biết khi nào có một yêu cầu kết nối đến trên port ta đã chọn.
 
-4. **Accept incoming connections**. The server will block (it will
-   sleep) when you try to accept a new connection if none are pending.
-   Then it wakes up when someone tries to connect.
+4. **Chấp nhận các kết nối đến**. Server sẽ block (ngủ) khi bạn cố chấp nhận kết nối mới nếu không có kết nối nào đang chờ. Sau đó nó thức dậy khi ai đó cố kết nối.
 
-   Accept returns a new socket! This is confusing. The original socket
-   the server made in step 1 is still there listening for new
-   connections. When the connection arrives, the OS makes a new socket
-   _specifically for that one connection_. This way the server can
-   handle multiple clients at once.
+   Accept trả về một socket mới! Điều này gây nhầm lẫn. Socket gốc mà server tạo ở bước 1 vẫn còn đó lắng nghe các kết nối mới. Khi kết nối đến, OS tạo một socket mới _đặc biệt cho kết nối đó_. Nhờ vậy server có thể xử lý nhiều client cùng lúc.
 
-   Sometimes the server spawns a new thread or process to handle each
-   new client. But there's no law that says it has to.
+   Đôi khi server tạo một thread hoặc tiến trình mới để xử lý mỗi client mới. Nhưng không có quy định nào bắt buộc phải làm vậy.
 
-5. **Send data and receive data**. This is typically where the server
-   would receive a request from the client, and the server would send
-   back the response to that request.
+5. **Gửi và nhận dữ liệu**. Đây thường là nơi server nhận request từ client, và server gửi lại response cho request đó.
 
-6. **Go back and accept another connection**. Servers tend to be
-   long-running processes and handle many requests over their lifetimes.
+6. **Quay lại chấp nhận kết nối tiếp theo**. Server thường là các tiến trình chạy lâu dài và xử lý nhiều request trong suốt vòng đời của chúng.
 
 ## Reflect
 
-* What role does `bind()` play on the server side?
+* `bind()` đóng vai trò gì ở phía server?
 
-* Would a client ever call `bind()`? (Might have to search this one
-  on the Internet.)
+* Liệu client có bao giờ gọi `bind()` không? (Có thể phải tìm kiếm cái này trên Internet.)
 
-* Speculate on why `accept()` returns a new socket as opposed to just
-  reusing the one we called `listen()` with.
+* Hãy suy đoán tại sao `accept()` trả về một socket mới thay vì chỉ tái sử dụng cái mà ta đã gọi `listen()`.
 
-* What would happen if the server didn't loop to another `accept()`
-  call? What would happen when a second client tried to connect?
+* Điều gì sẽ xảy ra nếu server không vòng lặp lại để gọi `accept()` tiếp? Điều gì sẽ xảy ra khi client thứ hai cố kết nối?
 
-* If one computer is using TCP port 3490, can another computer use port
-  3490?
+* Nếu một máy tính đang dùng TCP port 3490, máy tính khác có thể dùng port 3490 không?
 
-* Speculate about why ports exist. What functionality do they make
-  possible that plain IP addresses do not?
+* Hãy suy đoán tại sao port tồn tại. Chúng tạo ra chức năng gì mà địa chỉ IP thuần túy không làm được?
 
-## Resources
+## Tài Nguyên
 
 * [Python Sockets Documentation](https://docs.python.org/3/library/socket.html)
-* [flbg[_Beej's Guide to Network Programming_|bgnet]]--optional, for C devs
+* [flbg[_Beej's Guide to Network Programming_|bgnet]] --- tùy chọn, dành cho lập trình viên C
