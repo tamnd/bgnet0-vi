@@ -1,46 +1,39 @@
-# Project: A Better Web Server
+# Dự Án: Web Server Tốt Hơn
 
-Time to improve the web server so that it serves actual files!
+Đã đến lúc cải thiện web server để nó phục vụ các file thực sự!
 
-We're going to make it so that when a web client (in this case we'll use
-a browser) requests a specific file, the webserver will return that
-file.
+Chúng ta sẽ làm cho nó hoạt động sao cho khi một web client (trong trường hợp này chúng ta dùng trình duyệt) yêu cầu một file cụ thể, webserver sẽ trả về file đó.
 
-There are some interesting details to be found along the way.
+Dọc đường sẽ có một số chi tiết thú vị.
 
-## Restrictions
+## Hạn Chế
 
-In order to better understand the sockets API at a lower level, this
-project may **not** use any of the following helper functions:
+Để hiểu sâu hơn về sockets API ở cấp độ thấp hơn, dự án này **không được** dùng bất kỳ hàm helper nào sau đây:
 
-* The `socket.create_connection()` function.
-* The `socket.create_server()` function.
-* Anything in the `urllib` modules (except `urllib.parse`—that's OK).
+* Hàm `socket.create_connection()`.
+* Hàm `socket.create_server()`.
+* Bất cứ thứ gì trong các module `urllib` (ngoại trừ `urllib.parse` --- điều đó OK).
 
-After coding up the project, it should be more obvious how these helper
-functions are implemented.
+Sau khi code xong dự án, sẽ rõ hơn các hàm helper này được thực hiện như thế nào.
 
-## Running the Server
+## Chạy Server
 
-Just like in the previous project, the server should start listening on
-port 28333 ***unless*** the user specifies a port on the command line.
-E.g.:
+Giống như dự án trước, server nên bắt đầu lắng nghe trên cổng 28333 ***trừ khi*** người dùng chỉ định một cổng trên dòng lệnh. Ví dụ:
 
 ``` {.sh}
 $ python webserver.py       # Listens on port 28333
 $ python webserver.py 3490  # Listens on port 3490
 ```
 
-## The Process
+## Quy Trình
 
-If you go to your browser and enter a URL like this (substituting the
-port number of your running server):
+Nếu bạn vào trình duyệt và nhập một URL như thế này (thay thế số cổng của server đang chạy của bạn):
 
 ``` {.default}
 http://localhost:33490/file2.html
 ```
 
-The client will send a request to your server that looks like this:
+Client sẽ gửi một yêu cầu đến server của bạn trông giống thế này:
 
 ``` {.default}
 GET /file2.html HTTP/1.1
@@ -49,19 +42,18 @@ Connection: close
 
 ```
 
-Notice the file name is right there in the `GET` request on the first
-line!
+Chú ý tên file ngay ở đó trong yêu cầu `GET` trên dòng đầu tiên!
 
-Your server will:
+Server của bạn sẽ:
 
-1. Parse that request header to get the file name.
-2. Strip the path off for security reasons.
-3. Read the data from the named file.
-4. Determine the type of data in the file, HTML or text.
-5. Build an HTTP response packet with the file data in the payload.
-6. Send that HTTP response back to the client.
+1. Phân tích header yêu cầu đó để lấy tên file.
+2. Loại bỏ đường dẫn vì lý do bảo mật.
+3. Đọc dữ liệu từ file có tên đó.
+4. Xác định loại dữ liệu trong file, HTML hay text.
+5. Tạo một gói phản hồi HTTP với dữ liệu file trong payload.
+6. Gửi phản hồi HTTP đó trở lại client.
 
-The response will look like this example file:
+Phản hồi sẽ trông giống như file ví dụ này:
 
 ``` {.default}
 HTTP/1.1 200 OK
@@ -76,53 +68,35 @@ Connection: close
 ...
 ```
 
-[The rest of the HTML file has been truncated in this example.]
+[Phần còn lại của file HTML đã bị cắt bớt trong ví dụ này.]
 
-At this point, the browser should display the file.
+Lúc này, trình duyệt sẽ hiển thị file.
 
-Notice a couple things in the header that need to be computed: the
-`Content-Type` will be set according to the type of data in the file
-being served, and the `Content-Length` will be set to the length in
-bytes of that data.
+Chú ý một vài thứ trong header cần tính toán: `Content-Type` sẽ được đặt theo loại dữ liệu trong file đang được phục vụ, và `Content-Length` sẽ được đặt bằng độ dài tính bằng byte của dữ liệu đó.
 
-We're going to want to be able to display at least two different types
-of files: HTML and text files.
+Chúng ta muốn có thể hiển thị ít nhất hai loại file khác nhau: HTML và file text.
 
-## Parsing the Request Header
+## Phân Tích Header Yêu Cầu
 
-You'll want to read in the full request header, so you're probably doing
-something like accumulating data from all your `recv()`s in a single
-variable and searching it (with something like string's `.find()` method
-to find the `"\r\n\r\n"` that marks the end of the header.
+Bạn sẽ muốn đọc vào toàn bộ header yêu cầu, nên bạn có thể đang làm gì đó như tích lũy dữ liệu từ tất cả các `recv()` của bạn trong một biến duy nhất và tìm kiếm trong đó (với thứ gì đó như phương thức `.find()` của string để tìm `"\r\n\r\n"` đánh dấu kết thúc header.
 
-At that point, you can `.split()` the header data on `"\r\n"` to get
-individual lines.
+Sau đó, bạn có thể `.split()` dữ liệu header trên `"\r\n"` để lấy từng dòng riêng lẻ.
 
-The first line is the `GET` line.
+Dòng đầu tiên là dòng `GET`.
 
-You can `.split()` that single line into its three parts: the request
-method (`GET`), the path (e.g. `/file1.txt`), and the protocol
-(`HTTP/1.1`).
+Bạn có thể `.split()` dòng đơn đó thành ba phần: phương thức yêu cầu (`GET`), đường dẫn (ví dụ `/file1.txt`), và giao thức (`HTTP/1.1`).
 
-Don't forget to `.decode("ISO-8859-1")` the first line of the request so
-that you can use it as a string.
+Đừng quên `.decode("ISO-8859-1")` dòng đầu tiên của yêu cầu để bạn có thể dùng nó như một string.
 
-We only really need the path.
+Chúng ta chỉ thực sự cần đường dẫn.
 
-## Stripping the Path down to the Filename
+## Rút Gọn Đường Dẫn Xuống Tên File
 
-**SECURITY RISK!** If we don't strip the path off, a malicious attacker
-could use it to accesss arbitrary files on your system. Can you think of
-how they might build a URL that reads `/etc/password`?
+**RỦI RO BẢO MẬT!** Nếu chúng ta không rút gọn đường dẫn, kẻ tấn công độc hại có thể dùng nó để truy cập các file tùy ý trên hệ thống của bạn. Bạn có thể nghĩ ra cách họ có thể xây dựng một URL đọc `/etc/password` không?
 
-Real web servers just check to make sure the path is restricted to a
-certain directory hierarchy, but we'll take the easy way and just strip
-all the path information off and only serve files from the directory the
-webserver is running in.
+Web server thực sự chỉ kiểm tra để đảm bảo đường dẫn bị giới hạn trong một cây thư mục nhất định, nhưng chúng ta sẽ đi theo cách đơn giản và chỉ loại bỏ toàn bộ thông tin đường dẫn và chỉ phục vụ file từ thư mục mà webserver đang chạy trong đó.
 
-The path is going to be made up of directory names separated by a slash
-(`/`), so the easiest thing to do at this point is to use `.split('/')`
-on your path and filename, and then look at the last element.
+Đường dẫn sẽ được tạo thành từ các tên thư mục được phân tách bằng dấu gạch chéo (`/`), nên cách dễ nhất tại đây là dùng `.split('/')` trên đường dẫn và tên file, rồi xem phần tử cuối cùng.
 
 ``` {.py}
 fullpath = "/foo/bar/baz.txt"
@@ -130,9 +104,7 @@ fullpath = "/foo/bar/baz.txt"
 file_name = fullpath.split("/")[-1]
 ```
 
-A more portable way is to use the standard library function
-`os.path.split`. The value returned by `os.path.split` is will be a
-tuple with two elements, the second of which is the file name:
+Một cách linh hoạt hơn là dùng hàm thư viện chuẩn `os.path.split`. Giá trị trả về bởi `os.path.split` sẽ là một tuple với hai phần tử, phần tử thứ hai là tên file:
 
 ``` {.py}
 fullpath = "/foo/bar/baz.txt"
@@ -141,7 +113,7 @@ os.path.split(fullpath)
 => ('/foo/bar', 'baz.txt')
 ```
 
-Select the last element:
+Chọn phần tử cuối cùng:
 
 ``` {.py}
 fullpath = "/foo/bar/baz.txt"
@@ -149,18 +121,15 @@ fullpath = "/foo/bar/baz.txt"
 file_name = os.path.split(fullpath)[-1]
 ```
 
-Use that to get the file name you want to serve.
+Dùng cái đó để lấy tên file bạn muốn phục vụ.
 
-## MIME and Getting the `Content-Type`
+## MIME và Lấy `Content-Type`
 
-In HTTP, the payload can be anything--any collection of bytes. So how
-does the web browser know how to display it?
+Trong HTTP, payload có thể là bất cứ thứ gì --- bất kỳ tập hợp byte nào. Vậy làm thế nào trình duyệt web biết cách hiển thị nó?
 
-The answer is in the `Content-Type` header, which gives the
-[MIME](https://en.wikipedia.org/wiki/MIME) type of the data. This is
-enough for the client to know how to display it.
+Câu trả lời nằm trong header `Content-Type`, cho biết loại [MIME](https://en.wikipedia.org/wiki/MIME) (Multipurpose Internet Mail Extensions --- định dạng nội dung đa năng) của dữ liệu. Điều này đủ để client biết cách hiển thị nó.
 
-Some example MIME types:
+Một số loại MIME ví dụ:
 
 <!-- CAPTION: MIME Types -->
 |MIME Type|Description|
@@ -172,36 +141,31 @@ Some example MIME types:
 |`image/gif`|GIF image|
 |`application/octet-stream`|Generic unclassified data|
 
-There are [a lot of MIME
-types](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types)
-to identify any kind of data.
+Có [rất nhiều loại MIME](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types) để xác định bất kỳ loại dữ liệu nào.
 
-You put these right in the HTTP response in the `Content-Type` header:
+Bạn đặt chúng ngay trong phản hồi HTTP trong header `Content-Type`:
 
 ``` {.default}
 Content-Type: application/pdf
 ```
 
-But how do you know what type of data a file holds?
+Nhưng làm thế nào bạn biết file chứa loại dữ liệu gì?
 
-The classic way to do this is by looking at the file extension,
-everything after the last period in the file name.
+Cách cổ điển để làm điều này là xem phần mở rộng file, tất cả mọi thứ sau dấu chấm cuối cùng trong tên file.
 
-Luckily,
-[`os.path.splitext()`](https://docs.python.org/3/library/os.path.html#os.path.splitext)
-gives us an easy way to pull the extension off a file name:
+May mắn thay, [`os.path.splitext()`](https://docs.python.org/3/library/os.path.html#os.path.splitext) cung cấp cho chúng ta một cách dễ dàng để lấy phần mở rộng từ tên file:
 
 ``` {.py}
 os.path.splitext('keyboardcat.gif')
 ```
 
-returns a tuple containing:
+trả về một tuple chứa:
 
 ``` {.py}
 ('keyboardcat', '.gif')
 ```
 
-You can just map the following extensions for this assignment:
+Bạn chỉ cần ánh xạ các phần mở rộng sau cho bài tập này:
 
 <!-- CAPTION: Extension Mapping -->
 |Extension|MIME Type|
@@ -209,27 +173,25 @@ You can just map the following extensions for this assignment:
 |`.txt`|`text/plain`|
 |`.html`|`text/html`|
 
-So if the file has a `.txt` extension, be sure to send back:
+Vì vậy nếu file có phần mở rộng `.txt`, hãy chắc chắn gửi lại:
 
 ``` {.default}
 Content-Type: text/plain
 ```
 
-in your response.
+trong phản hồi của bạn.
 
-If you really want to be correct, add `charset` to your header to
-specify the character encoding:
+Nếu bạn thực sự muốn chính xác, hãy thêm `charset` vào header để chỉ định encoding ký tự:
 
 ``` {.default}
 Content-Type: text/plain; charset=iso-8859-1
 ```
 
-but that's not necessary, since browsers typically default to that
-encoding.
+nhưng điều đó không cần thiết, vì trình duyệt thường mặc định về encoding đó.
 
-## Reading the File, `Content-Length`, and Handling Not Found
+## Đọc File, `Content-Length`, và Xử Lý Không Tìm Thấy
 
-Here's some code to read an entire file and check for errors:
+Đây là một đoạn code để đọc toàn bộ file và kiểm tra lỗi:
 
 ``` {.py}
 try:
@@ -242,46 +204,41 @@ except:
     # TODO send a 404
 ```
 
-The data you get back from `.read()` is what will be the payload.
-Use `len()` to compute the number of bytes.
+Dữ liệu bạn nhận lại từ `.read()` sẽ là payload.
+Dùng `len()` để tính số byte.
 
-The number of bytes will be send back in the `Content-Length` header,
-like so:
+Số byte sẽ được gửi lại trong header `Content-Length`, như sau:
 
 ``` {.default}
 Content-Length: 357
 ```
 
-(with the number of bytes of your file).
+(với số byte trong file của bạn).
 
-> You might be wondering what the `"rb"` thing is in the `open()` call.
-> This causes the file to open for reading in binary mode. In Python, a
-> file open for reading in binary mode will return a bytestring
-> representing the file that you can send straight out on the socket.
+> Bạn có thể đang thắc mắc `"rb"` là gì trong lời gọi `open()`.
+> Cái này làm cho file mở để đọc ở chế độ nhị phân. Trong Python, một
+> file mở để đọc ở chế độ nhị phân sẽ trả về một bytestring
+> đại diện cho file mà bạn có thể gửi thẳng ra trên socket.
 
-What about this `404 Not Found` thing? It's common enough that you've
-probably seen it in normal web usage from time to time.
+Còn cái chuyện `404 Not Found` thì sao? Nó phổ biến đến mức bạn có lẽ đã thấy nó trong sử dụng web thông thường từ thời gian đến thời gian.
 
-This just means you've requested a file or other resource that doesn't
-exist.
+Điều này chỉ có nghĩa là bạn đã yêu cầu một file hoặc tài nguyên khác không tồn tại.
 
-In our case, we'll detect some kind of file open error (with the
-`except` block, above) and return a `404` response.
+Trong trường hợp của chúng ta, chúng ta sẽ phát hiện một số loại lỗi mở file (với khối `except` ở trên) và trả về phản hồi `404`.
 
-The `404` response is an HTTP response, except instead of
+Phản hồi `404` là một phản hồi HTTP, ngoại trừ thay vì
 
 ``` {.default}
 HTTP/1.1 200 OK
 ```
 
-our response will start with
+phản hồi của chúng ta sẽ bắt đầu bằng
 
 ``` {.default}
 HTTP/1.1 404 Not Found
 ```
 
-So when you try to open the file and it fails, you're going to just
-return the following (verbatim) and close the connection:
+Vì vậy khi bạn cố mở file và thất bại, bạn sẽ chỉ trả về nội dung sau (verbatim --- nguyên văn) và đóng kết nối:
 
 ``` {.default}
 HTTP/1.1 404 Not Found
@@ -292,93 +249,88 @@ Connection: close
 404 not found
 ```
 
-(Both the content length and the payload can just be hardcoded in this
-case, but of course have to be `.encode()`'d to bytes.)
+(Cả content length và payload đều có thể hardcode trong trường hợp này, nhưng tất nhiên phải được `.encode()` thành bytes.)
 
-## Extensions
+## Mở Rộng
 
-These are here if you have time to give yourself the additional
-challenge for greater understanding of the material. Push yourself!
+Các phần này dành cho bạn nếu có thời gian tự thử thách thêm để hiểu sâu hơn về tài liệu. Hãy thử sức!
 
-* Add MIME support for other file types so you can serve JPEGs and other
-  files.
+* Thêm hỗ trợ MIME cho các loại file khác để bạn có thể phục vụ JPEG và các
+  file khác.
 
-* Add support for showing a directory listing. If the user doesn't
-  specify a file in the URL, show a directory listing where each file
-  name is a link to that file.
+* Thêm hỗ trợ hiển thị danh sách thư mục. Nếu người dùng không chỉ định file trong
+  URL, hiển thị danh sách thư mục trong đó mỗi tên file là một liên kết đến file đó.
 
-  Hint:
+  Gợi ý:
   [`os.listdir`](https://docs.python.org/3/library/os.html#os.listdir)
-  and
+  và
   [`os.path.join()`](https://docs.python.org/3/library/os.path.html#os.path.join)
 
-* Instead of just dropping the entire path, allow serving out of
-  subdirectories from a root directory your specify on the server.
+* Thay vì chỉ bỏ toàn bộ đường dẫn, cho phép phục vụ từ các thư mục con từ
+  một thư mục gốc bạn chỉ định trên server.
 
-  **SECURITY RISK!** Make sure the user can't break out of the root
-  directory by using a bunch of `..`s in the path!
+  **RỦI RO BẢO MẬT!** Hãy chắc chắn người dùng không thể thoát ra khỏi thư mục
+  gốc bằng cách dùng một loạt `..` trong đường dẫn!
 
-  Normally you'd have some kind of configuration variable that specified
-  the server root directory as an absolute path. But if you're in one of
-  my classes, that would make my life miserable when I went to grade
-  projects. So if that's the case, please use a relative path for your
-  server root directory and create a full path with the
-  [`os.path.abspath()`](https://docs.python.org/3/library/os.path.html#os.path.abspath)
-  function.
+  Thông thường bạn sẽ có một biến cấu hình nào đó chỉ định thư mục gốc server
+  như một đường dẫn tuyệt đối. Nhưng nếu bạn đang ở trong một trong các lớp của tôi,
+  điều đó sẽ làm cuộc sống của tôi khổ sở khi tôi chấm điểm dự án. Vì vậy nếu
+  đó là trường hợp, hãy dùng một đường dẫn tương đối cho thư mục gốc server của bạn
+  và tạo một đường dẫn đầy đủ với hàm
+  [`os.path.abspath()`](https://docs.python.org/3/library/os.path.html#os.path.abspath).
 
   ``` {.py}
   server_root = os.path.abspath('.')        # This...
   server_root = os.path.abspath('./root')   # or something like this
   ```
 
-  This would set `server_root` to a full path to where you ran your
-  server. For example, on my machine, I might get:
+  Cái này sẽ đặt `server_root` thành một đường dẫn đầy đủ đến nơi bạn chạy
+  server của mình. Ví dụ, trên máy của tôi, tôi có thể nhận được:
 
   ``` {.default}
   /home/beej/src/webserver                  # This...
   /home/beej/src/webserver/root             # or something like this
   ```
 
-  Then when the user tries to `GET` some path, you can just append it to
-  server root to get the path to the file.
+  Sau đó khi người dùng thử `GET` một đường dẫn nào đó, bạn chỉ cần nối nó vào
+  server root để lấy đường dẫn đến file.
 
   ``` {.py}
   file_path = os.path.sep.join((server_root, get_path))
   ```
 
-  So if they tried to `GET /foo/bar/index.html`, then `file_path` would
-  get set to:
+  Vì vậy nếu họ thử `GET /foo/bar/index.html`, thì `file_path` sẽ được đặt thành:
 
   ```
   /home/beej/src/webserver/foo/bar/index.html
   ```
 
-  **And now the security crux!** You have to make sure that `file_path`
-  is within the server root directory. See, a villain might try to:
+  **Và bây giờ là điểm mấu chốt bảo mật!** Bạn phải đảm bảo rằng `file_path`
+  nằm trong thư mục gốc server. Thấy không, một kẻ xấu có thể thử:
 
   ``` {.http}
   GET /../../../../../etc/passwd HTTP/1.1
   ```
-  
-  And if they did that, we'd unknowingly serve out this file:
+
+  Và nếu họ làm vậy, chúng ta sẽ vô tình phục vụ file này:
 
   ```
   /home/beej/src/webserver/../../../../../etc/passwd
   ```
 
-  which would get them to my password file in `/etc/passwd`. I don't
-  want that.
+  điều đó sẽ đưa họ đến file password của tôi trong `/etc/passwd`. Tôi không
+  muốn điều đó.
 
-  So I need to make sure that wherever they end up is still within my
-  `server_root` hierarchy. How? We can use `abspath()` again.
+  Vì vậy tôi cần đảm bảo rằng dù họ kết thúc ở đâu vẫn còn trong cây thư mục
+  `server_root` của tôi. Làm thế nào? Chúng ta có thể dùng `abspath()` lại.
 
-  If I run the crazy `..` path above through `abspath()`, it just
-  returns `/etc/passwd` to me. It resolves all the `..`s and other
-  things and returns the "real" path.
+  Nếu tôi chạy đường dẫn `..` điên rồ ở trên qua `abspath()`, nó chỉ trả về
+  `/etc/passwd` cho tôi. Nó giải quyết tất cả các `..` và những thứ khác
+  và trả về đường dẫn "thực".
 
-  But I know my server root in this example is
-  `/home/beej/src/webserver`, so I can just verify that the absolute
-  file path begins with that. And 404 if it doesn't.
+  Nhưng tôi biết server root của tôi trong ví dụ này là
+  `/home/beej/src/webserver`, vì vậy tôi chỉ cần xác minh rằng đường dẫn file
+  tuyệt đối bắt đầu bằng cái đó. Và trả 404 nếu không.
 
   ``` {.py}
   # Convert to absolute path
@@ -389,9 +341,9 @@ challenge for greater understanding of the material. Push yourself!
       send_404()
   ```
 
-## Example Files
+## File Ví Dụ
 
-You can copy and paste these into files for testing purposes:
+Bạn có thể sao chép và dán những thứ này vào file để thử nghiệm:
 
 ### `file1.txt`
 
@@ -428,8 +380,7 @@ you're sending it out as the wrong MIME type! It should be
 </html>
 ```
 
-The idea is that these URLs would retrieve the above files (with the
-appropriate port given):
+Ý tưởng là các URL này sẽ lấy các file trên (với cổng phù hợp được cấp):
 
 ``` {.default}
 http://localhost:33490/file1.txt
