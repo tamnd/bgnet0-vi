@@ -1,115 +1,105 @@
-# Domain Name System (DNS)
+# Hệ Thống Tên Miền (DNS)
 
-We've learned that IP is responsible for routing traffic around the
-Internet. We've also learned that it does it with _IP addresses_, which
-we commonly show in dots-and-numbers format for IPv4, such as
-`10.1.2.3`.
+Chúng ta đã biết IP chịu trách nhiệm định tuyến lưu lượng (routing traffic) trên
+Internet. Chúng ta cũng biết nó làm điều đó với _địa chỉ IP_ (IP addresses), mà ta
+thường biểu diễn dạng chấm-số (dots-and-numbers) cho IPv4, ví dụ `10.1.2.3`.
 
-But as humans, we rarely use IP addresses. When you use your web
-browser, you don't typically put an IP address in the address bar.
+Nhưng là con người, chúng ta hiếm khi dùng địa chỉ IP. Khi bạn dùng trình duyệt
+web, bạn thường không nhập địa chỉ IP vào thanh địa chỉ.
 
-Even in our projects, we tended to type `localhost` instead of our
-localhost address of `127.0.0.1`.
+Ngay trong các dự án của chúng ta, ta cũng thường gõ `localhost` thay vì địa chỉ
+localhost `127.0.0.1`.
 
-The general process for converting a name like `www.example.com` that
-humans use into an IP address that computers use is called _domain name
-resolution_, and is provided by a distributed group of servers that
-comprise the _Domain Name System_, or DNS.
+Quá trình chung để chuyển đổi một tên như `www.example.com` mà con người dùng thành
+địa chỉ IP mà máy tính dùng được gọi là _phân giải tên miền_ (domain name
+resolution), và được cung cấp bởi một nhóm server phân tán tạo thành _Hệ Thống Tên
+Miền_ (Domain Name System), hay DNS.
 
-## Typical Usage
+## Sử Dụng Thông Thường
 
-From a user standpoint, we configure our devices to have a "name server"
-that they contact to convert those names to IP addresses. (Probably this
-is configured with DHCP, but more on that later.)
+Từ góc nhìn người dùng, chúng ta cấu hình thiết bị của mình có một "name server"
+(máy chủ tên miền) để liên hệ khi cần chuyển đổi tên thành địa chỉ IP. (Có lẽ điều
+này được cấu hình qua DHCP, nhưng sẽ nói thêm về sau.)
 
-When you try to connect to `example.com`, your computer contacts that
-name server to get the IP address.
+Khi bạn cố kết nối đến `example.com`, máy tính của bạn liên hệ name server đó để
+lấy địa chỉ IP.
 
-If that name server knows the answer, it supplies it. But if it doesn't,
-then a whole bunch of wheels get put into motion.
+Nếu name server đó biết câu trả lời, nó cung cấp ngay. Nhưng nếu không, thì một
+loạt guồng máy bắt đầu chuyển động.
 
-Let's start diving down into that process.
+Hãy bắt đầu đào sâu vào quá trình đó.
 
-## Domains and IP Addresses
+## Tên Miền và Địa Chỉ IP
 
-If haven't ever registered a domain (such as `example.com` or
-`oregonstate.edu` or `google.com` or `army.mil`), the process is
-something like this:
+Nếu bạn chưa bao giờ đăng ký tên miền (như `example.com` hay `oregonstate.edu` hay
+`google.com` hay `army.mil`), quy trình đại khái như sau:
 
-1. Contact a _domain registrar_ (i.e. some company that has the
-   authority to sell domains).
-2. Choose a domain no one has picked yet.
-3. Pay them some money annually to use the domain.
+1. Liên hệ một _nhà đăng ký tên miền_ (domain registrar) --- tức là công ty có thẩm
+   quyền bán tên miền.
+2. Chọn tên miền chưa ai đăng ký.
+3. Trả tiền hàng năm để dùng tên miền đó.
 4. ...
-5. Profit!
+5. Kiếm tiền!
 
-But doing this is completely disconnected from the idea of an IP
-address. Indeed, domains can exist without IP addresses--they just can't
-be used.
+Nhưng việc này hoàn toàn tách biệt khỏi khái niệm địa chỉ IP. Thật vậy, tên miền
+có thể tồn tại mà không cần địa chỉ IP --- chỉ là không dùng được thôi.
 
-Once you have your domain, you can contact a hosting company that will
-provide you with an IP address on a server that you can use.
+Khi đã có tên miền, bạn có thể liên hệ công ty hosting để họ cung cấp địa chỉ IP
+trên một server mà bạn có thể dùng.
 
-Now you have the two pieces: the domain and the IP address.
+Vậy là bạn có hai mảnh: tên miền và địa chỉ IP.
 
-But you still have to connect them so people can look up your IP if they
-have your domain name.
+Nhưng bạn vẫn phải kết nối chúng lại để người khác có thể tra cứu IP của bạn khi
+họ có tên miền.
 
-To do this, you add a database record with the pertinent information to
-a server that's part of the DNS landscape: a _domain name server_.
+Để làm điều này, bạn thêm một bản ghi cơ sở dữ liệu với thông tin liên quan vào một
+server thuộc hệ sinh thái DNS: một _domain name server_ (máy chủ tên miền).
 
-## (Domain) Name Servers
+## Máy Chủ Tên (Name Servers)
 
-Usually called _name servers_ for short, these servers contain IP
-records for the domain in which they are an _authority_. That is, a name
-server doesn't have records for the entire world; it just has them for a
-particular domain or subdomain.
+Thường được gọi tắt là _name servers_, các server này chứa bản ghi IP cho tên miền
+mà chúng có _thẩm quyền_ (authority). Tức là, một name server không có bản ghi cho
+cả thế giới; nó chỉ có cho một tên miền hoặc subdomain cụ thể.
 
-> A _subdomain_ is a domain administered by the owner of a domain. For
-> example, the owner of `example.com` might make subdomains
-> `sub1.example.com` and `sub2.example.com`. These aren't hosts in this
-> case--but they can have their own hosts, e.g.
-> `host1.sub1.example.com`, `host2.sub1.example.com`,
+> Một _subdomain_ (tên miền con) là tên miền do chủ sở hữu của một tên miền quản lý.
+> Ví dụ, chủ của `example.com` có thể tạo subdomain `sub1.example.com` và
+> `sub2.example.com`. Chúng không phải là host trong trường hợp này --- nhưng chúng
+> có thể có host riêng, ví dụ `host1.sub1.example.com`, `host2.sub1.example.com`,
 > `somecompy.sub2.example.com`.
 >
-> Domain owners can make as many subdomains as they want. They just have
-> to make sure they have a name server set up to handle them.
+> Chủ tên miền có thể tạo bao nhiêu subdomain tùy thích. Chỉ cần đảm bảo có name
+> server được thiết lập để xử lý chúng.
 
-A name server that's authoritative for a specific domain can be asked
-about any host on that domain.
+Name server có thẩm quyền cho một tên miền cụ thể có thể được hỏi về bất kỳ host
+nào trên tên miền đó.
 
-The host is often the first "word" of a domain name, though it's not
-necessarily.
+Host thường là "từ" đầu tiên của tên miền, mặc dù không nhất thiết phải vậy.
 
-For example with `www.example.com`, the host is a computer called `www`
-on a domain `example.com`.
+Ví dụ với `www.example.com`, host là máy tính tên `www` trên tên miền `example.com`.
 
-A single name server might be authoritative for many domains.
+Một name server có thể có thẩm quyền cho nhiều tên miền.
 
-But even if a name server doesn't know the IP address of the domain it's
-been asked to provide, it can contact some other name servers to figure
-it out. From a user perspective, this process is transparent.
+Nhưng ngay cả khi name server không biết địa chỉ IP của tên miền được hỏi, nó có
+thể liên hệ các name server khác để tìm ra. Từ góc nhìn người dùng, quá trình này
+hoàn toàn trong suốt (transparent).
 
-So, easy-peasy. If I don't know the domain in question, I'll just
-contact the name server for that domain and get the answer from them,
-right?
+Vậy là đơn giản. Nếu mình không biết tên miền đó, mình chỉ cần liên hệ name server
+của tên miền đó và lấy câu trả lời từ họ, phải không?
 
-## Root Name Servers
+## Máy Chủ Tên Gốc (Root Name Servers)
 
-We have an issue, though. How can I connect to the name server for a
-domain if I don't know what the name server is for a domain?
+Chúng ta có một vấn đề ở đây. Làm sao tôi có thể kết nối với name server của một
+tên miền nếu tôi không biết name server đó là cái nào?
 
-To solve this, we have a number of _root name servers_ that can help us
-on our way. When we don't know an IP, we can start with them and ask
-them to tell us the IP, or tell us which other server to ask. More on
-that process in a minute.
+Để giải quyết điều này, chúng ta có một số _root name servers_ (máy chủ tên gốc)
+có thể giúp chúng ta. Khi không biết IP, ta có thể bắt đầu từ chúng và yêu cầu họ
+cho biết IP, hoặc chỉ cho ta hỏi server nào khác. Sẽ nói thêm về quá trình đó sau.
 
-Computers are preconfigured with the IP addresses of the 13 root name
-servers. These IPs rarely ever change, and only one of them is needed to
-work. Computers that perform DNS frequently retrieve the list to keep it
-up to date.
+Máy tính được cấu hình sẵn với địa chỉ IP của 13 root name server. Các IP này hiếm
+khi thay đổi, và chỉ cần một trong số chúng là đủ. Máy tính thực hiện DNS thường
+xuyên truy xuất danh sách này để cập nhật.
 
-The root name servers themselves are named `a` to `m`:
+Các root name server được đặt tên từ `a` đến `m`:
 
 ``` {.default}
 a.root-servers.net
@@ -121,21 +111,19 @@ l.root-servers.net
 m.root-servers.net
 ```
 
-## Example Run
+## Ví Dụ Chạy
 
-Let's start by doing a query on a computer called
-`www.example.com`. We need to know its IP address. We don't know
-which name server is responsible for the `example.com` domain. All we
-know is our list of root name servers.
+Hãy bắt đầu bằng cách tra cứu một máy tính tên `www.example.com`. Ta cần biết địa
+chỉ IP của nó. Ta không biết name server nào chịu trách nhiệm cho tên miền
+`example.com`. Tất cả những gì ta biết là danh sách root name server của mình.
 
-1. Let's choose a random root server, say `c.root-servers.net`. We'll
-   contact it and say, "Hey, we're looking for `www.example.com`. Can
-   you help us?"
+1. Hãy chọn một root server ngẫu nhiên, ví dụ `c.root-servers.net`. Ta liên hệ nó
+   và nói: "Này, chúng tôi đang tìm `www.example.com`. Bạn có thể giúp không?"
 
-   But the root name server doesn't know that. It says, "I don't know
-   about that, but I can tell you if you're looking for any `.com`
-   domain, you can contact any one of these name servers." It attaches a
-   list of name servers who know about the `.com` domains:
+   Nhưng root name server không biết điều đó. Nó nói: "Tôi không biết điều đó, nhưng
+   tôi có thể cho bạn biết rằng nếu bạn đang tìm tên miền `.com` nào đó, bạn có thể
+   liên hệ bất kỳ name server nào trong số này." Nó đính kèm danh sách các name
+   server biết về tên miền `.com`:
 
    ``` {.default}
    a.gtld-servers.net
@@ -153,206 +141,188 @@ know is our list of root name servers.
    m.gtld-servers.net
    ```
 
-2. So we choose one of the `.com` name servers.
+2. Vậy ta chọn một trong các name server `.com`.
 
-   "Hey `h.gtld-servers.net`, we're looking for `www.example.com`. Can
-   you help us?"
+   "Này `h.gtld-servers.net`, chúng tôi đang tìm `www.example.com`. Bạn có thể giúp
+   không?"
 
-   And it answers, "I don't know that name, but I do know the name
-   servers for `example.com`. You can talk to one of them. It attaches
-   the list of name servers who know about the `example.com` domain:
+   Và nó trả lời: "Tôi không biết tên đó, nhưng tôi biết các name server cho
+   `example.com`. Bạn có thể nói chuyện với một trong số đó." Nó đính kèm danh sách
+   các name server biết về tên miền `example.com`:
 
    ``` {.default}
    a.iana-servers.net
    b.iana-servers.net
    ```
 
-3. So we choose one of those servers.
+3. Vậy ta chọn một trong các server đó.
 
-   "Hey `a.iana-servers.net`, we're looking for `www.example.com`. Can
-   you help us?"
+   "Này `a.iana-servers.net`, chúng tôi đang tìm `www.example.com`. Bạn có thể giúp
+   không?"
 
-   And that name server answers, "Yes, I can! I know that name! Its IP
-   address is `93.184.216.34`!"
+   Và name server đó trả lời: "Có, tôi có thể! Tôi biết tên đó! Địa chỉ IP của nó
+   là `93.184.216.34`!"
 
-So for any lookup, we start with root name server and it directs us on
-where to go to find more info. (Unless the information has been cached
-somewhere, but more on that later.)
+Vậy là với bất kỳ tra cứu nào, ta bắt đầu từ root name server và nó chỉ đường đến
+nơi tìm thêm thông tin. (Trừ khi thông tin đã được cache ở đâu đó, nhưng sẽ nói thêm
+về điều đó sau.)
 
-## Zones
+## Zones (Vùng)
 
-The Domain Name System is split into logical administrative _zones_. A
-zone is, loosely, a collection of domains under the authority of a
-particular name server.
+Hệ Thống Tên Miền được chia thành các _zone_ (vùng) quản trị logic. Một zone, đại
+khái, là tập hợp các tên miền dưới thẩm quyền của một name server cụ thể.
 
-But that's an oversimplification. There could be one or more domains in
-the same zone. And there could be a number of name servers working in
-that same zone.
+Nhưng đó là cách đơn giản hóa. Có thể có một hoặc nhiều tên miền trong cùng một
+zone. Và có thể có nhiều name server hoạt động trong cùng zone đó.
 
-Think of the zones as all the domains and subdomains some administration
-is responsible for.
+Hãy nghĩ zone như tất cả tên miền và subdomain mà một đơn vị quản trị nào đó chịu
+trách nhiệm.
 
-For example, in the root zone, we saw there were a number of name
-servers responsible for that lookup. And also in the `.com` zone, there
-were a number of different name servers there with authority.
+Ví dụ, trong root zone, ta thấy có nhiều name server chịu trách nhiệm cho tra cứu
+đó. Và trong zone `.com`, cũng có một số name server khác nhau có thẩm quyền.
 
-## Resolver Library
+## Thư Viện Resolver
 
-When you write software that uses domain names, it calls a library to do
-the DNS lookup. You might have noticed that in Python when you called:
+Khi bạn viết phần mềm dùng tên miền, nó gọi một thư viện để thực hiện tra cứu DNS.
+Bạn có thể đã nhận thấy rằng trong Python khi bạn gọi:
 
 ``` {.py}
 s.connect(("example.com", 80))
 ```
 
-you didn't have to worry about DNS at all. Behind the scenes, Python did
-all that work of looking up that domain in DNS.
+bạn không cần lo lắng về DNS chút nào. Phía sau, Python đã làm tất cả công việc tra
+cứu tên miền đó trong DNS.
 
-In C, there's a function called `getaddrinfo()` that does the same
-thing.
+Trong C, có một hàm gọi là `getaddrinfo()` làm điều tương tự.
 
-The short of it is that there's a library that we can use and we don't
-have to write all that code ourselves.
+Tóm lại là có một thư viện mà ta có thể dùng và không cần tự viết tất cả code đó.
 
-The OS also has a record containing its default name server to use for
-lookups. (This is sometimes configured by hand, but more commonly is
-configured through
+Hệ điều hành cũng có một bản ghi chứa name server mặc định để dùng cho các tra cứu.
+(Đôi khi được cấu hình thủ công, nhưng thường được cấu hình qua
 [DHCP](https://en.wikipedia.org/wiki/Dynamic_Host_Configuration_Protocol).)
-So when you request a lookup, your computer first goes to this server.
+Vậy khi bạn yêu cầu tra cứu, máy tính của bạn trước tiên sẽ đến server này.
 
-But wait a minute--how does that tie into the whole root server
-hierarchy thing?
+Nhưng khoan --- điều đó liên quan như thế nào đến toàn bộ hệ thống phân cấp root
+server?
 
-The answer: caching!
+Câu trả lời: caching (bộ nhớ đệm)!
 
-## Caching Servers
+## Máy Chủ Cache (Caching Servers)
 
-Imagine all the DNS lookups that are happening globally. If we had to go
-to the root servers for _every_ request, not only would that take a long
-time for repeated requests, but the root servers would get absolutely
-hammered.
+Hãy tưởng tượng tất cả các tra cứu DNS đang diễn ra trên toàn cầu. Nếu ta phải đến
+root server cho _mỗi_ yêu cầu, không chỉ mất nhiều thời gian cho các yêu cầu lặp
+lại, mà các root server còn bị quá tải hoàn toàn.
 
-To avoid this, all DNS resolver libraries and DNS servers _cache_ their
-results.
+Để tránh điều này, tất cả thư viện resolver DNS và server DNS đều _cache_ (lưu đệm)
+kết quả của chúng.
 
-> As it is, the root servers handle literally trillions of requests per
-> day.
+> Thực tế, các root server xử lý hàng nghìn tỷ yêu cầu mỗi ngày.
 
-This way we can avoid overloading the root servers with repeated
-requests.
+Bằng cách này ta có thể tránh làm quá tải các root server với các yêu cầu lặp lại.
 
-So we're going to have to amend the outline we already went over.
+Vậy ta phải sửa lại sơ đồ đã trình bày.
 
-1. Ask our resolver library for the IP address. If it has it cached, it
-   will return it.
+1. Hỏi thư viện resolver của ta về địa chỉ IP. Nếu nó có trong cache, nó sẽ trả về
+   ngay.
 
-2. If it doesn't have it, ask our local name server for the IP address.
-   If it has it cached, it will return it.
+2. Nếu không có, hỏi name server cục bộ của ta về địa chỉ IP. Nếu nó có trong cache,
+   nó sẽ trả về.
 
-3. If it's not cached **and** if this name server has another upstream
-   name server (that is, another nameserver it can appeal to for
-   answers), it asks that name server for the answer.
+3. Nếu không có trong cache **và** nếu name server này có một name server upstream
+   khác (tức là một name server khác nó có thể nhờ để tìm câu trả lời), nó hỏi name
+   server đó.
 
-4. If it's not cached **and** if this name server does not have another
-   upstream name server, it goes to the root servers and the process
-   continues as before.
+4. Nếu không có trong cache **và** nếu name server này không có name server upstream
+   nào, nó đến các root server và quá trình tiếp tục như trước.
 
-With all these possible opportunities to get a cached result, it really
-helps take the load off the root name servers./
+Với tất cả các cơ hội có thể lấy kết quả từ cache này, nó thực sự giúp giảm tải cho
+các root name server.
 
-Lots of WiFi routers you get also run caching name servers. So when DHCP
-configures your computer, your computer uses your router as a DNS
-server for the computers on your LAN. This gives you a snappy response
-for DNS lookups since you have a really short ping time to your router.
+Nhiều router WiFi bạn mua cũng chạy caching name server. Vậy khi DHCP cấu hình máy
+tính của bạn, máy tính dùng router của bạn làm DNS server cho các máy trên LAN. Điều
+này cho bạn phản hồi nhanh cho các tra cứu DNS vì ping time đến router rất ngắn.
 
-### Time To Live
+### Time To Live (Thời Gian Sống)
 
-Since the IP address for a domain or host might change, we have to have
-a way to expire cache entries.
+Vì địa chỉ IP của tên miền hay host có thể thay đổi, ta phải có cách để các mục
+cache hết hạn.
 
-This is done through a field in the DNS record called _time to live_
-(TTL). This is the number of seconds a server should cache the results.
-It's commonly set to 86400 seconds (1 day), but could be more or less
-depending on how often a zone administrator thinks an IP address will
-change.
+Điều này được thực hiện qua một trường trong bản ghi DNS gọi là _time to live_ (TTL,
+thời gian sống). Đây là số giây một server nên cache kết quả. Thường được đặt là
+86400 giây (1 ngày), nhưng có thể hơn hoặc ít hơn tùy thuộc vào mức độ thay đổi địa
+chỉ IP mà quản trị viên zone nghĩ đến.
 
-When a cache entry expires, the name server will have to once again ask
-for the data from upstream or the root servers if someone requests it.
+Khi một mục cache hết hạn, name server sẽ phải hỏi lại upstream hoặc root server nếu
+có ai yêu cầu nó.
 
-## Record Types
+## Loại Bản Ghi (Record Types)
 
-So far, we've talked about using DNS to map a host or domain name to an
-IP address. This is one of the types of records stored for a domain on a
-DNS server.
+Cho đến nay, ta đã nói về việc dùng DNS để ánh xạ tên host hoặc tên miền thành địa
+chỉ IP. Đây là một trong các loại bản ghi được lưu trữ cho tên miền trên DNS server.
 
-The common record types are:
+Các loại bản ghi phổ biến là:
 
-* `A`: An address record for IPv4. This is the type of record we've been
-  talking about this whole time. Answers the question, "What is the IPv4
-  address for this host or domain?"
+* `A`: Bản ghi địa chỉ cho IPv4. Đây là loại bản ghi ta đã nói đến suốt lúc nãy.
+  Trả lời câu hỏi: "Địa chỉ IPv4 của host hoặc tên miền này là gì?"
 
-* `AAAA`: An address record for IPv6. Answers the question, "What is the
-  IPv6 address for this host or domain?"
+* `AAAA`: Bản ghi địa chỉ cho IPv6. Trả lời câu hỏi: "Địa chỉ IPv6 của host hoặc
+  tên miền này là gì?"
 
-* `NS`: A name server record for a particular domain. Answers the
-  question, "What are the name servers answering for this host or
-  domain?"
+* `NS`: Bản ghi name server cho một tên miền cụ thể. Trả lời câu hỏi: "Những name
+  server nào đang trả lời cho host hoặc tên miền này?"
 
-* `MX`: A mail exchange record. Answers the question, "What computers
-  are responsible for handling mail on this domain?"
+* `MX`: Bản ghi mail exchange (trao đổi thư). Trả lời câu hỏi: "Máy tính nào chịu
+  trách nhiệm xử lý thư trên tên miền này?"
 
-* `TXT`: A text record. Holds free-form text information. Is sometimes
-  used for anti-spam purposes and proof-of-ownership of a domain.
+* `TXT`: Bản ghi văn bản. Chứa thông tin văn bản tự do. Đôi khi được dùng cho mục
+  đích chống spam và chứng minh quyền sở hữu tên miền.
 
-* `CNAME`: A canonical name record. Think of this as an alias. Makes
-  the statement, "Domain xyz.example.com is an alias for
-  abc.example.com."
+* `CNAME`: Bản ghi tên kinh điển (canonical name). Hãy nghĩ đây như một bí danh
+  (alias). Phát biểu: "Tên miền xyz.example.com là bí danh của abc.example.com."
 
-* `SOA`: A start of authority record. This contains information about a
-  domain, including its main name server and contact information.
+* `SOA`: Bản ghi đầu thẩm quyền (start of authority). Chứa thông tin về tên miền,
+  bao gồm name server chính và thông tin liên lạc.
 
-There are [a lot of DNS record
-types](https://en.wikipedia.org/wiki/List_of_DNS_record_types).
+Có [rất nhiều loại bản ghi DNS](https://en.wikipedia.org/wiki/List_of_DNS_record_types).
 
-## Dynamic DNS
+## DNS Động (Dynamic DNS)
 
-Typical users of the Internet don't have a _static IP address_ (that is,
-dedicated or unchanging) at their house. If they reboot their modem,
-their ISP might hand them a different IP address.
+Người dùng Internet thông thường không có _địa chỉ IP tĩnh_ (static IP address ---
+tức là chuyên dùng hoặc không thay đổi) tại nhà. Nếu họ khởi động lại modem, ISP có
+thể cấp cho họ địa chỉ IP khác.
 
-This causes a ruckus with DNS because any DNS records pointing to their
-public IPs would be out of date.
+Điều này gây rắc rối với DNS vì bất kỳ bản ghi DNS nào trỏ đến IP công khai của họ
+sẽ bị lỗi thời.
 
-Dynamic DNS (DDNS) aims to solve this problem.
+DNS Động (DDNS) nhằm giải quyết vấn đề này.
 
-In a nutshell, there are two mechanisms at play:
+Tóm lại, có hai cơ chế đang hoạt động:
 
-1. A way for a client to tell the DDNS server what their IP address is.
+1. Một cách để client báo cho DDNS server biết địa chỉ IP của họ là gì.
 
-2. A very short TTL on the DDNS server for that record.
+2. TTL rất ngắn trên DDNS server cho bản ghi đó.
 
-While DNS defines a way to send update records, a common other way is
-for a computer on your LAN to periodically (e.g. every 10 minutes)
-contact the DDNS provider with an authenticated HTTP request. The DDNS
-server will see the IP address it came from and use that to update its
-record.
+Trong khi DNS định nghĩa một cách để gửi bản ghi cập nhật, một cách phổ biến khác
+là có một máy tính trên LAN của bạn định kỳ (ví dụ mỗi 10 phút) liên hệ nhà cung
+cấp DDNS với một yêu cầu HTTP được xác thực. DDNS server sẽ thấy địa chỉ IP yêu cầu
+đến từ đó và dùng nó để cập nhật bản ghi.
 
-## Reverse DNS
+## Reverse DNS (DNS Ngược)
 
-What if you have a dots-and-numbers IP address and want the host name
-for that IP? You can do a _reverse DNS_ lookup.
+Điều gì sẽ xảy ra nếu bạn có địa chỉ IP dạng chấm-số và muốn biết tên host của IP
+đó? Bạn có thể thực hiện tra cứu _reverse DNS_ (DNS ngược).
 
-Note that not all IP addresses have such records, and often a reverse
-DNS query will come up empty.
+Lưu ý rằng không phải tất cả địa chỉ IP đều có bản ghi như vậy, và thường một truy
+vấn reverse DNS sẽ trả về rỗng.
 
-## Reflect
+## Suy Ngẫm
 
-* What is your name server for your computer right now? Search the net
-  for how to look it up on your particular OS.
+* Name server của máy tính bạn ngay lúc này là gì? Tìm trên mạng cách tra cứu trên
+  hệ điều hành của bạn.
 
-* Do the root name servers know every IP address in the world?
+* Các root name server có biết mọi địa chỉ IP trên thế giới không?
 
-* Why would anyone use dynamic DNS?
+* Tại sao ai đó lại dùng DNS động?
 
-* What is TTL used for?
+* TTL được dùng để làm gì?
 
