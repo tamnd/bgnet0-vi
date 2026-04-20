@@ -1,64 +1,61 @@
-# Appendix: Bitwise Operations {#appendix-bitwise}
+# Phụ lục: Phép Toán Bitwise {#appendix-bitwise}
 
-In this section, we'll refresh on _bitwise operations_.
+Trong phần này, ta sẽ ôn lại _phép toán bitwise_ (bitwise operations).
 
-The bitwise operators in a language manipulate the bits of numbers.
-These operators act as if a number is represented in binary, even if its
-not. They can work on numbers of any base in Python code, but it makes
-the most sense to us as humans in binary.
+Các toán tử bitwise trong một ngôn ngữ thao tác trên các bit của số.
+Các toán tử này hoạt động như thể một số được biểu diễn dưới dạng nhị phân, dù thực
+tế không phải vậy. Chúng có thể làm việc với số ở bất kỳ cơ số nào trong Python,
+nhưng với con người, nhìn dưới dạng nhị phân sẽ dễ hiểu nhất.
 
-> Protip: remember that different number bases like hex, binary, and
-> decimal are just different ways of writing a value down. Kind of like
-> different languages for representing the same numeric value.
+> Mẹo: nhớ rằng các cơ số khác nhau như hex, nhị phân, và thập phân chỉ là những
+> cách khác nhau để viết xuống một giá trị. Giống như các ngôn ngữ khác nhau để
+> biểu diễn cùng một giá trị số vậy.
 >
-> When a value is stored in a variable, it's best to think of it as
-> existing in a pure numeric sense--no base at all. It's only when you
-> write it down (in code or print it out) that the base matters.
+> Khi một giá trị được lưu trong một biến, tốt nhất hãy nghĩ nó tồn tại thuần túy
+> dưới dạng số --- không có cơ số. Chỉ khi bạn viết xuống (trong code hoặc in ra)
+> thì cơ số mới quan trọng.
 >
-> For instance, Python prints everything in decimal (base 10) by
-> default. It has various methods to override that and output in another
-> base.
+> Ví dụ, Python in mọi thứ theo thập phân (cơ số 10) theo mặc định. Nó có nhiều
+> phương thức để ghi đè điều đó và xuất ra theo cơ số khác.
 
-We'll look at:
+Ta sẽ xem xét:
 
-* Coding different bases in Python
-* Printing different bases in Python
+* Viết code các cơ số khác nhau trong Python
+* In các cơ số khác nhau trong Python
 * Bitwise-AND
 * Bitwise-OR
 * Bitwise-NOT
-* Bitwise shift
-* Setting a given number of `1` bits
+* Dịch bit (Bitwise shift)
+* Thiết lập một số bit `1` nhất định
 
-## Coding Different Bases in Python
+## Viết Code Các Cơ Số Khác Nhau trong Python
 
-What value is `110101`?
+`110101` có giá trị là bao nhiêu?
 
-Your brain might think I'm asking "What is this binary number in
-decimal?" But you'd be wrong!
+Não bạn có thể nghĩ tôi đang hỏi "Số nhị phân này là bao nhiêu trong thập phân?"
+Nhưng bạn nhầm rồi!
 
-I did not specify a number base along with that number, so you don't
-know if it's binary or decimal or hex!
+Tôi không chỉ định cơ số cùng với số đó, nên bạn không biết nó là nhị phân, thập
+phân hay hex!
 
-For the record, I meant it to be decimal, so it's one hundred ten
-thousand one hundred one.
+Để rõ ràng, ý tôi là thập phân, vậy nó là một trăm mười nghìn một trăm lẻ một.
 
-Python and most other languages assume the numbers in your code are
-decimal unless you specify otherwise.
+Python và hầu hết các ngôn ngữ khác giả định các số trong code của bạn là thập phân
+trừ khi bạn chỉ định khác.
 
-If you wanted it to be a different base, you have to prefix the number
-to indicate the base.
+Nếu bạn muốn nó ở cơ số khác, bạn phải thêm tiền tố (prefix) để chỉ định cơ số.
 
-These prefixes are:
+Các tiền tố là:
 
 <!-- CAPTION: Python Number Base Prefixes -->
-|Base|Base name|Prefix|
+|Cơ số|Tên cơ số|Tiền tố|
 |-|-|-|
-|2|Binary|`0b`|
-|8|Octal|`0o`|
-|10|Decimal|None|
-|16|Hexadecimal|`0x`|
+|2|Nhị phân (Binary)|`0b`|
+|8|Bát phân (Octal)|`0o`|
+|10|Thập phân (Decimal)|Không có|
+|16|Thập lục phân (Hexadecimal)|`0x`|
 
-So let's write some numbers in different bases:
+Vậy hãy viết một số theo các cơ số khác nhau:
 
 ``` {.default}
   110101 decimal!
@@ -66,53 +63,50 @@ So let's write some numbers in different bases:
 0x110101 hex!
 ```
 
-Let's look at the decimal value `3490`. I can convert that to hex and
-get `0xda2`.
+Nhìn vào giá trị thập phân `3490`. Tôi có thể chuyển nó sang hex và ra `0xda2`.
 
-It's important to remember these two values are identical:
+Điều quan trọng cần nhớ là hai giá trị này giống hệt nhau:
 
 ``` {.py}
 >>> 3490 == 0xda2
 True
 ```
 
-It's just a different "language" for representing the same value.
+Chỉ là "ngôn ngữ" khác nhau để biểu diễn cùng một giá trị mà thôi.
 
-## Printing and Converting
+## In và Chuyển Đổi
 
-Remember that there's no such thing as a value "stored in hex" or
-"stored in decimal" in a variable. The variable holds just a numeric
-value and we shouldn't consider it to have a base.
+Nhớ rằng không có khái niệm giá trị "được lưu dưới dạng hex" hay "được lưu dưới dạng
+thập phân" trong một biến. Biến chỉ lưu một giá trị số thuần túy và ta không nên nghĩ
+nó có cơ số.
 
-It only acquires a base when we write in our code or print it out. Then
-we have to specify the base. (Although Python uses decimal by default in
-all cases.)
+Nó chỉ có cơ số khi ta viết trong code hoặc in ra. Khi đó ta phải chỉ định cơ số.
+(Mặc dù Python dùng thập phân theo mặc định trong mọi trường hợp.)
 
-You can convert a value to a hex string with the `hex()` function. All
-"converted" values end up as strings. What else would they be?
+Bạn có thể chuyển một giá trị sang chuỗi hex bằng hàm `hex()`. Tất cả các giá trị
+"được chuyển đổi" đều trở thành chuỗi. Thì phải là gì khác nào?
 
 ``` {.py}
 >>> print(hex(3490))
 0xda2
 ```
 
-You can convert a value to a binary string with the `bin()` function.
+Bạn có thể chuyển một giá trị sang chuỗi nhị phân bằng hàm `bin()`.
 
 ``` {.py}
 >>> print(bin(3490))
 0b110110100010
 ```
 
-You can also use f-strings to get the job done:
+Bạn cũng có thể dùng f-string để làm điều đó:
 
 ``` {.py}
 >>> print(f"3490 is {3490:x} in hex and {3490:b} in binary")
 3490 is da2 in hex and 110110100010 in binary
 ```
 
-The f-strings have a nice feature of being able to pad to a field width
-with zeros. Let's say you wanted an 8-digit hex number representation,
-you could do it like this:
+F-string có tính năng hay là có thể đệm đến độ rộng trường bằng số không. Giả sử
+bạn muốn biểu diễn số hex 8 chữ số, bạn có thể làm như sau:
 
 ``` {.py}
 >>> print(f"3490 is {3490:08x} in hex")
@@ -121,9 +115,8 @@ you could do it like this:
 
 ## Bitwise-AND
 
-Bitwise-AND mashes two numbers together with an AND operation. The result of
-an AND operation is `1` if both of the two input bits are `1`.
-Otherwise it's `0`. 
+Bitwise-AND kết hợp hai số với nhau bằng phép AND. Kết quả của phép AND là `1`
+nếu cả hai bit đầu vào đều là `1`. Ngược lại là `0`.
 
 <!-- CAPTION: Bitwise-AND Truth Table -->
 |A|B|A AND B|
@@ -133,8 +126,8 @@ Otherwise it's `0`.
 |1|0|0|
 |1|1|1|
 
-Let's do an example and AND two binary numbers together. Bitwise-AND uses
-the ampersand operator (`&`) in Python and many other languages.
+Hãy làm một ví dụ và AND hai số nhị phân với nhau. Bitwise-AND dùng toán tử
+ampersand (`&`) trong Python và nhiều ngôn ngữ khác.
 
 ``` {.default}
   0     0     1     1
@@ -143,13 +136,12 @@ the ampersand operator (`&`) in Python and many other languages.
   0     0     0     1
 ```
 
-You see the result is `1` only if both of the two input bits are `1`.
+Bạn thấy kết quả là `1` chỉ khi cả hai bit đầu vào đều là `1`.
 
-Larger inputs are AND'd by pairs of individual bits, which are what
-appears in each column of the large numbers below. (For completeness, the
-decimal result is shown on the right, but this is derived from the binary
-representation. It's not easy to look at two decimal numbers and
-ascertain their bitwise-AND.)
+Các đầu vào lớn hơn được AND theo từng cặp bit riêng lẻ, chính là những gì xuất
+hiện ở mỗi cột của các số lớn bên dưới. (Để hoàn chỉnh, kết quả thập phân được
+hiển thị ở bên phải, nhưng nó được suy ra từ biểu diễn nhị phân. Không dễ để
+nhìn hai số thập phân và suy ra bitwise-AND của chúng.)
 
 ``` {.default}
   0100011111000101010      146986
@@ -158,14 +150,12 @@ ascertain their bitwise-AND.)
   0000011001000101000       12840
 ```
 
-See how any particular output bit is `1` only if both bits in the column
-above it are `1`.
+Thấy cách mỗi bit đầu ra là `1` chỉ khi cả hai bit trong cột phía trên nó đều là `1`.
 
 ## Bitwise-OR
 
-Bitwise-OR mashes two numbers together with an OR operation. The result of
-an OR operation is `1` if either or both of the two input bits are `1`.
-Otherwise it's `0`. 
+Bitwise-OR kết hợp hai số với nhau bằng phép OR. Kết quả của phép OR là `1`
+nếu một trong hai hoặc cả hai bit đầu vào là `1`. Ngược lại là `0`.
 
 <!-- CAPTION: Bitwise-OR Truth Table -->
 |A|B|A OR B|
@@ -175,8 +165,8 @@ Otherwise it's `0`.
 |1|0|1|
 |1|1|1|
 
-Let's do an example and OR two binary numbers together. Bitwise-OR uses
-the pipe operator (`|`) in Python and many other languages.
+Hãy làm một ví dụ và OR hai số nhị phân với nhau. Bitwise-OR dùng toán tử
+pipe (`|`) trong Python và nhiều ngôn ngữ khác.
 
 ``` {.default}
   0     0     1     1
@@ -185,13 +175,12 @@ the pipe operator (`|`) in Python and many other languages.
   0     1     1     1
 ```
 
-You see the result is `1` if either of the two input bits are `1`.
+Bạn thấy kết quả là `1` nếu một trong hai bit đầu vào là `1`.
 
-Larger inputs are OR'd by pairs of individual bits, which are what
-appears in each column of the large numbers below. (For completeness, the
-decimal result is shown on the right, but this is derived from the binary
-representation. It's not easy to look at two decimal numbers and
-ascertain their bitwise-OR.)
+Các đầu vào lớn hơn được OR theo từng cặp bit riêng lẻ, chính là những gì xuất
+hiện ở mỗi cột của các số lớn bên dưới. (Để hoàn chỉnh, kết quả thập phân được
+hiển thị ở bên phải, nhưng nó được suy ra từ biểu diễn nhị phân. Không dễ để
+nhìn hai số thập phân và suy ra bitwise-OR của chúng.)
 
 ``` {.default}
   0100011111000101010      146986
@@ -200,14 +189,14 @@ ascertain their bitwise-OR.)
   1101111111001111010      458362
 ```
 
-See how any particular output bit is `1` if either or both bits in the
-column above it are `1`.
+Thấy cách mỗi bit đầu ra là `1` nếu một trong hai hoặc cả hai bit trong cột phía
+trên nó là `1`.
 
 ## Bitwise-NOT
 
-Bitwise-NOT _inverts_ a value by changing all the `1` bits to `0` and
-all the `0` bits to `1` This is a unary operator--it just works on a
-single number.
+Bitwise-NOT _đảo ngược_ một giá trị bằng cách đổi tất cả bit `1` thành `0` và
+tất cả bit `0` thành `1`. Đây là toán tử đơn nguyên (unary) --- chỉ hoạt động
+trên một số duy nhất.
 
 <!-- CAPTION: Bitwise-NOT Truth Table -->
 |A|NOT A|
@@ -215,8 +204,8 @@ single number.
 |0|1|
 |1|0|
 
-Let's do an example and NOT a single bit number. Bitwise-NOT uses
-the tilde operator (`~`) in Python and many other languages.
+Hãy làm một ví dụ và NOT một số bit đơn. Bitwise-NOT dùng toán tử
+tilde (`~`) trong Python và nhiều ngôn ngữ khác.
 
 ``` {.default}
 ~ 0   ~ 1
@@ -224,13 +213,12 @@ the tilde operator (`~`) in Python and many other languages.
   1     0
 ```
 
-You see the result is simply flipped to the other bit value.
+Bạn thấy kết quả đơn giản là lật sang giá trị bit kia.
 
-Larger inputs are NOT'd by individual bits, which are what appears in
-each column of the large numbers below. (For completeness, the decimal
-result is shown on the right, but this is derived from the binary
-representation. It's not easy to look at two decimal numbers and
-ascertain their bitwise-NOT.)
+Các đầu vào lớn hơn được NOT theo từng bit riêng lẻ, chính là những gì xuất
+hiện ở mỗi cột của các số lớn bên dưới. (Để hoàn chỉnh, kết quả thập phân được
+hiển thị ở bên phải, nhưng nó được suy ra từ biểu diễn nhị phân. Không dễ để
+nhìn hai số thập phân và suy ra bitwise-NOT của chúng.)
 
 ``` {.default}
 ~ 0100011111000101010    ~ 146986
@@ -238,14 +226,12 @@ ascertain their bitwise-NOT.)
   1011100000111010101      377301
 ```
 
-See how any particular output bit is `1` only if both bits in the column
-above it are `1`.
+Thấy cách mỗi bit đầu ra là `1` chỉ khi cả hai bit trong cột phía trên nó đều là `1`.
 
-Python note: the bitwise-NOT of a number will frequently be negative
-because of Python's arbitrary-precision arithmetic. If you need it to be
-positive, bitwise-AND the result with the number of `1` bits you need to
-represent the final value. For instance, to get a byte with `37`
-inverted, you can do any of these:
+Lưu ý Python: bitwise-NOT của một số thường âm vì Python dùng số học độ chính xác
+tùy ý. Nếu bạn cần nó là dương, hãy bitwise-AND kết quả với số bit `1` bạn cần
+để biểu diễn giá trị cuối cùng. Ví dụ, để lấy một byte với `37` bị đảo ngược,
+bạn có thể làm bất kỳ cách nào trong số này:
 
 ``` {.py}
 (~37) & 255
@@ -253,41 +239,38 @@ inverted, you can do any of these:
 (~37) & 0b11111111
 ```
 
-(Because, of course, those are all the same number in different bases!)
+(Vì tất nhiên, đó đều là cùng một số ở các cơ số khác nhau!)
 
-## Bitwise shift
+## Dịch Bit (Bitwise Shift)
 
-This is an interesting one. Using this, you can move a number back and
-forth by a certain number of bits.
+Đây là cái thú vị. Dùng thứ này, bạn có thể di chuyển một số qua lại một số bit nhất định.
 
-Check out how we're moving all the bits left by 2 in this example:
+Xem cách ta di chuyển tất cả bit sang trái 2 trong ví dụ này:
 
 ``` {.default}
 000111000111  left shifted by 2 is:
 011100011100
 ```
 
-Or we can shift right:
+Hoặc ta có thể dịch phải:
 
 ``` {.default}
 000111000111  right shifted by 2 is:
 000001110001  
 ```
 
-New bits on the left or right are set to zero, and bits that fall off
-the ends vanish forever.
+Các bit mới ở trái hoặc phải được đặt thành không, và các bit rơi ra ngoài sẽ biến
+mất mãi mãi.
 
-> I'm lying a little because of how a lot of languages handle right
-> shifting of negative numbers. If you shift a negative number right,
-> the new bits might be `1` instead of `0` depending on the language.
-> Python uses arbitrary precision integer math, so there are actually an
-> infinite number of `1` bits on the left of any negative number in
-> Python, making things even weirder.
+> Tôi đang nói dối một chút vì cách nhiều ngôn ngữ xử lý dịch phải của số âm. Nếu
+> bạn dịch phải một số âm, các bit mới có thể là `1` thay vì `0` tùy thuộc vào
+> ngôn ngữ. Python dùng số học nguyên độ chính xác tùy ý, vì vậy thực ra có vô số
+> bit `1` ở bên trái của bất kỳ số âm nào trong Python, làm mọi thứ còn kỳ lạ hơn.
 >
-> For now, best to just think about positive numbers.
+> Bây giờ, tốt nhất chỉ nghĩ về số dương thôi.
 
-The operator is `<<` for left shift and `>>` for right shift in most
-languages (sorry, Ruby!). Let's do an example:
+Toán tử là `<<` cho dịch trái và `>>` cho dịch phải trong hầu hết các ngôn ngữ
+(xin lỗi Ruby!). Hãy làm một ví dụ:
 
 ``` {.py}
 >>> v = 0b00000101
@@ -295,90 +278,89 @@ languages (sorry, Ruby!). Let's do an example:
 00010100
 ```
 
-There we had a byte in binary and we left-shifted it by 2 with `v << 2`.
-And you can see the `101` has moved over 2 bits to the left!
+Ở đây ta có một byte ở dạng nhị phân và ta dịch trái nó 2 bit với `v << 2`.
+Và bạn có thể thấy `101` đã di chuyển sang trái 2 bit!
 
-## Setting a Given Number of `1` bits
+## Thiết Lập Một Số Bit `1` Nhất Định
 
-This is a little bit-hack we can do if we want to get a number with a
-certain number of contiguous bits set to `1`.
+Đây là một thủ thuật bit nhỏ ta có thể dùng nếu muốn lấy một số với một số bit
+liên tiếp được thiết lập thành `1`.
 
-For example, what if I want a number with 12 bits set to one, namely:
+Ví dụ, nếu tôi muốn một số với 12 bit được thiết lập thành một, cụ thể là:
 
 ``` {.py}
 0b111111111111
 ```
 
-What would I have to do?
+Tôi phải làm gì?
 
-We can make use of a couple tricks here. Let's start with trick #1.
+Ta có thể tận dụng một vài thủ thuật ở đây. Bắt đầu với thủ thuật #1.
 
-If you want to set the nth bit to `1` (where the rightmost bit is bit
-number 0), you can raise 2 to that power and get there.
+Nếu bạn muốn thiết lập bit thứ n thành `1` (trong đó bit ngoài cùng bên phải
+là bit số 0), bạn có thể nâng 2 lên lũy thừa đó và đến đích.
 
-Let's set bit #5 to 1. We can take `2**5` which gives us `32`. And `32`
-in binary is `100000`. There we are.
+Hãy thiết lập bit #5 thành 1. Ta lấy `2**5` ra `32`. Và `32` ở dạng nhị phân
+là `100000`. Đây rồi.
 
-Another option is to left-shift a `1` by 5 bits: `1 << 5` is `100000` in
-binary, which is `32` decimal.
+Tùy chọn khác là dịch trái `1` đi 5 bit: `1 << 5` là `100000` ở nhị phân,
+tức là `32` thập phân.
 
-That works.
+Cách đó hoạt động được.
 
-But how do we get to our bit run of `1`s from there?
+Nhưng làm thế nào để đến được chuỗi bit `1` của chúng ta từ đó?
 
-Check this out: what's 32 minus 1? 31. Not a trick question. But let's
-look at those in binary:
+Xem cái này: 32 trừ 1 bằng bao nhiêu? 31. Không phải câu hỏi đánh lừa. Nhưng
+hãy nhìn chúng ở dạng nhị phân:
 
 ``` {.default}
 32   100000
 31   011111
 ```
 
-Hey! It's a run of `1`s! Not only that, but it's a run of 5 `1`s, just
-like we wanted! (This is analogous to subtraction in decimal. 10,000 - 1
-is 9,999. Just in binary we roll over to all `1`s, not `9`s.)
+Ồ! Là một chuỗi `1`! Không những thế, còn là chuỗi 5 bit `1`, đúng như ta
+muốn! (Điều này tương tự như phép trừ trong thập phân. 10,000 - 1 = 9,999.
+Chỉ là trong nhị phân ta tràn sang tất cả `1`, không phải `9`.)
 
 ``` {.py}
 run_of_ones = (1 << count) - 1
 ```
 
-Here's our run of 12 `1`s:
+Đây là chuỗi 12 bit `1` của ta:
 
 ``` {.py}
 >>> bin((1 << 12) - 1)
 '0b111111111111'
 ```
 
-If you like these sorts of _bit-twiddling hacks_, you might enjoy the
-book [Hacker's
-Delight](https://en.wikipedia.org/wiki/Hacker%27s_Delight). Chapter 2,
-which covers a lot of these techniques had historically been distributed
-for free; you might be able to find a PDF floating around.
+Nếu bạn thích những _thủ thuật bit_ (bit-twiddling hacks) kiểu này, bạn có thể
+thích cuốn sách [Hacker's
+Delight](https://en.wikipedia.org/wiki/Hacker%27s_Delight). Chương 2, bao gồm
+nhiều kỹ thuật như vậy đã từng được phân phối miễn phí; bạn có thể tìm thấy
+PDF trôi nổi đâu đó.
 
-## Reflect
+## Suy Ngẫm
 
-* What is `2342 & 2332`?
+* `2342 & 2332` bằng bao nhiêu?
 
-* What is `0b110101 | 112`?
+* `0b110101 | 112` bằng bao nhiêu?
 
-* What is `~0b101010010101` in binary? (Python will show the result as a
-  negative number, but you can turn it back positive by ANDing it with
-  `0b111111111111`. And don't forget that Python leaves off leading
-  zeroes when it prints!)
+* `~0b101010010101` ở dạng nhị phân là bao nhiêu? (Python sẽ hiển thị kết quả
+  là một số âm, nhưng bạn có thể đưa nó về dương bằng cách AND với
+  `0b111111111111`. Và đừng quên Python bỏ qua các số không đứng đầu khi in!)
 
-* What is `16 << 1`?
+* `16 << 1` bằng bao nhiêu?
 
-* What is `64 << 1`?
+* `64 << 1` bằng bao nhiêu?
 
-* What is `4200 << 1`? See the pattern?
+* `4200 << 1` bằng bao nhiêu? Thấy quy luật không?
 
-* What is `16 >> 2`?
+* `16 >> 2` bằng bao nhiêu?
 
-* What is `0b11100111 << 3`?
+* `0b11100111 << 3` bằng bao nhiêu?
 
-* What is `(1 << 8) - 1`?
+* `(1 << 8) - 1` bằng bao nhiêu?
 
-* What is `0x01020304 & ((1 << 16) - 1)`?
+* `0x01020304 & ((1 << 16) - 1)` bằng bao nhiêu?
 
 <!--
 
